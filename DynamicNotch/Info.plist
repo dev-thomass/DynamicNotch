@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- Calendar widget — needs EventKit access to display the next event. -->
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>DynamicNotch shows your next event in the notch panel.</string>
+	<!-- Pre-macOS-14 fallback name for the same permission. -->
+	<key>NSCalendarsUsageDescription</key>
+	<string>DynamicNotch shows your next event in the notch panel.</string>
+</dict>
+</plist>

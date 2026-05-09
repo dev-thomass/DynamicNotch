@@ -1,0 +1,45 @@
+# DynamicNotch SwiftFormat configuration
+# https://github.com/nicklockwood/SwiftFormat
+#
+# Mirrors AGENTS.md style guidelines. Run with:
+#   swiftformat .
+# Verify (CI / pre-commit):
+#   swiftformat --lint .
+
+# ───── Core style (AGENTS.md) ─────
+--indent 4
+--linebreaks lf
+--maxwidth 120
+--tabwidth 4
+--allman false
+--commas inline
+--trimwhitespace always
+
+# Spacing around operators / commas / colons
+--operatorfunc spaced
+--ranges spaced
+
+# ───── Modern Swift idioms ─────
+--swiftversion 5.10
+--self remove
+--guardelse same-line
+--elseposition same-line
+--ifdef no-indent
+--patternlet hoist
+--shortoptionals always
+--stripunusedargs closure-only
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+
+# Imports — alphabetical, no duplicates
+--importgrouping alphabetized
+
+# Doc-comment normalization
+--docComments preserve
+
+# Header — leave existing per-file headers untouched
+--header ignore
+
+# ───── Files to skip ─────
+--exclude .build,build,DerivedData,Pods,vendor,Tools/GenerateAppIcon.swift
