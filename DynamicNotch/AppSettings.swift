@@ -68,4 +68,24 @@ final class AppSettings: ObservableObject {
 
     @PublishedPersist(key: "pomodoroCyclesBeforeLongBreak", defaultValue: 4)
     var pomodoroCyclesBeforeLongBreak: Int
+
+    // MARK: wings (extensions latérales de l'encoche)
+
+    /// Active globalement le système de wings — quand `false`, l'encoche
+    /// reste à sa taille native même si batterie en charge / chrono actif.
+    @PublishedPersist(key: "wingsEnabled", defaultValue: true)
+    var wingsEnabled: Bool
+
+    /// Affiche l'icône batterie + pourcentage à gauche/droite quand la
+    /// machine est branchée sur secteur.
+    @PublishedPersist(key: "wingBattery", defaultValue: true)
+    var wingBattery: Bool
+
+    /// Affiche `mm | ss` quand le chronomètre tourne.
+    @PublishedPersist(key: "wingStopwatch", defaultValue: true)
+    var wingStopwatch: Bool
+
+    /// Affiche le temps restant du pomodoro tant qu'une session est active.
+    @PublishedPersist(key: "wingPomodoro", defaultValue: true)
+    var wingPomodoro: Bool
 }

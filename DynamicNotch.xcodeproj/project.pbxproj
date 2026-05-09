@@ -59,6 +59,12 @@
 		W1D100020000000000000004 /* PomodoroWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000004 /* PomodoroWidget.swift */; };
 		W1D100020000000000000005 /* NowPlayingWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000005 /* NowPlayingWidget.swift */; };
 		W1D100020000000000000006 /* CalendarWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000006 /* CalendarWidget.swift */; };
+		WG1100020000000000000001 /* BatteryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000001 /* BatteryMonitor.swift */; };
+		WG1100020000000000000002 /* NotchWingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000002 /* NotchWingsView.swift */; };
+		WG1100020000000000000003 /* VolumeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000003 /* VolumeManager.swift */; };
+		WG1100020000000000000004 /* BrightnessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000004 /* BrightnessManager.swift */; };
+		WG1100020000000000000005 /* MediaKeyInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000005 /* MediaKeyInterceptor.swift */; };
+		WG1100020000000000000006 /* NotchHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000006 /* NotchHUDView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -109,6 +115,12 @@
 		W1D100010000000000000004 /* PomodoroWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroWidget.swift; sourceTree = "<group>"; };
 		W1D100010000000000000005 /* NowPlayingWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingWidget.swift; sourceTree = "<group>"; };
 		W1D100010000000000000006 /* CalendarWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarWidget.swift; sourceTree = "<group>"; };
+		WG1100010000000000000001 /* BatteryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryMonitor.swift; sourceTree = "<group>"; };
+		WG1100010000000000000002 /* NotchWingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchWingsView.swift; sourceTree = "<group>"; };
+		WG1100010000000000000003 /* VolumeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeManager.swift; sourceTree = "<group>"; };
+		WG1100010000000000000004 /* BrightnessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessManager.swift; sourceTree = "<group>"; };
+		WG1100010000000000000005 /* MediaKeyInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaKeyInterceptor.swift; sourceTree = "<group>"; };
+		WG1100010000000000000006 /* NotchHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchHUDView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -187,6 +199,12 @@
 				F1X100010000000000000003 /* SingleInstance.swift */,
 				F3X100010000000000000001 /* AppSettings.swift */,
 				F3X100010000000000000002 /* DisplayPreference.swift */,
+				WG1100010000000000000001 /* BatteryMonitor.swift */,
+				WG1100010000000000000002 /* NotchWingsView.swift */,
+				WG1100010000000000000003 /* VolumeManager.swift */,
+				WG1100010000000000000004 /* BrightnessManager.swift */,
+				WG1100010000000000000005 /* MediaKeyInterceptor.swift */,
+				WG1100010000000000000006 /* NotchHUDView.swift */,
 				W1D100010000000000000001 /* Widget.swift */,
 				W1D100040000000000000000 /* Widgets */,
 				DEC100030000000000000000 /* DesignSystem */,
@@ -355,6 +373,12 @@
 				W1D100020000000000000004 /* PomodoroWidget.swift in Sources */,
 				W1D100020000000000000005 /* NowPlayingWidget.swift in Sources */,
 				W1D100020000000000000006 /* CalendarWidget.swift in Sources */,
+				WG1100020000000000000001 /* BatteryMonitor.swift in Sources */,
+				WG1100020000000000000002 /* NotchWingsView.swift in Sources */,
+				WG1100020000000000000003 /* VolumeManager.swift in Sources */,
+				WG1100020000000000000004 /* BrightnessManager.swift in Sources */,
+				WG1100020000000000000005 /* MediaKeyInterceptor.swift in Sources */,
+				WG1100020000000000000006 /* NotchHUDView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

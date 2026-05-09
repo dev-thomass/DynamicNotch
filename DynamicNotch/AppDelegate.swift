@@ -39,6 +39,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
 
         _ = EventMonitors.shared
+        // Démarre les managers + tap des touches média pour afficher le HUD
+        // sous l'encoche dès le premier appui sur volume / luminosité.
+        _ = BatteryMonitor.shared
+        _ = VolumeManager.shared
+        _ = BrightnessManager.shared
+        MediaKeyInterceptor.shared.start()
+        _ = HUDController.shared
 
         // Rebuild the windows when the user picks a different display.
         AppSettings.shared.$displayPreference

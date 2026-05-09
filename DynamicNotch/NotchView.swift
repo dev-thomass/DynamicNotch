@@ -12,13 +12,32 @@ struct NotchView: View {
     @StateObject var tvm = TrayDrop.shared
     @StateObject var settings = AppSettings.shared
 
+    // Modèles observés pour faire re-render les wings quand leur état change.
+    // Sans ces @StateObject, `WingsResolver()` retournerait des données
+    // périmées et la silhouette ne saurait pas qu'il faut s'élargir.
+    @StateObject private var battery = BatteryMonitor.shared
+    @StateObject private var stopwatch = StopwatchModel.shared
+    @StateObject private var pomodoro = PomodoroModel.shared
+
     @State var dropTargeting: Bool = false
+
+    /// Wings actives au moment du rendu. Recalculé à chaque tick — coût
+    /// négligeable (3 booleans + 2 enums).
+    private var activeWings: [WingProvider] { WingsResolver().activeProviders }
+
+    /// Largeur additionnelle à donner à la silhouette pour englober les
+    /// wings gauche + droite. 0 si rien n'est actif.
+    private var wingsExtraWidth: CGFloat {
+        guard vm.status == .closed, !activeWings.isEmpty else { return 0 }
+        // Une wing par côté max — providers au-delà sont ignorés (V1).
+        return CGFloat(min(activeWings.count, 2)) * WingsLayout.oneWingWidth
+    }
 
     var notchSize: CGSize {
         switch vm.status {
         case .closed:
             var ans = CGSize(
-                width: vm.deviceNotchRect.width - 4,
+                width: vm.deviceNotchRect.width - 4 + wingsExtraWidth,
                 height: vm.deviceNotchRect.height - 4
             )
             if ans.width < 0 { ans.width = 0 }
@@ -108,6 +127,12 @@ struct NotchView: View {
             )
         }
         .background(dragDetector)
+        // HUD volume / luminosité, ancré sous l'encoche.
+        .overlay(alignment: .top) {
+            NotchHUDView()
+                .offset(y: notchSize.height + 8)
+                .allowsHitTesting(false)
+        }
         .animation(vm.animation, value: vm.status)
         // The opened panel resizes when the user enters Settings (large
         // form) or Menu (compact tile row). Animate the size change with
@@ -144,7 +169,32 @@ struct NotchView: View {
             color: .black.opacity(([.opened, .popping].contains(vm.status)) ? 1 : 0),
             radius: 16
         )
+        .overlay { wingsOverlay }
         .overlay(alignment: .trailing) { closedBadge }
+    }
+
+    /// Contenu des wings — affiché par-dessus la silhouette noire élargie.
+    /// Les `frame` calculés sont basés sur `notchSize` qui inclut déjà
+    /// `wingsExtraWidth`, donc l'alignement marche tout seul.
+    @ViewBuilder
+    private var wingsOverlay: some View {
+        if vm.status == .closed, !activeWings.isEmpty {
+            HStack(spacing: 0) {
+                if activeWings.count >= 1 {
+                    WingContent(provider: activeWings[0], slot: .left)
+                        .padding(.leading, WingsLayout.innerPadding)
+                        .frame(width: WingsLayout.oneWingWidth, alignment: .leading)
+                }
+                Spacer(minLength: 0)
+                if activeWings.count >= 2 {
+                    WingContent(provider: activeWings[1], slot: .right)
+                        .padding(.trailing, WingsLayout.innerPadding)
+                        .frame(width: WingsLayout.oneWingWidth, alignment: .trailing)
+                }
+            }
+            .frame(width: notchSize.width, height: notchSize.height)
+            .transition(.opacity.combined(with: .scale(scale: 0.85)))
+        }
     }
 
     /// Pill-shaped count badge that hugs the right side of the closed notch

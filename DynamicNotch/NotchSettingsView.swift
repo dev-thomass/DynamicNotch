@@ -35,12 +35,13 @@ struct NotchSettingsView: View {
 
                     VStack(alignment: .leading, spacing: DS.Spacing.md) {
                         displaySection
-                        storageSection
+                        wingsSection
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
                     VStack(alignment: .leading, spacing: DS.Spacing.md) {
                         pomodoroSection
+                        storageSection
                         advancedSection
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -185,6 +186,35 @@ struct NotchSettingsView: View {
                 LaunchAtLogin.Toggle {
                     settingLabel("Lancer à l'ouverture de session", subtitle: nil)
                 }
+            }
+        }
+    }
+
+    // MARK: wings
+
+    private var wingsSection: some View {
+        sectionCard(title: "Extensions latérales", systemImage: "rectangle.expand.vertical") {
+            VStack(alignment: .leading, spacing: DS.Spacing.sm) {
+                Toggle(isOn: $settings.wingsEnabled) {
+                    settingLabel("Activer les extensions",
+                                 subtitle: "Étend l'encoche pour afficher batterie, chrono, focus en temps réel")
+                }
+                Group {
+                    Toggle(isOn: $settings.wingBattery) {
+                        settingLabel("Batterie en charge",
+                                     subtitle: "Icône colorée à gauche, pourcentage à droite")
+                    }
+                    Toggle(isOn: $settings.wingStopwatch) {
+                        settingLabel("Chronomètre actif",
+                                     subtitle: "Minutes à gauche, secondes à droite")
+                    }
+                    Toggle(isOn: $settings.wingPomodoro) {
+                        settingLabel("Pomodoro en cours",
+                                     subtitle: "Pastille de phase + temps restant")
+                    }
+                }
+                .disabled(!settings.wingsEnabled)
+                .opacity(settings.wingsEnabled ? 1 : 0.5)
             }
         }
     }
@@ -384,6 +414,10 @@ struct NotchSettingsView: View {
         settings.pomodoroShortBreakMinutes = 5
         settings.pomodoroLongBreakMinutes = 15
         settings.pomodoroCyclesBeforeLongBreak = 4
+        settings.wingsEnabled = true
+        settings.wingBattery = true
+        settings.wingStopwatch = true
+        settings.wingPomodoro = true
         vm.hapticFeedback = true
     }
 
