@@ -62,9 +62,15 @@ struct NotchView: View {
     var notchSize: CGSize {
         switch vm.status {
         case .closed:
+            // Sur un Mac avec encoche matérielle : on doit COÏNCIDER pixel-
+            // perfect avec la silhouette physique (pas de marge -4 qui
+            // crée un liseré gris autour de notre silhouette noire).
+            // Sur un Mac sans : on garde la marge -4 pour que la pilule
+            // simulée ait un peu d'air autour d'elle.
+            let inset: CGFloat = hasHardwareNotch ? 0 : 4
             var ans = CGSize(
-                width: vm.deviceNotchRect.width - 4 + wingsExtraWidth,
-                height: vm.deviceNotchRect.height - 4 + hudExtraHeight
+                width: vm.deviceNotchRect.width - inset + wingsExtraWidth,
+                height: vm.deviceNotchRect.height - inset + hudExtraHeight
             )
             if ans.width < 0 { ans.width = 0 }
             if ans.height < 0 { ans.height = 0 }

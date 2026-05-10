@@ -138,22 +138,11 @@ struct WingContent: View {
             BatteryGlyph(level: battery.level, tint: battery.indicativeTint, isCharging: battery.isCharging)
         case .right:
             Text(battery.percentText)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(size: 9, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(.white)
-                // Pulse subtil quand en charge active — confirme visuellement
-                // que la batterie monte.
-                .opacity(battery.isCharging ? pulseOpacity : 1.0)
-                .animation(
-                    battery.isCharging
-                        ? .easeInOut(duration: 1.4).repeatForever(autoreverses: true)
-                        : .default,
-                    value: battery.isCharging
-                )
         }
     }
-
-    @State private var pulseOpacity: Double = 0.65
 
     // ─── Stopwatch (mm | ss) ─────────────────────────────────────────────
 
@@ -162,17 +151,12 @@ struct WingContent: View {
         let total = max(0, Int(stopwatch.elapsed))
         let m = total / 60
         let s = total % 60
-        let display = String(format: slot == .left ? "%02d" : "%02d", slot == .left ? m : s)
-        let label   = slot == .left ? "min" : "sec"
+        let display = slot == .left ? String(format: "%02d", m) : String(format: "%02d", s)
         VStack(spacing: 0) {
             Text(display)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(size: 9, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(.white)
-            Text(label)
-                .font(.system(size: 7, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.55))
-                .offset(y: -1)
         }
     }
 
@@ -185,12 +169,12 @@ struct WingContent: View {
             // Petite pastille colorée selon la phase
             Circle()
                 .fill(pomodoro.phase.tint)
-                .frame(width: 8, height: 8)
+                .frame(width: 6, height: 6)
                 .padding(.horizontal, 2)
         case .right:
             let total = max(0, Int(pomodoro.remaining.rounded()))
             Text(String(format: "%d:%02d", total / 60, total % 60))
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(size: 9, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(.white)
         }
@@ -203,13 +187,13 @@ struct WingContent: View {
         switch slot {
         case .left:
             Image(systemName: "calendar")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 9, weight: .semibold))
                 .foregroundStyle(.white)
         case .right:
             if let event = calendar.nextEvent {
                 let mins = max(0, Int(event.startDate.timeIntervalSinceNow / 60))
                 Text(mins == 0 ? "main." : "\(mins)′")
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .font(.system(size: 9, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.white)
             }
@@ -238,34 +222,48 @@ struct MonochromeBar: View {
 
 // MARK: - Battery glyph
 
-/// Petite icône batterie qui se remplit selon le niveau, avec éclair quand
-/// en charge active. Blanc/teinté selon le niveau (vert > 50 %, jaune > 20 %,
-/// rouge sinon).
+/// Petite icône batterie qui se remplit selon le niveau, avec éclair
+/// SCINTILLANT quand en charge active. Blanc/teinté selon le niveau
+/// (vert > 50 %, jamais > 20 %, rouge sinon).
 struct BatteryGlyph: View {
     let level: Double           // 0..1
     let tint: Color
     let isCharging: Bool
 
-    private let bodySize = CGSize(width: 22, height: 11)
-    private let bumpSize = CGSize(width: 2, height: 5)
+    private let bodySize = CGSize(width: 16, height: 8)
+    private let bumpSize = CGSize(width: 1.5, height: 4)
+
+    @State private var boltOpacity: Double = 1.0
 
     var body: some View {
         HStack(spacing: 1) {
             ZStack(alignment: .leading) {
                 // Coque vide
-                RoundedRectangle(cornerRadius: 2.5, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.7), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.7), lineWidth: 0.8)
                 // Remplissage proportionnel
-                RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                RoundedRectangle(cornerRadius: 1, style: .continuous)
                     .fill(tint)
-                    .frame(width: max(0, (bodySize.width - 4) * level), height: bodySize.height - 4)
-                    .padding(.leading, 2)
-                // Éclair en charge
+                    .frame(width: max(0, (bodySize.width - 3) * level), height: bodySize.height - 3)
+                    .padding(.leading, 1.5)
+                // Éclair en charge — SCINTILLE (pulse opacity rapide)
                 if isCharging {
                     Image(systemName: "bolt.fill")
-                        .font(.system(size: 7, weight: .black))
+                        .font(.system(size: 5.5, weight: .black))
                         .foregroundStyle(.white)
+                        .opacity(boltOpacity)
                         .frame(width: bodySize.width, height: bodySize.height)
+                        .onAppear {
+                            // Pulse rapide 0.7 ↔ 1.0 toutes les 0.6s pour
+                            // un effet "scintillant" qui confirme la charge
+                            // en cours d'un coup d'œil.
+                            withAnimation(
+                                .easeInOut(duration: 0.6)
+                                    .repeatForever(autoreverses: true)
+                            ) {
+                                boltOpacity = 0.4
+                            }
+                        }
                 }
             }
             .frame(width: bodySize.width, height: bodySize.height)

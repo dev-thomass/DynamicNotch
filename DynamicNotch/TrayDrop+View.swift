@@ -2,8 +2,9 @@
 //  TrayDrop+View.swift
 //  DynamicNotch
 //
-//  Affichage du widget Files. Refondu pour utiliser le DSDropZone (plus
-//  de bordure pointillée vintage), et tout en français.
+//  Widget Files. Refondu pour utiliser le DSDropZone, et présente en bas
+//  deux actions discrètes : une corbeille drop-zone (déposer un fichier
+//  pour le supprimer) + un bouton "Tout supprimer" avec confirmation.
 //
 
 import SwiftUI
@@ -13,6 +14,7 @@ struct TrayView: View {
     @StateObject var tvm = TrayDrop.shared
 
     @State private var targeting = false
+    @State private var trashTargeting = false
 
     var storageTime: String {
         switch tvm.selectedFileStorageTime {
@@ -78,7 +80,8 @@ struct TrayView: View {
     // MARK: populated
 
     private var populated: some View {
-        ZStack(alignment: .bottom) {
+        VStack(spacing: DS.Spacing.xs) {
+            // Items
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: vm.spacing) {
                     ForEach(tvm.items) { item in
@@ -87,20 +90,87 @@ struct TrayView: View {
                 }
                 .padding(.horizontal, DS.Spacing.xs)
             }
-            optionHint
-                .padding(.bottom, 2)
-                .allowsHitTesting(false)
+            // Actions discrètes en bas-droite
+            HStack(spacing: 6) {
+                Spacer()
+                trashDropZone
+                clearAllButton
+            }
+            .padding(.horizontal, DS.Spacing.xs)
         }
     }
 
-    /// Pastille discrète "⌥ pour supprimer" affichée tant qu'il y a des items.
-    private var optionHint: some View {
-        DSPill(
-            "⌥ pour supprimer",
-            systemImage: "option",
-            tone: vm.optionKeyPressed ? .destructive : .neutral
-        )
-        .opacity(vm.optionKeyPressed ? 1.0 : 0.55)
-        .animation(DS.Motion.fast, value: vm.optionKeyPressed)
+    // MARK: actions
+
+    /// Corbeille drop-zone : si l'utilisateur drag un item du tray
+    /// (DropItemView a `.draggable(item)`) et le relâche dessus, le
+    /// fichier correspondant est supprimé. Match par nom de fichier
+    /// (les noms sont uniques dans notre storage UUID/filename).
+    private var trashDropZone: some View {
+        Image(systemName: "trash")
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(trashTargeting ? .white : DS.Color.textTertiary)
+            .frame(width: 26, height: 18)
+            .background(
+                Capsule().fill(trashTargeting
+                               ? DS.Color.destructive
+                               : DS.Color.surfaceRaisedStrong)
+            )
+            .overlay(
+                Capsule().strokeBorder(
+                    trashTargeting ? DS.Color.destructive : DS.Color.borderSubtle,
+                    lineWidth: 0.5
+                )
+            )
+            .onDrop(of: [.fileURL, .data], isTargeted: $trashTargeting) { providers in
+                handleTrashDrop(providers)
+                return true
+            }
+            .help(Text("Glissez un fichier ici pour le supprimer"))
+            .accessibilityLabel(Text("Corbeille — glissez un fichier ici pour le supprimer"))
+    }
+
+    /// Bouton "Tout supprimer" avec confirmation. Affiche le compte des
+    /// items pour que l'utilisateur sache exactement ce qu'il efface.
+    private var clearAllButton: some View {
+        Button {
+            confirmAndClearAll()
+        } label: {
+            Image(systemName: "xmark.bin")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(DS.Color.textTertiary)
+                .frame(width: 26, height: 18)
+                .background(Capsule().fill(DS.Color.surfaceRaisedStrong))
+                .overlay(Capsule().strokeBorder(DS.Color.borderSubtle, lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
+        .help(Text("Tout supprimer (\(tvm.items.count) fichier(s))"))
+        .accessibilityLabel(Text("Supprimer tous les fichiers du tray"))
+    }
+
+    private func handleTrashDrop(_ providers: [NSItemProvider]) {
+        for provider in providers {
+            _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                guard let url else { return }
+                let fileName = url.lastPathComponent
+                Task { @MainActor in
+                    // Match par nom de fichier, supprime le premier item qui
+                    // correspond (les noms sont uniques par UUID parent dir).
+                    if let item = TrayDrop.shared.items.first(where: { $0.fileName == fileName }) {
+                        TrayDrop.shared.delete(item.id)
+                    }
+                }
+            }
+        }
+    }
+
+    private func confirmAndClearAll() {
+        let count = tvm.items.count
+        guard count > 0 else { return }
+        let title = "Tout supprimer ?"
+        let message = "\(count) fichier(s) seront retirés du tray. Vos originaux sur le disque ne sont pas affectés."
+        if NSAlert.popConfirm(title: title, message: message, confirm: "Tout supprimer", destructive: true) {
+            tvm.removeAll()
+        }
     }
 }

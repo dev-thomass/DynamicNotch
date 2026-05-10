@@ -84,17 +84,44 @@ extension NSItemProvider {
 }
 
 extension [NSItemProvider] {
+    /// Noms / patterns à TOUJOURS ignorer dans un drop.
+    /// Quand on drag un dossier, le système peut ramener avec lui ses
+    /// fichiers cachés / système (`.DS_Store`, `__MACOSX`, AppleDouble
+    /// `._*`). On les filtre pour ne pas polluer le tray.
+    private static let ignoredFileNames: Set<String> = [".DS_Store", "Thumbs.db", "__MACOSX"]
+
+    private static func shouldIgnore(_ url: URL) -> Bool {
+        let name = url.lastPathComponent
+        if ignoredFileNames.contains(name) { return true }
+        if name.hasPrefix("._") { return true } // AppleDouble side-files
+        if name.hasPrefix(".") { return true }  // Hidden files Unix-style
+        return false
+    }
+
     func interfaceConvert() -> [URL]? {
-        let urls = compactMap { provider -> URL? in
-            provider.convertToFilePathThatIsWhatWeThinkItWillWorkWithDynamicNotch()
+        var loaded: [URL] = []
+        var failures = 0
+        for provider in self {
+            guard let url = provider.convertToFilePathThatIsWhatWeThinkItWillWorkWithDynamicNotch()
+            else {
+                failures += 1
+                continue
+            }
+            // Le filtrage hidden NE compte PAS comme un échec — c'est une
+            // suppression intentionnelle pour éviter de polluer le tray.
+            if Self.shouldIgnore(url) {
+                Log.drop.info("ignored hidden/system file: \(url.lastPathComponent, privacy: .public)")
+                continue
+            }
+            loaded.append(url)
         }
-        guard urls.count == count else {
-            Log.drop.error("interfaceConvert: \(self.count - urls.count) of \(self.count) provider(s) failed")
+        if failures > 0 {
+            Log.drop.error("interfaceConvert: \(failures) of \(self.count) provider(s) failed")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 NSAlert.popError(DynamicNotchError.multipleFilesFailedToLoad)
             }
             return nil
         }
-        return urls
+        return loaded
     }
 }
