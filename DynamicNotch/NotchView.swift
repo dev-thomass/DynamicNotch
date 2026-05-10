@@ -33,9 +33,16 @@ struct NotchView: View {
         vm.status == .closed && hud.current != nil && settings.wingsEnabled
     }
 
-    /// Hauteur additionnelle de l'extension HUD (vers le bas). 24 pt
-    /// suffisent pour un compact icône + barre fine.
-    private static let hudExtraHeight: CGFloat = 24
+    /// Hauteur additionnelle de l'extension HUD (vers le bas).
+    /// 32 pt = 8pt de marge interne (séparation visuelle avec le contenu
+    /// natif de l'encoche au-dessus, batterie / chrono / etc.) + 14pt
+    /// pour l'icône+barre + 10pt de padding inférieur.
+    private static let hudExtraHeight: CGFloat = 32
+
+    /// Marge entre le bord bas de l'encoche native et le début du
+    /// contenu HUD. Évite que l'icône volume / barre se "colle" au
+    /// pourcentage batterie ou à la pastille pomodoro juste au-dessus.
+    private static let hudTopMargin: CGFloat = 10
 
     /// Provider unique qui occupe les wings gauche + droite à la fois.
     /// Première entrée de `activeWings`, ou nil si aucun. L'utilisateur
@@ -226,11 +233,15 @@ struct NotchView: View {
                     .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, 14)
-            // Zone du bas — la hauteur correspond exactement à
-            // `hudExtraHeight`. Centré verticalement dans ce slot.
-            .frame(height: Self.hudExtraHeight)
+            // La zone HUD totale fait `hudExtraHeight`. Le contenu
+            // (icône + barre) est positionné en bas avec une marge
+            // supérieure de `hudTopMargin` pour bien séparer
+            // visuellement de la zone "encoche normale" qui contient
+            // déjà du contenu (batterie / chrono / etc.).
+            .frame(height: Self.hudExtraHeight - Self.hudTopMargin, alignment: .center)
             .frame(maxWidth: .infinity)
-            .padding(.bottom, 2)
+            .padding(.top, Self.hudTopMargin)
+            .padding(.bottom, 4)
             .transition(.opacity)
         }
     }

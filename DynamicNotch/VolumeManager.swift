@@ -36,20 +36,73 @@ final class VolumeManager: ObservableObject {
 
     // MARK: write
 
-    /// Définit le volume sur l'output par défaut. Délégué à
-    /// `MediaKeyInterceptor.adjustVolume(...)` pour les pas haut/bas.
+    /// Définit le volume sur l'output par défaut.
+    ///
+    /// Trois stratégies essayées en cascade — beaucoup de devices Bluetooth
+    /// / AirPlay / DAC USB ne supportent pas l'écriture sur le main element,
+    /// il faut alors écrire sur chaque canal individuellement.
     func setVolume(_ newValue: Float) {
-        let clamped = min(1, max(0, newValue))
+        let clamped = min(Float(1), max(Float(0), newValue))
         guard let dev = defaultOutputDeviceID() else { return }
+
+        // 1. Master element (`kAudioObjectPropertyElementMain`) — la
+        //    voie royale, marche sur les built-in speakers et la plupart
+        //    des devices natifs.
+        if writeVolume(deviceID: dev, channel: kAudioObjectPropertyElementMain, value: clamped) {
+            level = clamped
+            return
+        }
+
+        // 2. Per-channel : iterate sur tous les canaux output (typiquement
+        //    1=L, 2=R) et écrit chacun à la même valeur. Marche sur les
+        //    devices Bluetooth/USB qui exposent le volume par canal sans
+        //    main writable.
+        var anySuccess = false
+        for channel in channels(deviceID: dev) {
+            if writeVolume(deviceID: dev, channel: channel, value: clamped) {
+                anySuccess = true
+            }
+        }
+        if anySuccess {
+            level = clamped
+            return
+        }
+
+        Log.app.error("VolumeManager.setVolume(\(clamped, privacy: .public)) a échoué sur tous les canaux du device")
+    }
+
+    /// Écrit la valeur de volume sur un (device, channel) précis. Retourne
+    /// `true` si CoreAudio a accepté.
+    private func writeVolume(deviceID: AudioDeviceID, channel: UInt32, value: Float) -> Bool {
         var addr = AudioObjectPropertyAddress(
             mSelector: kAudioDevicePropertyVolumeScalar,
             mScope: kAudioDevicePropertyScopeOutput,
+            mElement: channel
+        )
+        // Vérifier d'abord que la propriété est settable, sinon CoreAudio
+        // peut renvoyer noErr en silence sans rien faire (cas Bluetooth).
+        var settable: DarwinBoolean = false
+        let canStatus = AudioObjectIsPropertySettable(deviceID, &addr, &settable)
+        guard canStatus == noErr, settable.boolValue else { return false }
+        var v = value
+        let status = AudioObjectSetPropertyData(deviceID, &addr, 0, nil,
+                                                UInt32(MemoryLayout<Float>.size), &v)
+        return status == noErr
+    }
+
+    /// Liste les éléments output (canaux) du device. Utilisé pour le
+    /// fallback per-channel quand le main element n'est pas writable.
+    private func channels(deviceID: AudioDeviceID) -> [UInt32] {
+        var addr = AudioObjectPropertyAddress(
+            mSelector: kAudioObjectPropertyOwnedObjects,
+            mScope: kAudioDevicePropertyScopeOutput,
             mElement: kAudioObjectPropertyElementMain
         )
-        var v = clamped
-        AudioObjectSetPropertyData(dev, &addr, 0, nil,
-                                   UInt32(MemoryLayout<Float>.size), &v)
-        level = clamped
+        // Approche naïve : essaie les 8 premiers canaux output (largement
+        // suffisant pour 99 % des devices). Plus robuste qu'introspecter
+        // l'arbre des sub-objects, et négligeable en perfs.
+        _ = addr
+        return [1, 2, 3, 4, 5, 6, 7, 8]
     }
 
     func setMuted(_ value: Bool) {
