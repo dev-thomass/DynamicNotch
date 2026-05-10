@@ -2,72 +2,63 @@
 //  MediaKeyInterceptor.swift
 //  DynamicNotch
 //
-//  Intercepte les touches media (volume up/down/mute, brightness up/down)
-//  via un CGEvent tap système. Quand activé, le HUD natif macOS ne s'affiche
-//  pas — c'est notre HUD sous l'encoche qui prend le relais.
+//  Intercepte les touches média (volume up/down/mute, brightness up/down)
+//  via deux mécanismes :
+//   - **NSEvent global monitor** (mode lecture seule, par défaut) — observe
+//     sans consommer ; le HUD natif macOS coexiste.
+//   - **CGEvent.tapCreate** (.cghidEventTap, options .defaultTap) — capture
+//     ET consomme (return nil dans le callback) → le HUD natif n'apparaît
+//     plus, seul le nôtre est visible. Requiert la permission Accessibility.
 //
-//  Permission requise : Accessibility (Réglages → Confidentialité → Acc.).
-//  Sans cette permission, le tap échoue silencieusement — on log un avis
-//  et on reste en mode "lecture seule" (le HUD apparaît quand l'utilisateur
-//  utilise déjà les touches mais on ne court-circuite pas le HUD système).
+//  ⚠️ La classe N'EST PAS `@MainActor` : le callback CGEvent est invoqué
+//  par le système sur un thread du run loop arbitraire — appeler une
+//  méthode `@MainActor` depuis ce contexte plante l'app. Tout accès à
+//  l'état UI / aux singletons `@MainActor` est explicitement dispatché
+//  via `DispatchQueue.main.async`.
 //
 
+import AppKit
+import ApplicationServices
 import Cocoa
 import Combine
 import CoreGraphics
 import Foundation
-import ApplicationServices
 
-@MainActor
-final class MediaKeyInterceptor: ObservableObject {
+final class MediaKeyInterceptor {
     static let shared = MediaKeyInterceptor()
 
-    /// Émis quand le volume vient d'être ajusté (par les touches ou par
-    /// nous-mêmes via setVolume). Le HUD écoute pour s'afficher.
+    /// Émis quand le volume vient d'être ajusté.
     let volumeChanged = PassthroughSubject<Float, Never>()
     let volumeMuted   = PassthroughSubject<Bool, Never>()
-
     /// Émis quand la luminosité vient d'être ajustée.
     let brightnessChanged = PassthroughSubject<Float, Never>()
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
     private(set) var isActive: Bool = false
-    /// `true` quand on intercepte ET consomme les events (HUD natif supprimé).
-    /// `false` en mode lecture seule via NSEvent.
     private(set) var isConsuming: Bool = false
+    private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        // Démarrage initial selon le setting persisté.
+        // Le bootstrap (lecture des settings, abonnement Combine, install
+        // initiale du monitor) doit se faire sur main — `DispatchQueue.main.async`
+        // assure qu'on n'appelle pas de code MainActor depuis un thread
+        // arbitraire si init est invoqué hors main.
         DispatchQueue.main.async { [weak self] in
+            self?.subscribeSettings()
             self?.refreshFromSettings()
         }
-        // Re-évalue quand le setting change.
-        AppSettings.shared.$suppressNativeHUD
-            .removeDuplicates()
-            .sink { [weak self] _ in self?.refreshFromSettings() }
-            .store(in: &cancellables)
     }
-
-    private var cancellables = Set<AnyCancellable>()
 
     // MARK: lifecycle
 
-    /// Démarre l'interception. Appelée une fois depuis AppDelegate.
-    /// Le mode (lecture seule vs consommation) est piloté par le setting
-    /// `AppSettings.suppressNativeHUD`.
+    /// Appel public depuis AppDelegate. Idempotent — si déjà démarré,
+    /// re-évalue le mode (lecture seule vs consume) selon les settings.
     func start() {
-        refreshFromSettings()
-    }
-
-    /// Re-démarre dans le bon mode selon `suppressNativeHUD` + permission
-    /// Accessibility.
-    private func refreshFromSettings() {
-        stop()
-        if AppSettings.shared.suppressNativeHUD, AccessibilityHelper.isTrusted {
-            installCGEventTap()
-        } else {
-            installNSEventMonitor()
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshFromSettings()
         }
     }
 
@@ -92,15 +83,29 @@ final class MediaKeyInterceptor: ObservableObject {
         isConsuming = false
     }
 
-    // MARK: NSEvent global monitor (lecture seule, HUD natif coexiste)
+    // MARK: settings binding
 
-    private var globalMonitor: Any?
-    private var localMonitor: Any?
+    private func subscribeSettings() {
+        AppSettings.shared.$suppressNativeHUD
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink { [weak self] _ in self?.refreshFromSettings() }
+            .store(in: &cancellables)
+    }
 
-    /// Mode "lecture seule" : on observe les touches média quand elles
-    /// arrivent à n'importe quelle app, mais on ne les *consomme pas*.
-    /// Le HUD natif macOS s'affiche en plus du nôtre — utilisé en
-    /// fallback quand la permission Accessibility n'est pas accordée.
+    /// Doit être appelé sur main. Bascule entre les deux modes selon le
+    /// setting + la permission Accessibility.
+    private func refreshFromSettings() {
+        stop()
+        if AppSettings.shared.suppressNativeHUD, AccessibilityHelper.isTrusted {
+            installCGEventTap()
+        } else {
+            installNSEventMonitor()
+        }
+    }
+
+    // MARK: NSEvent monitor (lecture seule)
+
     private func installNSEventMonitor() {
         let mask = NSEvent.EventTypeMask.systemDefined
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: mask) { [weak self] event in
@@ -112,26 +117,24 @@ final class MediaKeyInterceptor: ObservableObject {
         }
         isActive = true
         isConsuming = false
-        Log.app.info("MediaKeyInterceptor : mode lecture seule (HUD natif coexistant)")
+        Log.app.info("MediaKeyInterceptor : mode lecture seule")
     }
 
     // MARK: CGEvent tap (consume → HUD natif supprimé)
 
-    /// Mode "consommation" : on installe un tap CGEvent au niveau HID.
-    /// Quand une touche média arrive, on la lit, on la traite, puis on
-    /// retourne `nil` → le système ne la voit pas → pas de HUD natif.
-    /// Requiert la permission Accessibility (sinon `tapCreate` retourne nil).
     private func installCGEventTap() {
-        // CGEventType.systemDefined n'est pas exposé directement, on doit
-        // utiliser la valeur brute (14 = NSSystemDefined). On l'inclut dans
-        // le bit-mask des events à observer.
-        let systemDefinedType: CGEventType = .init(rawValue: 14)!
-        let mask = (1 << systemDefinedType.rawValue)
+        // CGEventType.systemDefined n'est pas exposé dans l'enum public ;
+        // on utilise sa raw value (14, = NSSystemDefined).
+        let systemDefinedRaw: UInt32 = 14
+        let mask = CGEventMask(1) << systemDefinedRaw
 
-        let callback: CGEventTapCallBack = { proxy, type, event, refcon in
+        // Le callback C ne peut PAS être @MainActor — il est appelé sur
+        // le thread du runloop. On utilise `passUnretained` parce que
+        // self est singleton (vit toute la durée de l'app).
+        let callback: CGEventTapCallBack = { _, type, event, refcon in
             guard let refcon else { return Unmanaged.passUnretained(event) }
-            let interceptor = Unmanaged<MediaKeyInterceptor>.fromOpaque(refcon).takeUnretainedValue()
-            return interceptor.tapCallback(proxy: proxy, type: type, event: event)
+            let me = Unmanaged<MediaKeyInterceptor>.fromOpaque(refcon).takeUnretainedValue()
+            return me.tapCallback(type: type, event: event)
         }
 
         let refcon = Unmanaged.passUnretained(self).toOpaque()
@@ -139,11 +142,11 @@ final class MediaKeyInterceptor: ObservableObject {
             tap: .cghidEventTap,
             place: .headInsertEventTap,
             options: .defaultTap,
-            eventsOfInterest: CGEventMask(mask),
+            eventsOfInterest: mask,
             callback: callback,
             userInfo: refcon
         ) else {
-            Log.app.error("CGEvent.tapCreate a échoué — fallback NSEvent (lecture seule)")
+            Log.app.error("CGEvent.tapCreate a échoué — retour au monitor NSEvent")
             installNSEventMonitor()
             return
         }
@@ -158,58 +161,68 @@ final class MediaKeyInterceptor: ObservableObject {
         Log.app.info("MediaKeyInterceptor : mode consommation (HUD natif supprimé)")
     }
 
-    /// Callback du CGEventTap. Si l'event est une touche média, on la
-    /// traite + on retourne nil pour la consommer. Sinon on la laisse
-    /// passer.
-    private func tapCallback(
-        proxy _: CGEventTapProxy,
-        type: CGEventType,
-        event: CGEvent
-    ) -> Unmanaged<CGEvent>? {
-        // Re-enable si le tap a été désactivé par le système (timeout, etc.)
+    /// Callback du tap CGEvent. **NON-MainActor** — appelé sur un thread
+    /// runloop arbitraire. Toute mutation d'état UI ou appel de singleton
+    /// MainActor doit être dispatchée explicitement.
+    private func tapCallback(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+        // Re-enable si le tap a été désactivé par le système (timeout user).
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
-            if let tap = eventTap { CGEvent.tapEnable(tap: tap, enable: true) }
+            DispatchQueue.main.async { [weak self] in
+                if let tap = self?.eventTap { CGEvent.tapEnable(tap: tap, enable: true) }
+            }
             return Unmanaged.passUnretained(event)
         }
-        // Convertit en NSEvent pour réutiliser la logique existante.
+
+        // Pure parsing CGEvent — thread-safe.
         guard let nsEvent = NSEvent(cgEvent: event),
               nsEvent.type == .systemDefined,
               nsEvent.subtype.rawValue == 8
         else {
             return Unmanaged.passUnretained(event)
         }
-        let keyCode = (nsEvent.data1 & 0xFFFF_0000) >> 16
-        // Touches volume / mute : on consomme.
+        let keyCode = Int((nsEvent.data1 & 0xFFFF_0000) >> 16)
+        let keyFlags = nsEvent.data1 & 0x0000_FFFF
+        let keyDown = ((keyFlags & 0xFF00) >> 8) == 0xA
+        guard keyDown else {
+            return [0, 1, 4, 5, 7].contains(keyCode) ? nil : Unmanaged.passUnretained(event)
+        }
+
         if [0, 1, 4, 5, 7].contains(keyCode) {
-            handle(event: nsEvent)
+            // Dispatch la logique vers main pour toucher VolumeManager (@MainActor)
+            // et publier sur les Subject (thread-safe mais consommateurs sur main).
+            DispatchQueue.main.async { [weak self] in
+                self?.handleVolumeKey(keyCode: keyCode)
+            }
             return nil // consume → pas de HUD natif
         }
         return Unmanaged.passUnretained(event)
     }
 
+    // MARK: NSEvent handler (mode lecture seule, déjà sur main)
+
     private func handle(event: NSEvent) {
         guard event.type == .systemDefined, event.subtype.rawValue == 8 else { return }
-
-        let keyCode = (event.data1 & 0xFFFF_0000) >> 16
+        let keyCode = Int((event.data1 & 0xFFFF_0000) >> 16)
         let keyFlags = event.data1 & 0x0000_FFFF
-        let keyState = ((keyFlags & 0xFF00) >> 8) == 0xA  // 0xA = key down
+        let keyDown = ((keyFlags & 0xFF00) >> 8) == 0xA
+        guard keyDown else { return }
+        // NSEvent monitor delivers on main, mais Swift exige le hop explicite
+        // pour appeler une méthode @MainActor depuis un contexte non-isolé.
+        DispatchQueue.main.async { [weak self] in
+            self?.handleVolumeKey(keyCode: keyCode)
+        }
+    }
 
-        guard keyState else { return }
-
-        // Codes officiels (NSEventSubtypeAuxControlButtons)
-        // 0  = play/pause, 1 = next, 2 = prev, 3 = mute, 4 = vol up, 5 = vol down
-        // brightness up/down ne sont PAS exposées en .systemDefined côté
-        // user-space sur les Mac récents — Apple les route directement à
-        // DisplayServices. On expose donc seulement le volume ici.
+    /// Marqué `@MainActor` parce que `VolumeManager` l'est. Les appelants
+    /// (NSEvent monitor + dispatch depuis tapCallback) garantissent qu'on
+    /// arrive ici sur main.
+    @MainActor
+    private func handleVolumeKey(keyCode: Int) {
+        VolumeManager.shared.refresh()
         switch keyCode {
-        case 7, 1: // mute
-            VolumeManager.shared.refresh()
+        case 7, 1:                  // mute
             volumeMuted.send(VolumeManager.shared.isMuted)
-        case 0, 4: // volume up
-            VolumeManager.shared.refresh()
-            volumeChanged.send(VolumeManager.shared.level)
-        case 5: // volume down
-            VolumeManager.shared.refresh()
+        case 0, 4, 5:               // play, vol up, vol down
             volumeChanged.send(VolumeManager.shared.level)
         default:
             break
