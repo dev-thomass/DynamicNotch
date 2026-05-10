@@ -23,16 +23,14 @@ import SwiftUI
 
 // MARK: - Provider
 
-/// Catalogue des wings disponibles. L'ordre des cas définit la priorité
-/// quand plusieurs providers veulent la même slot (le premier déclaré gagne).
+/// Catalogue des wings (extensions latérales) disponibles. Le HUD système
+/// volume/luminosité n'est PAS dans cette liste — il a sa propre logique
+/// d'extension verticale (vers le bas), gérée directement dans `NotchView`.
 enum WingProvider: String, CaseIterable, Identifiable {
     case battery
     case stopwatch
     case pomodoro
     case calendar
-    /// HUD système éphémère (volume / luminosité). Override toutes les
-    /// autres wings pendant qu'il est actif (1.2 s).
-    case systemHUD
 
     var id: String { rawValue }
 }
@@ -65,17 +63,12 @@ struct WingsResolver {
         self.settings = settings
     }
 
-    /// Liste ordonnée des providers actuellement actifs (et autorisés par
-    /// les réglages utilisateur). Premier = gauche, deuxième = droite.
-    /// **Le HUD système (volume/luminosité) override TOUS les autres** pour
-    /// la durée de son affichage — c'est un événement transitoire qui
-    /// mérite l'attention.
+    /// Liste ordonnée des providers latéraux actuellement actifs.
+    /// Premier = gauche, deuxième = droite. **Le HUD système n'est PAS
+    /// listé ici** — il a sa propre logique d'extension verticale (vers
+    /// le bas), gérée directement dans `NotchView`.
     var activeProviders: [WingProvider] {
         guard settings.wingsEnabled else { return [] }
-        // HUD éphémère : prend toute la place pendant 1.2 s.
-        if hud.current != nil {
-            return [.systemHUD]
-        }
         var out: [WingProvider] = []
         if settings.wingBattery, battery.hasBattery, battery.isPluggedIn {
             out.append(.battery)
@@ -104,12 +97,8 @@ struct WingsResolver {
 
 enum WingsLayout {
     /// Largeur additionnelle ajoutée à la silhouette de l'encoche pour
-    /// accueillir UNE wing (gauche ou droite).
+    /// accueillir UNE wing latérale (gauche ou droite).
     static let oneWingWidth: CGFloat = 60
-
-    /// Largeur du HUD système (icône + barre fine). Plus large qu'une wing
-    /// classique car il occupe les deux côtés à la fois.
-    static let hudWidth: CGFloat = 110
 
     /// Padding interne dans la wing.
     static let innerPadding: CGFloat = 8
@@ -137,7 +126,6 @@ struct WingContent: View {
         case .stopwatch: stopwatchContent
         case .pomodoro:  pomodoroContent
         case .calendar:  calendarContent
-        case .systemHUD: systemHUDContent  // overrides — utilise les 2 slots
         }
     }
 
@@ -228,48 +216,13 @@ struct WingContent: View {
         }
     }
 
-    // ─── HUD système (volume / luminosité) — sobre, blanc seulement ──────
-
-    @ViewBuilder
-    private var systemHUDContent: some View {
-        // Le HUD prend les 2 slots simultanément. La gauche affiche
-        // l'icône, la droite affiche la barre fine. Aucune couleur — juste
-        // blanc avec opacités variables, pour rester strictement sobre.
-        switch slot {
-        case .left:
-            if let kind = hud.current {
-                Image(systemName: hudIcon(kind))
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .padding(.leading, 4)
-            }
-        case .right:
-            if let kind = hud.current {
-                MonochromeBar(level: hudLevel(kind))
-                    .frame(width: 70, height: 3)
-                    .padding(.trailing, 4)
-            }
-        }
-    }
-
-    private func hudIcon(_ kind: HUDController.HUDKind) -> String {
-        switch kind {
-        case .volume(_, let muted): muted ? "speaker.slash.fill" : "speaker.wave.2.fill"
-        case .brightness:           "sun.max.fill"
-        }
-    }
-
-    private func hudLevel(_ kind: HUDController.HUDKind) -> Float {
-        switch kind {
-        case .volume(let l, _): l
-        case .brightness(let l): l
-        }
-    }
 }
 
 /// Barre de progression strictement monochrome : tube gris-blanc faible
 /// + remplissage blanc opaque. Pas de couleur d'accent.
-private struct MonochromeBar: View {
+/// Rendu accessible (internal) car réutilisé par `NotchView` pour le HUD
+/// volume/luminosité affiché dans l'extension basse de la silhouette.
+struct MonochromeBar: View {
     let level: Float
 
     var body: some View {

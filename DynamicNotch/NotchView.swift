@@ -23,20 +23,30 @@ struct NotchView: View {
 
     @State var dropTargeting: Bool = false
 
-    /// Wings actives au moment du rendu. Recalculé à chaque tick — coût
-    /// négligeable (3 booleans + 2 enums).
+    /// Wings actives (latérales) au moment du rendu.
     private var activeWings: [WingProvider] { WingsResolver().activeProviders }
 
+    /// `true` quand le HUD volume/luminosité doit être affiché.
+    /// Le HUD est traité séparément des wings car il étend la silhouette
+    /// **vers le bas** (en hauteur), pas latéralement.
+    private var hudActive: Bool {
+        vm.status == .closed && hud.current != nil && settings.wingsEnabled
+    }
+
+    /// Hauteur additionnelle de l'extension HUD (vers le bas). 24 pt
+    /// suffisent pour un compact icône + barre fine.
+    private static let hudExtraHeight: CGFloat = 24
+
     /// Largeur additionnelle à donner à la silhouette pour englober les
-    /// wings gauche + droite. 0 si rien n'est actif.
+    /// wings gauche + droite. 0 si aucune wing active.
     private var wingsExtraWidth: CGFloat {
         guard vm.status == .closed, !activeWings.isEmpty else { return 0 }
-        // HUD système prend toute la largeur (icône + barre).
-        if activeWings.first == .systemHUD {
-            return WingsLayout.hudWidth
-        }
-        // Une wing par côté max — providers au-delà sont ignorés (V1).
         return CGFloat(min(activeWings.count, 2)) * WingsLayout.oneWingWidth
+    }
+
+    /// Hauteur additionnelle pour l'extension verticale du HUD.
+    private var hudExtraHeight: CGFloat {
+        hudActive ? Self.hudExtraHeight : 0
     }
 
     var notchSize: CGSize {
@@ -44,7 +54,7 @@ struct NotchView: View {
         case .closed:
             var ans = CGSize(
                 width: vm.deviceNotchRect.width - 4 + wingsExtraWidth,
-                height: vm.deviceNotchRect.height - 4
+                height: vm.deviceNotchRect.height - 4 + hudExtraHeight
             )
             if ans.width < 0 { ans.width = 0 }
             if ans.height < 0 { ans.height = 0 }
@@ -89,10 +99,17 @@ struct NotchView: View {
                 .zIndex(0)
                 .disabled(true)
                 // Combine "is the notch resting?" with the user-tunable max
-                // opacity. Quand "alwaysVisibleWhenClosed" est actif, on ignore
-                // le fade vers 0.3 (notchVisible) et on garde 1 × notchOpacity.
+                // opacity. Cas spécial : quand le HUD ou un wing latéral
+                // est actif, on FORCE l'opacité à 1 — sinon le contenu
+                // (volume / batterie / chrono) apparaîtrait fantomatique
+                // (le fade à 0.3 du repos s'appliquerait au shell entier).
                 .opacity({
-                    let resting = settings.alwaysVisibleWhenClosed ? 1 : (vm.notchVisible ? 1 : 0.3)
+                    let activeContent = !activeWings.isEmpty || hudActive
+                    let resting: Double = {
+                        if activeContent { return 1 }
+                        if settings.alwaysVisibleWhenClosed { return 1 }
+                        return vm.notchVisible ? 1 : 0.3
+                    }()
                     return resting * settings.notchOpacity
                 }())
             Group {
@@ -142,6 +159,9 @@ struct NotchView: View {
         // se désactive (charge branchée, chrono lancé, …). Spring identique
         // à l'ouverture de l'encoche pour cohérence visuelle.
         .animation(vm.animation, value: notchSize.width)
+        // Idem pour l'extension VERTICALE (HUD volume/luminosité — descend
+        // par le bas).
+        .animation(vm.animation, value: notchSize.height)
         // The opened panel resizes when the user enters Settings (large
         // form) or Menu (compact tile row). Animate the size change with
         // the same spring as the open/close transition for visual cohesion.
@@ -178,7 +198,46 @@ struct NotchView: View {
             radius: 16
         )
         .overlay { wingsOverlay }
+        .overlay(alignment: .bottom) { hudOverlay }
         .overlay(alignment: .trailing) { closedBadge }
+    }
+
+    /// Contenu du HUD volume / luminosité — affiché DANS la zone basse de
+    /// la silhouette (qui s'est étendue de `hudExtraHeight` vers le bas).
+    /// Strictement monochrome blanc, pas de couleur.
+    @ViewBuilder
+    private var hudOverlay: some View {
+        if hudActive, let kind = hud.current {
+            HStack(spacing: 6) {
+                Image(systemName: hudIcon(kind))
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.white)
+                MonochromeBar(level: hudLevel(kind))
+                    .frame(height: 3)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, 14)
+            // Zone du bas — la hauteur correspond exactement à
+            // `hudExtraHeight`. Centré verticalement dans ce slot.
+            .frame(height: Self.hudExtraHeight)
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, 2)
+            .transition(.opacity)
+        }
+    }
+
+    private func hudIcon(_ kind: HUDController.HUDKind) -> String {
+        switch kind {
+        case .volume(_, let muted): muted ? "speaker.slash.fill" : "speaker.wave.2.fill"
+        case .brightness:           "sun.max.fill"
+        }
+    }
+
+    private func hudLevel(_ kind: HUDController.HUDKind) -> Float {
+        switch kind {
+        case .volume(let l, _): l
+        case .brightness(let l): l
+        }
     }
 
     /// Contenu des wings — affiché par-dessus la silhouette noire élargie.
