@@ -37,11 +37,21 @@ struct NotchView: View {
     /// suffisent pour un compact icône + barre fine.
     private static let hudExtraHeight: CGFloat = 24
 
-    /// Largeur additionnelle à donner à la silhouette pour englober les
-    /// wings gauche + droite. 0 si aucune wing active.
+    /// Provider unique qui occupe les wings gauche + droite à la fois.
+    /// Première entrée de `activeWings`, ou nil si aucun. L'utilisateur
+    /// décide la priorité en désactivant les wings qu'il ne veut pas
+    /// voir gagner — par défaut l'ordre est : battery > stopwatch >
+    /// pomodoro > calendar (ordre de l'enum WingProvider).
+    private var primaryWing: WingProvider? {
+        guard vm.status == .closed else { return nil }
+        return activeWings.first
+    }
+
+    /// Largeur additionnelle à donner à la silhouette pour englober le
+    /// wing gauche + droite (le provider primaire occupe les deux). 0 si
+    /// aucun wing actif.
     private var wingsExtraWidth: CGFloat {
-        guard vm.status == .closed, !activeWings.isEmpty else { return 0 }
-        return CGFloat(min(activeWings.count, 2)) * WingsLayout.oneWingWidth
+        primaryWing == nil ? 0 : 2 * WingsLayout.oneWingWidth
     }
 
     /// Hauteur additionnelle pour l'extension verticale du HUD.
@@ -98,20 +108,13 @@ struct NotchView: View {
             notch
                 .zIndex(0)
                 .disabled(true)
-                // Combine "is the notch resting?" with the user-tunable max
-                // opacity. Cas spécial : quand le HUD ou un wing latéral
-                // est actif, on FORCE l'opacité à 1 — sinon le contenu
-                // (volume / batterie / chrono) apparaîtrait fantomatique
-                // (le fade à 0.3 du repos s'appliquerait au shell entier).
-                .opacity({
-                    let activeContent = !activeWings.isEmpty || hudActive
-                    let resting: Double = {
-                        if activeContent { return 1 }
-                        if settings.alwaysVisibleWhenClosed { return 1 }
-                        return vm.notchVisible ? 1 : 0.3
-                    }()
-                    return resting * settings.notchOpacity
-                }())
+                // L'encoche est TOUJOURS pleinement visible — la fade à 0.3
+                // au repos donnait des comportements incohérents (HUD
+                // fantomatique, wings semi-transparentes selon l'écran).
+                // Si l'utilisateur veut une encoche plus discrète au repos,
+                // il y a le slider "Opacité de l'encoche" dans Réglages →
+                // Apparence (multiplicateur global, persistent).
+                .opacity(settings.notchOpacity)
             Group {
                 if vm.status == .opened {
                     VStack(spacing: vm.spacing) {
@@ -240,24 +243,21 @@ struct NotchView: View {
         }
     }
 
-    /// Contenu des wings — affiché par-dessus la silhouette noire élargie.
-    /// Les `frame` calculés sont basés sur `notchSize` qui inclut déjà
-    /// `wingsExtraWidth`, donc l'alignement marche tout seul.
+    /// Contenu des wings — UN seul provider occupe les deux slots (gauche
+    /// = icône / pastille, droite = valeur / texte). Quand plusieurs
+    /// providers sont éligibles, c'est le premier dans l'ordre `activeWings`
+    /// qui gagne (l'utilisateur peut désactiver les autres dans Settings).
     @ViewBuilder
     private var wingsOverlay: some View {
-        if vm.status == .closed, !activeWings.isEmpty {
+        if let provider = primaryWing {
             HStack(spacing: 0) {
-                if activeWings.count >= 1 {
-                    WingContent(provider: activeWings[0], slot: .left)
-                        .padding(.leading, WingsLayout.innerPadding)
-                        .frame(width: WingsLayout.oneWingWidth, alignment: .leading)
-                }
+                WingContent(provider: provider, slot: .left)
+                    .padding(.leading, WingsLayout.innerPadding)
+                    .frame(width: WingsLayout.oneWingWidth, alignment: .leading)
                 Spacer(minLength: 0)
-                if activeWings.count >= 2 {
-                    WingContent(provider: activeWings[1], slot: .right)
-                        .padding(.trailing, WingsLayout.innerPadding)
-                        .frame(width: WingsLayout.oneWingWidth, alignment: .trailing)
-                }
+                WingContent(provider: provider, slot: .right)
+                    .padding(.trailing, WingsLayout.innerPadding)
+                    .frame(width: WingsLayout.oneWingWidth, alignment: .trailing)
             }
             .frame(width: notchSize.width, height: notchSize.height)
             .transition(.opacity.combined(with: .scale(scale: 0.85)))

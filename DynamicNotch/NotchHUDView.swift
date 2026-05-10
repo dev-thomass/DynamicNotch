@@ -69,6 +69,15 @@ final class HUDController: ObservableObject {
     }
 
     private func observeBrightness() {
+        // Source 1 : event clavier intercepté (immédiat, mode CGEvent.tapCreate)
+        MediaKeyInterceptor.shared.brightnessChanged
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] level in
+                self?.showBrightness(level: level)
+            }
+            .store(in: &cancellables)
+        // Source 2 : polling 1Hz du BrightnessManager (mode lecture seule
+        // ou changement externe — slider menubar, ambient sensor, etc.)
         BrightnessManager.shared.$level
             .removeDuplicates { abs($0 - $1) < 0.01 }
             .dropFirst()

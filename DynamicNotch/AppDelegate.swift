@@ -42,6 +42,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         NSApp.setActivationPolicy(.accessory)
 
+        // Menu Edit invisible mais nécessaire pour que Cmd+V/C/X/A
+        // soient routés vers le first responder (TextEditor de la note).
+        // Sans menubar même invisible, macOS ignore ces shortcuts pour
+        // les apps `.accessory`.
+        installEditMenu()
+
         _ = EventMonitors.shared
         // Démarre les managers + tap des touches média pour afficher le HUD
         // sous l'encoche dès le premier appui sur volume / luminosité.
@@ -112,6 +118,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Triggered when a second DynamicNotch launch posts a wake-up notification.
     /// Distributed notifications can be delivered on any thread — bounce to main.
+    /// Installe un menu bar minimal avec un menu "Édition" exposant les
+    /// shortcuts standard. Le menu n'est pas visible (app `.accessory`
+    /// = pas de menubar dans la barre système), mais sa présence
+    /// suffit à dire à macOS de router Cmd+V/C/X/A vers le first
+    /// responder, ce qui permet le copier-coller dans le widget Note.
+    private func installEditMenu() {
+        let mainMenu = NSMenu()
+
+        // App menu (placeholder requis pour que macOS prenne en compte
+        // le mainMenu — même si invisible).
+        let appItem = NSMenuItem()
+        appItem.submenu = NSMenu()
+        mainMenu.addItem(appItem)
+
+        // Menu Édition avec les key equivalents standard.
+        let editItem = NSMenuItem()
+        let editMenu = NSMenu(title: "Édition")
+        editMenu.addItem(NSMenuItem(title: "Annuler",            action: Selector(("undo:")),                    keyEquivalent: "z"))
+        editMenu.addItem(NSMenuItem(title: "Rétablir",           action: Selector(("redo:")),                    keyEquivalent: "Z"))
+        editMenu.addItem(NSMenuItem.separator())
+        editMenu.addItem(NSMenuItem(title: "Couper",             action: #selector(NSText.cut(_:)),              keyEquivalent: "x"))
+        editMenu.addItem(NSMenuItem(title: "Copier",             action: #selector(NSText.copy(_:)),             keyEquivalent: "c"))
+        editMenu.addItem(NSMenuItem(title: "Coller",             action: #selector(NSText.paste(_:)),            keyEquivalent: "v"))
+        editMenu.addItem(NSMenuItem(title: "Tout sélectionner",  action: #selector(NSResponder.selectAll(_:)),   keyEquivalent: "a"))
+        editItem.submenu = editMenu
+        mainMenu.addItem(editItem)
+
+        NSApp.mainMenu = mainMenu
+    }
+
     @objc func handleWakeUpFromOtherInstance() {
         DispatchQueue.main.async { [weak self] in
             guard let vm = self?.mainWindowController?.vm else { return }

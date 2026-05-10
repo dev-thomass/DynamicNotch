@@ -180,8 +180,12 @@ final class MediaKeyInterceptor {
     /// Callback du tap CGEvent. **NON-MainActor** — appelé sur un thread
     /// runloop arbitraire. Toute mutation d'état UI ou appel de singleton
     /// MainActor doit être dispatchée explicitement.
+    ///
+    /// **Important** : quand on retourne `nil` (consume), le système ne
+    /// traite plus l'event → le volume / la luminosité ne change pas
+    /// tout seul. On doit nous-mêmes appeler `setVolume` / `setBrightness`
+    /// pour appliquer le changement.
     private func tapCallback(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-        // Re-enable si le tap a été désactivé par le système (timeout user).
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             DispatchQueue.main.async { [weak self] in
                 if let tap = self?.eventTap { CGEvent.tapEnable(tap: tap, enable: true) }
@@ -189,7 +193,6 @@ final class MediaKeyInterceptor {
             return Unmanaged.passUnretained(event)
         }
 
-        // Pure parsing CGEvent — thread-safe.
         guard let nsEvent = NSEvent(cgEvent: event),
               nsEvent.type == .systemDefined,
               nsEvent.subtype.rawValue == 8
@@ -199,19 +202,21 @@ final class MediaKeyInterceptor {
         let keyCode = Int((nsEvent.data1 & 0xFFFF_0000) >> 16)
         let keyFlags = nsEvent.data1 & 0x0000_FFFF
         let keyDown = ((keyFlags & 0xFF00) >> 8) == 0xA
-        guard keyDown else {
-            return [0, 1, 4, 5, 7].contains(keyCode) ? nil : Unmanaged.passUnretained(event)
-        }
 
-        if [0, 1, 4, 5, 7].contains(keyCode) {
-            // Dispatch la logique vers main pour toucher VolumeManager (@MainActor)
-            // et publier sur les Subject (thread-safe mais consommateurs sur main).
-            DispatchQueue.main.async { [weak self] in
-                self?.handleVolumeKey(keyCode: keyCode)
-            }
-            return nil // consume → pas de HUD natif
+        // Codes officiels (NX_KEYTYPE_*):
+        //  2 = brightness up, 3 = brightness down
+        //  4 = volume up, 5 = volume down, 7 = mute
+        let mediaKeys: Set<Int> = [2, 3, 4, 5, 7]
+        guard mediaKeys.contains(keyCode) else {
+            return Unmanaged.passUnretained(event)
         }
-        return Unmanaged.passUnretained(event)
+        // Consomme aussi le keyUp pour que le HUD natif ne réapparaisse pas.
+        guard keyDown else { return nil }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.applyMediaAction(keyCode: keyCode)
+        }
+        return nil // consume → pas de HUD natif
     }
 
     // MARK: NSEvent handler (mode lecture seule, déjà sur main)
@@ -222,24 +227,53 @@ final class MediaKeyInterceptor {
         let keyFlags = event.data1 & 0x0000_FFFF
         let keyDown = ((keyFlags & 0xFF00) >> 8) == 0xA
         guard keyDown else { return }
-        // NSEvent monitor delivers on main, mais Swift exige le hop explicite
-        // pour appeler une méthode @MainActor depuis un contexte non-isolé.
+        // Mode lecture seule : on observe uniquement, le système gère
+        // toujours le changement de volume / luminosité. On notifie juste
+        // le HUD pour qu'il s'affiche.
         DispatchQueue.main.async { [weak self] in
-            self?.handleVolumeKey(keyCode: keyCode)
+            self?.notifyObservers(keyCode: keyCode)
         }
     }
 
-    /// Marqué `@MainActor` parce que `VolumeManager` l'est. Les appelants
-    /// (NSEvent monitor + dispatch depuis tapCallback) garantissent qu'on
-    /// arrive ici sur main.
+    /// Mode CONSUME : on a empêché le système de traiter l'event, donc on
+    /// applique le changement nous-mêmes (incrément volume, set brightness)
+    /// puis on notifie le HUD.
+    /// Pas de step trop fin sinon les keyDown répétés (auto-repeat) sautent.
     @MainActor
-    private func handleVolumeKey(keyCode: Int) {
-        VolumeManager.shared.refresh()
+    private func applyMediaAction(keyCode: Int) {
+        let step: Float = 1.0 / 16.0  // = 6.25 % par appui (16 paliers)
         switch keyCode {
-        case 7, 1:                  // mute
+        case 4: // volume up
+            let new: Float = min(Float(1), VolumeManager.shared.level + step)
+            VolumeManager.shared.setVolume(new)
+        case 5: // volume down
+            let new: Float = max(Float(0), VolumeManager.shared.level - step)
+            VolumeManager.shared.setVolume(new)
+        case 7: // mute toggle
+            VolumeManager.shared.setMuted(!VolumeManager.shared.isMuted)
+        case 2: // brightness up
+            let new: Float = min(Float(1), BrightnessManager.shared.level + step)
+            BrightnessManager.shared.setBrightness(new)
+        case 3: // brightness down
+            let new: Float = max(Float(0), BrightnessManager.shared.level - step)
+            BrightnessManager.shared.setBrightness(new)
+        default:
+            break
+        }
+        notifyObservers(keyCode: keyCode)
+    }
+
+    /// Notifie les observateurs (HUD) du changement. Lit la valeur ACTUELLE
+    /// post-changement et l'envoie via les Subject.
+    @MainActor
+    private func notifyObservers(keyCode: Int) {
+        switch keyCode {
+        case 7, 1:               // mute
             volumeMuted.send(VolumeManager.shared.isMuted)
-        case 0, 4, 5:               // play, vol up, vol down
+        case 4, 5, 0:            // volume up/down/play
             volumeChanged.send(VolumeManager.shared.level)
+        case 2, 3:               // brightness up/down
+            brightnessChanged.send(BrightnessManager.shared.level)
         default:
             break
         }

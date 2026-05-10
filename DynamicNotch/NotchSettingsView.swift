@@ -177,9 +177,9 @@ struct NotchSettingsView: View {
                 Toggle(isOn: $settings.popOnHoverEnabled) {
                     settingLabel("Apparition au survol", subtitle: "Anime l'encoche quand le curseur s'approche")
                 }
-                Toggle(isOn: $settings.alwaysVisibleWhenClosed) {
-                    settingLabel("Toujours visible", subtitle: "L'encoche ne devient jamais semi-transparente")
-                }
+                // "Toujours visible" — toggle retiré : l'encoche est désormais
+                // toujours pleinement visible. Pour la rendre plus discrète
+                // au repos, utilisez le slider Opacité dans Apparence.
                 Toggle(isOn: $settings.escClosesNotch) {
                     settingLabel("Échap pour fermer", subtitle: "La touche Esc referme l'encoche ouverte")
                 }
