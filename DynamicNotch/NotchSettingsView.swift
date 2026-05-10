@@ -263,6 +263,11 @@ struct NotchSettingsView: View {
                                  subtitle: "Ignore l'encoche matérielle et affiche une pilule arrondie")
                 }
 
+                Toggle(isOn: $settings.showOnAllScreens) {
+                    settingLabel("Afficher sur tous les écrans",
+                                 subtitle: "Une encoche sur chaque écran connecté simultanément")
+                }
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Langue").font(DS.Typography.captionSmall)
                         .foregroundStyle(DS.Color.textTertiary)
@@ -453,6 +458,7 @@ struct NotchSettingsView: View {
         settings.escClosesNotch = true
         settings.displayPreference = .builtInWithNotch
         settings.forcePillMode = false
+        settings.showOnAllScreens = false
         settings.pomodoroFocusMinutes = 25
         settings.pomodoroShortBreakMinutes = 5
         settings.pomodoroLongBreakMinutes = 15

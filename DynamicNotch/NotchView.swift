@@ -18,6 +18,8 @@ struct NotchView: View {
     @StateObject private var battery = BatteryMonitor.shared
     @StateObject private var stopwatch = StopwatchModel.shared
     @StateObject private var pomodoro = PomodoroModel.shared
+    @StateObject private var hud = HUDController.shared
+    @StateObject private var calStore = CalendarStore.shared
 
     @State var dropTargeting: Bool = false
 
@@ -29,6 +31,10 @@ struct NotchView: View {
     /// wings gauche + droite. 0 si rien n'est actif.
     private var wingsExtraWidth: CGFloat {
         guard vm.status == .closed, !activeWings.isEmpty else { return 0 }
+        // HUD système prend toute la largeur (icône + barre).
+        if activeWings.first == .systemHUD {
+            return WingsLayout.hudWidth
+        }
         // Une wing par côté max — providers au-delà sont ignorés (V1).
         return CGFloat(min(activeWings.count, 2)) * WingsLayout.oneWingWidth
     }
@@ -127,12 +133,10 @@ struct NotchView: View {
             )
         }
         .background(dragDetector)
-        // HUD volume / luminosité, ancré sous l'encoche.
-        .overlay(alignment: .top) {
-            NotchHUDView()
-                .offset(y: notchSize.height + 8)
-                .allowsHitTesting(false)
-        }
+        // Le HUD volume/luminosité n'est PLUS rendu en bulle séparée — il
+        // est désormais intégré comme une "wing prioritaire" à l'intérieur
+        // de la silhouette de l'encoche (voir `NotchWingsView` +
+        // `WingsResolver`). Plus sobre, plus cohérent visuellement.
         .animation(vm.animation, value: vm.status)
         // Anime l'élargissement de la silhouette quand un wing s'active /
         // se désactive (charge branchée, chrono lancé, …). Spring identique

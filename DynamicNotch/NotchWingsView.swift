@@ -30,6 +30,9 @@ enum WingProvider: String, CaseIterable, Identifiable {
     case stopwatch
     case pomodoro
     case calendar
+    /// HUD système éphémère (volume / luminosité). Override toutes les
+    /// autres wings pendant qu'il est actif (1.2 s).
+    case systemHUD
 
     var id: String { rawValue }
 }
@@ -43,6 +46,7 @@ struct WingsResolver {
     private let stopwatch: StopwatchModel
     private let pomodoro: PomodoroModel
     private let calendar: CalendarStore
+    private let hud: HUDController
     private let settings: AppSettings
 
     init(
@@ -50,19 +54,28 @@ struct WingsResolver {
         stopwatch: StopwatchModel = .shared,
         pomodoro: PomodoroModel = .shared,
         calendar: CalendarStore = .shared,
+        hud: HUDController = .shared,
         settings: AppSettings = .shared
     ) {
         self.battery = battery
         self.stopwatch = stopwatch
         self.pomodoro = pomodoro
         self.calendar = calendar
+        self.hud = hud
         self.settings = settings
     }
 
     /// Liste ordonnée des providers actuellement actifs (et autorisés par
     /// les réglages utilisateur). Premier = gauche, deuxième = droite.
+    /// **Le HUD système (volume/luminosité) override TOUS les autres** pour
+    /// la durée de son affichage — c'est un événement transitoire qui
+    /// mérite l'attention.
     var activeProviders: [WingProvider] {
         guard settings.wingsEnabled else { return [] }
+        // HUD éphémère : prend toute la place pendant 1.2 s.
+        if hud.current != nil {
+            return [.systemHUD]
+        }
         var out: [WingProvider] = []
         if settings.wingBattery, battery.hasBattery, battery.isPluggedIn {
             out.append(.battery)
@@ -73,8 +86,6 @@ struct WingsResolver {
         if settings.wingPomodoro, pomodoro.phase != .idle {
             out.append(.pomodoro)
         }
-        // Wing Calendar : actif uniquement si un événement est dans la
-        // prochaine heure (sinon ce serait du bruit visuel permanent).
         if settings.wingCalendar,
            let event = calendar.nextEvent,
            event.startDate.timeIntervalSinceNow > 0,
@@ -93,12 +104,14 @@ struct WingsResolver {
 
 enum WingsLayout {
     /// Largeur additionnelle ajoutée à la silhouette de l'encoche pour
-    /// accueillir UNE wing (gauche ou droite). Calibrée pour pouvoir
-    /// afficher confortablement « 100 % » ou « 25:43 ».
+    /// accueillir UNE wing (gauche ou droite).
     static let oneWingWidth: CGFloat = 60
 
-    /// Padding interne dans la wing (entre le contenu et le bord de la
-    /// silhouette).
+    /// Largeur du HUD système (icône + barre fine). Plus large qu'une wing
+    /// classique car il occupe les deux côtés à la fois.
+    static let hudWidth: CGFloat = 110
+
+    /// Padding interne dans la wing.
     static let innerPadding: CGFloat = 8
 }
 
@@ -116,6 +129,7 @@ struct WingContent: View {
     @StateObject private var stopwatch = StopwatchModel.shared
     @StateObject private var pomodoro = PomodoroModel.shared
     @StateObject private var calendar = CalendarStore.shared
+    @StateObject private var hud = HUDController.shared
 
     var body: some View {
         switch provider {
@@ -123,6 +137,7 @@ struct WingContent: View {
         case .stopwatch: stopwatchContent
         case .pomodoro:  pomodoroContent
         case .calendar:  calendarContent
+        case .systemHUD: systemHUDContent  // overrides — utilise les 2 slots
         }
     }
 
@@ -209,6 +224,60 @@ struct WingContent: View {
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.white)
+            }
+        }
+    }
+
+    // ─── HUD système (volume / luminosité) — sobre, blanc seulement ──────
+
+    @ViewBuilder
+    private var systemHUDContent: some View {
+        // Le HUD prend les 2 slots simultanément. La gauche affiche
+        // l'icône, la droite affiche la barre fine. Aucune couleur — juste
+        // blanc avec opacités variables, pour rester strictement sobre.
+        switch slot {
+        case .left:
+            if let kind = hud.current {
+                Image(systemName: hudIcon(kind))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.leading, 4)
+            }
+        case .right:
+            if let kind = hud.current {
+                MonochromeBar(level: hudLevel(kind))
+                    .frame(width: 70, height: 3)
+                    .padding(.trailing, 4)
+            }
+        }
+    }
+
+    private func hudIcon(_ kind: HUDController.HUDKind) -> String {
+        switch kind {
+        case .volume(_, let muted): muted ? "speaker.slash.fill" : "speaker.wave.2.fill"
+        case .brightness:           "sun.max.fill"
+        }
+    }
+
+    private func hudLevel(_ kind: HUDController.HUDKind) -> Float {
+        switch kind {
+        case .volume(let l, _): l
+        case .brightness(let l): l
+        }
+    }
+}
+
+/// Barre de progression strictement monochrome : tube gris-blanc faible
+/// + remplissage blanc opaque. Pas de couleur d'accent.
+private struct MonochromeBar: View {
+    let level: Float
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(.white.opacity(0.18))
+                Capsule().fill(.white.opacity(0.95))
+                    .frame(width: max(2, CGFloat(level) * geo.size.width))
             }
         }
     }

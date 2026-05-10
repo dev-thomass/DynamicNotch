@@ -12,7 +12,11 @@ import LaunchAtLogin
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var isFirstOpen = true
-    var mainWindowController: NotchWindowController?
+    /// Tableau de tous les controllers actifs (un par écran quand
+    /// `showOnAllScreens` est ON, sinon un seul). Le 1er reste accessible
+    /// via `mainWindowController` pour la compat (wake-up, etc.).
+    var windowControllers: [NotchWindowController] = []
+    var mainWindowController: NotchWindowController? { windowControllers.first }
     private var settingsObservers: Set<AnyCancellable> = []
 
     /// Re-read each time we need it (was cached at launch and never refreshed).
@@ -47,16 +51,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         MediaKeyInterceptor.shared.start()
         _ = HUDController.shared
 
-        // Rebuild the windows when the user picks a different display.
-        AppSettings.shared.$displayPreference
-            .removeDuplicates()
-            .dropFirst() // skip the initial value, we rebuild explicitly below
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                Log.app.info("display preference changed, rebuilding windows")
-                self?.rebuildApplicationWindows()
-            }
-            .store(in: &settingsObservers)
+        // Rebuild the windows when the user picks a different display
+        // OU bascule "afficher sur tous les écrans".
+        Publishers.CombineLatest(
+            AppSettings.shared.$displayPreference.removeDuplicates(),
+            AppSettings.shared.$showOnAllScreens.removeDuplicates()
+        )
+        .dropFirst()
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] _, _ in
+            Log.app.info("display setting changed, rebuilding windows")
+            self?.rebuildApplicationWindows()
+        }
+        .store(in: &settingsObservers)
 
         rebuildApplicationWindows()
     }
@@ -74,18 +81,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func rebuildApplicationWindows() {
         defer { isFirstOpen = false }
-        if let mainWindowController {
-            mainWindowController.destroy()
-        }
-        mainWindowController = nil
-        guard let mainScreen = findScreenFitsOurNeeds() else { return }
+        // Détruit toutes les windows existantes proprement.
+        windowControllers.forEach { $0.destroy() }
+        windowControllers.removeAll()
 
-        // Decide *before* constructing the controller — its initializer reads
-        // `openAfterCreate` synchronously now (T-22 init refactor), so a
-        // post-init assignment would arrive too late. The pre-T-22 code relied
-        // on a 100 ms asyncAfter to mask this race.
+        // Liste des écrans à équiper :
+        //  - si `showOnAllScreens` : tous les NSScreen connectés
+        //  - sinon : juste celui désigné par `displayPreference`
+        let screens: [NSScreen]
+        if AppSettings.shared.showOnAllScreens {
+            screens = NSScreen.screens
+        } else if let one = findScreenFitsOurNeeds() {
+            screens = [one]
+        } else {
+            screens = []
+        }
+
         let shouldOpen = isFirstOpen && !isLaunchedAtLogin
-        mainWindowController = .init(screen: mainScreen, openAfterCreate: shouldOpen)
+        for (index, screen) in screens.enumerated() {
+            // openAfterCreate uniquement sur le 1er écran (pour ne pas
+            // ouvrir l'encoche partout au boot).
+            let controller = NotchWindowController(
+                screen: screen,
+                openAfterCreate: shouldOpen && index == 0
+            )
+            windowControllers.append(controller)
+        }
+        Log.app.info("rebuilt \(self.windowControllers.count) notch window(s)")
     }
 
     /// Triggered when a second DynamicNotch launch posts a wake-up notification.
@@ -106,3 +128,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 }
+
+import Combine

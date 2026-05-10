@@ -24,10 +24,15 @@ final class AppSettings: ObservableObject {
     var displayPreference: DisplayPreference
 
     /// Force le mode "pilule" même sur les Mac qui ont une encoche matérielle.
-    /// Utile sur les écrans externes ou pour ceux qui préfèrent l'esthétique
-    /// pilule à la silhouette à coins concaves.
     @PublishedPersist(key: "forcePillMode", defaultValue: false)
     var forcePillMode: Bool
+
+    /// Affiche l'encoche sur TOUS les écrans connectés simultanément (pas
+    /// seulement celui désigné par `displayPreference`). Utile si tu utilises
+    /// le HUD volume ou tu veux des wings batterie sur n'importe quel écran
+    /// que tu regardes.
+    @PublishedPersist(key: "showOnAllScreens", defaultValue: false)
+    var showOnAllScreens: Bool
 
     // MARK: appearance
 
