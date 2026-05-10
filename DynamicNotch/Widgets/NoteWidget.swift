@@ -45,6 +45,17 @@ struct NoteView: View {
                 .onChange(of: content) { newValue in
                     debounceSave(newValue)
                 }
+                // Quand le focus est demandé / repris, on (ré)active l'app
+                // ET la fenêtre. Sans ça, Cmd+V (et tous les raccourcis
+                // d'édition) ne fonctionnent pas : SwiftUI a besoin que
+                // l'app `.accessory` soit explicitement active pour que les
+                // events clavier système soient routés vers le TextEditor.
+                .onChange(of: isFocused) { focused in
+                    if focused { activateForEditing() }
+                }
+                // Bloquer la propagation du tap au handler global de
+                // mouseDown qui ferait fermer la notch.
+                .onTapGesture { activateForEditing() }
         }
         // Explicit fill so this tile always claims the same height as its
         // siblings. Without it, the TextEditor's intrinsic small size let the
@@ -61,10 +72,29 @@ struct NoteView: View {
 
     private func handleAppear() {
         content = loadNote()
-        // Defer focus by one runloop tick so the host window has time to
-        // become key — otherwise the text view doesn't get firstResponder.
+        // Defer focus + activation par 1 runloop tick pour que la fenêtre
+        // ait le temps d'être présentée — puis on active explicitement
+        // l'app + on rend la fenêtre key, sans quoi Cmd+V ne fonctionne
+        // pas dans le TextEditor d'une app `.accessory`.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            activateForEditing()
             isFocused = true
+        }
+    }
+
+    /// Active l'app DynamicNotch + rend sa fenêtre key. Indispensable
+    /// pour que les raccourcis clavier d'édition (Cmd+V, Cmd+C, Cmd+X,
+    /// Cmd+A, etc.) soient routés vers le TextEditor.
+    private func activateForEditing() {
+        NSApp.activate(ignoringOtherApps: true)
+        // Trouve la fenêtre `NotchWindow` qui héberge ce widget et la rend
+        // key. `NSApp.keyWindow` peut être nil quand on vient juste
+        // d'activer l'app — on cherche dans toutes les windows.
+        for window in NSApp.windows where window is NotchWindow {
+            if !window.isKeyWindow {
+                window.makeKeyAndOrderFront(nil)
+            }
+            break
         }
     }
 
