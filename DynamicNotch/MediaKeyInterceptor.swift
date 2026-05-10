@@ -41,6 +41,10 @@ final class MediaKeyInterceptor {
     private(set) var isConsuming: Bool = false
     private var cancellables = Set<AnyCancellable>()
 
+    /// Notification publiée quand le mode change (lecture seule / consume /
+    /// failed). Le Settings UI s'abonne pour afficher un statut live.
+    static let statusChangedNotification = Notification.Name("MediaKeyInterceptorStatusChanged")
+
     private init() {
         // Le bootstrap (lecture des settings, abonnement Combine, install
         // initiale du monitor) doit se faire sur main — `DispatchQueue.main.async`
@@ -118,6 +122,7 @@ final class MediaKeyInterceptor {
         isActive = true
         isConsuming = false
         Log.app.info("MediaKeyInterceptor : mode lecture seule")
+        NotificationCenter.default.post(name: Self.statusChangedNotification, object: nil)
     }
 
     // MARK: CGEvent tap (consume → HUD natif supprimé)
@@ -146,7 +151,17 @@ final class MediaKeyInterceptor {
             callback: callback,
             userInfo: refcon
         ) else {
-            Log.app.error("CGEvent.tapCreate a échoué — retour au monitor NSEvent")
+            // Cause la plus fréquente : la permission Accessibility a été
+            // accordée à un binaire signé différemment (rebuild ad-hoc =
+            // nouveau hash → permission révoquée silencieusement). L'utilisateur
+            // doit retirer l'app de la liste Accessibilité puis la rajouter.
+            Log.app.error("""
+                CGEvent.tapCreate a échoué malgré AXIsProcessTrusted=true.
+                Cause probable : permission Accessibility révoquée par un
+                rebuild ad-hoc. Retirer DynamicNotch de Réglages → Confidentialité
+                → Accessibilité, puis rajouter le binaire actuel.
+                Fallback NSEvent activé.
+                """)
             installNSEventMonitor()
             return
         }
@@ -158,7 +173,8 @@ final class MediaKeyInterceptor {
         CGEvent.tapEnable(tap: tap, enable: true)
         isActive = true
         isConsuming = true
-        Log.app.info("MediaKeyInterceptor : mode consommation (HUD natif supprimé)")
+        Log.app.info("MediaKeyInterceptor : mode consommation actif (HUD natif supprimé)")
+        NotificationCenter.default.post(name: Self.statusChangedNotification, object: nil)
     }
 
     /// Callback du tap CGEvent. **NON-MainActor** — appelé sur un thread

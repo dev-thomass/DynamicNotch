@@ -103,30 +103,29 @@ struct NotchHUDView: View {
 
     @ViewBuilder
     private func hudCard(for kind: HUDController.HUDKind) -> some View {
-        HStack(spacing: DS.Spacing.sm) {
+        // Mini-pill : 100×14, vraiment discrète. Icône 9pt + barre 60pt
+        // sans texte de pourcentage (visuellement bruyant pour un HUD
+        // qui doit juste donner le niveau au coup d'œil).
+        HStack(spacing: 6) {
             icon(for: kind)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 22, height: 22)
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.85))
             ProgressBar(level: level(for: kind), tint: tint(for: kind))
-                .frame(width: 160, height: 6)
-            Text("\(Int(round(level(for: kind) * 100))) %")
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(.white.opacity(0.8))
-                .frame(width: 38, alignment: .trailing)
+                .frame(width: 60, height: 3)
         }
-        .padding(.horizontal, DS.Spacing.md)
-        .padding(.vertical, DS.Spacing.sm)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
         .background(
-            RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                .fill(Color.black)
+            // Fond semi-transparent + matériau translucide pour rester
+            // élégant sans crier comme un bloc noir massif.
+            Capsule(style: .continuous)
+                .fill(Color.black.opacity(0.85))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                .strokeBorder(.white.opacity(0.08), lineWidth: 1)
+            Capsule(style: .continuous)
+                .strokeBorder(.white.opacity(0.06), lineWidth: 0.5)
         )
-        .shadow(color: .black.opacity(0.4), radius: 16, y: 8)
+        .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
     }
 
     private func icon(for kind: HUDController.HUDKind) -> Image {

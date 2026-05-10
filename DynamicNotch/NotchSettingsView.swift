@@ -394,15 +394,15 @@ struct NotchSettingsView: View {
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 Toggle(isOn: $settings.suppressNativeHUD) {
                     settingLabel("Supprimer le HUD natif",
-                                 subtitle: AccessibilityHelper.isTrusted
-                                     ? "Affiche uniquement notre HUD (permission OK)"
-                                     : "Demande la permission Accessibilité au prochain appui")
+                                 subtitle: hudStatusSubtitle)
                 }
-                if !AccessibilityHelper.isTrusted, settings.suppressNativeHUD {
+                if settings.suppressNativeHUD, !MediaKeyInterceptor.shared.isConsuming {
                     DSButton(
-                        "Ouvrir Réglages → Accessibilité",
+                        AccessibilityHelper.isTrusted
+                            ? "Re-grant : permission révoquée par rebuild"
+                            : "Ouvrir Réglages → Accessibilité",
                         systemImage: "lock.shield",
-                        role: .secondary,
+                        role: .warning,
                         size: .small
                     ) {
                         AccessibilityHelper.openSystemSettings()
@@ -419,6 +419,28 @@ struct NotchSettingsView: View {
                 }
             }
         }
+        // Re-render quand le statut du tap change pour mettre à jour
+        // le sous-titre live.
+        .onReceive(NotificationCenter.default.publisher(for: MediaKeyInterceptor.statusChangedNotification)) { _ in
+            // touch un state pour forcer SwiftUI à re-évaluer
+            statusTick &+= 1
+        }
+    }
+
+    @State private var statusTick: UInt8 = 0
+
+    private var hudStatusSubtitle: LocalizedStringKey {
+        let mki = MediaKeyInterceptor.shared
+        if !settings.suppressNativeHUD {
+            return "HUD natif macOS conservé"
+        }
+        if mki.isConsuming {
+            return "Actif — HUD natif supprimé ✓"
+        }
+        if AccessibilityHelper.isTrusted {
+            return "Permission accordée mais tap inactif — re-autoriser après rebuild"
+        }
+        return "Permission Accessibilité requise"
     }
 
     private func confirmAndReset() {
