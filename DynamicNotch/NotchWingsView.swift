@@ -223,40 +223,55 @@ struct MonochromeBar: View {
 // MARK: - Battery glyph
 
 /// Petite icône batterie qui se remplit selon le niveau, avec éclair
-/// SCINTILLANT quand en charge active. Blanc/teinté selon le niveau
-/// (vert > 50 %, jamais > 20 %, rouge sinon).
+/// SCINTILLANT quand en charge active. Blanc/teinté selon le niveau.
+///
+/// Refactor : utilise des paddings symétriques pour que le remplissage
+/// reste pixel-aligné au centre de la coque sur tous les Retina scaling.
+/// L'ancien code avec `.padding(.leading, 1.5)` seulement créait un
+/// décalage visible sur les écrans externes (DPI différent).
 struct BatteryGlyph: View {
     let level: Double           // 0..1
     let tint: Color
     let isCharging: Bool
 
-    private let bodySize = CGSize(width: 16, height: 8)
-    private let bumpSize = CGSize(width: 1.5, height: 4)
+    // Dimensions de l'icône — proportions ratio 2:1 (plus la pointe).
+    private let bodyWidth: CGFloat  = 16
+    private let bodyHeight: CGFloat = 8
+    private let bumpWidth: CGFloat  = 1.5
+    private let bumpHeight: CGFloat = 4
+    /// Inset interne de la coque (border + air entre border et fill).
+    private let inset: CGFloat = 1.5
+    private let cornerRadius: CGFloat = 2
 
     @State private var boltOpacity: Double = 1.0
 
     var body: some View {
         HStack(spacing: 1) {
-            ZStack(alignment: .leading) {
-                // Coque vide
-                RoundedRectangle(cornerRadius: 2, style: .continuous)
+            // Corps (coque + remplissage + éclair)
+            ZStack {
+                // Coque (border)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(Color.white.opacity(0.7), lineWidth: 0.8)
-                // Remplissage proportionnel
-                RoundedRectangle(cornerRadius: 1, style: .continuous)
-                    .fill(tint)
-                    .frame(width: max(0, (bodySize.width - 3) * level), height: bodySize.height - 3)
-                    .padding(.leading, 1.5)
-                // Éclair en charge — SCINTILLE (pulse opacity rapide)
+
+                // Remplissage proportionnel à level, ancré à gauche.
+                // Utilise un HStack avec Spacer pour garantir l'alignment
+                // pixel-perfect via le système de layout SwiftUI (plus
+                // robuste que des paddings hardcodés).
+                HStack(spacing: 0) {
+                    RoundedRectangle(cornerRadius: max(0, cornerRadius - inset))
+                        .fill(tint)
+                        .frame(width: max(0, (bodyWidth - inset * 2) * level))
+                    Spacer(minLength: 0)
+                }
+                .padding(inset)
+
+                // Éclair scintillant
                 if isCharging {
                     Image(systemName: "bolt.fill")
                         .font(.system(size: 5.5, weight: .black))
                         .foregroundStyle(.white)
                         .opacity(boltOpacity)
-                        .frame(width: bodySize.width, height: bodySize.height)
                         .onAppear {
-                            // Pulse rapide 0.7 ↔ 1.0 toutes les 0.6s pour
-                            // un effet "scintillant" qui confirme la charge
-                            // en cours d'un coup d'œil.
                             withAnimation(
                                 .easeInOut(duration: 0.6)
                                     .repeatForever(autoreverses: true)
@@ -266,11 +281,12 @@ struct BatteryGlyph: View {
                         }
                 }
             }
-            .frame(width: bodySize.width, height: bodySize.height)
-            // Bump du connecteur
+            .frame(width: bodyWidth, height: bodyHeight)
+
+            // Bump du connecteur (pointe à droite)
             RoundedRectangle(cornerRadius: 0.5, style: .continuous)
                 .fill(Color.white.opacity(0.7))
-                .frame(width: bumpSize.width, height: bumpSize.height)
+                .frame(width: bumpWidth, height: bumpHeight)
         }
     }
 }

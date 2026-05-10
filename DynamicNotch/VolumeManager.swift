@@ -160,19 +160,37 @@ final class VolumeManager: ObservableObject {
         return m != 0
     }
 
-    /// Installe un listener CoreAudio sur le volume (pour rester sync si
-    /// l'utilisateur change le volume depuis le menubar / Réglages).
+    /// Installe les listeners CoreAudio sur le volume ET le mute pour
+    /// rester sync quand le système / une autre app change la valeur
+    /// (menubar slider, AppleScript, touches média en mode lecture seule).
+    /// Ces refresh déclenchent le @Published level/isMuted, qui à leur
+    /// tour déclenchent le HUD via les souscriptions HUDController.
     private func installListener() {
         guard !listenerSetup, let dev = defaultOutputDeviceID() else { return }
-        var addr = AudioObjectPropertyAddress(
+
+        let block: AudioObjectPropertyListenerBlock = { _, _ in
+            Task { @MainActor in VolumeManager.shared.refresh() }
+        }
+
+        // Volume scalar — main element (suffit pour les built-in speakers ;
+        // pour les devices Bluetooth qui n'exposent que les canaux
+        // individuels, on rate cet event mais le polling qui pourrait être
+        // ajouté plus tard couvrirait ça).
+        var volumeAddr = AudioObjectPropertyAddress(
             mSelector: kAudioDevicePropertyVolumeScalar,
             mScope: kAudioDevicePropertyScopeOutput,
             mElement: kAudioObjectPropertyElementMain
         )
-        let block: AudioObjectPropertyListenerBlock = { _, _ in
-            Task { @MainActor in VolumeManager.shared.refresh() }
-        }
-        let status = AudioObjectAddPropertyListenerBlock(dev, &addr, .main, block)
-        if status == noErr { listenerSetup = true }
+        _ = AudioObjectAddPropertyListenerBlock(dev, &volumeAddr, .main, block)
+
+        // Mute toggle.
+        var muteAddr = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyMute,
+            mScope: kAudioDevicePropertyScopeOutput,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        _ = AudioObjectAddPropertyListenerBlock(dev, &muteAddr, .main, block)
+
+        listenerSetup = true
     }
 }

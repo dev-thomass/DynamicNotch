@@ -54,6 +54,8 @@ final class HUDController: ObservableObject {
     }
 
     private func observeMediaKeys() {
+        // Source 1 : event clavier intercepté en mode CGEvent.tapCreate
+        // (HUD natif supprimé). Immédiat, pas de race.
         MediaKeyInterceptor.shared.volumeChanged
             .receive(on: DispatchQueue.main)
             .sink { [weak self] level in
@@ -66,21 +68,38 @@ final class HUDController: ObservableObject {
                 self?.showVolume(level: VolumeManager.shared.level, muted: muted)
             }
             .store(in: &cancellables)
+        // Source 2 : changement EXTERNE du volume détecté par le listener
+        // CoreAudio installé dans VolumeManager (mode NSEvent fallback,
+        // changement via menubar slider, AppleScript, etc.). Sans ça, en
+        // mode lecture seule le système changeait le volume mais le HUD
+        // ne se déclenchait jamais — l'utilisateur ne savait pas où il
+        // en était.
+        VolumeManager.shared.$level
+            .removeDuplicates { abs($0 - $1) < 0.005 }
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] level in
+                self?.showVolume(level: level, muted: VolumeManager.shared.isMuted)
+            }
+            .store(in: &cancellables)
+        VolumeManager.shared.$isMuted
+            .removeDuplicates()
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] muted in
+                self?.showVolume(level: VolumeManager.shared.level, muted: muted)
+            }
+            .store(in: &cancellables)
     }
 
     private func observeBrightness() {
-        // Source 1 : event clavier intercepté (immédiat, mode CGEvent.tapCreate)
+        // Source UNIQUE : event clavier intercepté.
+        // Le polling 1Hz du BrightnessManager déclenchait le HUD à chaque
+        // micro-variation détectée (ambient light sensor, transitions
+        // smooth du système) → HUD parasite qui apparaissait sans raison.
+        // On garde le polling pour rester sync sur la valeur affichée,
+        // mais sans déclencher le HUD.
         MediaKeyInterceptor.shared.brightnessChanged
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] level in
-                self?.showBrightness(level: level)
-            }
-            .store(in: &cancellables)
-        // Source 2 : polling 1Hz du BrightnessManager (mode lecture seule
-        // ou changement externe — slider menubar, ambient sensor, etc.)
-        BrightnessManager.shared.$level
-            .removeDuplicates { abs($0 - $1) < 0.01 }
-            .dropFirst()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] level in
                 self?.showBrightness(level: level)
