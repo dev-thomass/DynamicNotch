@@ -44,7 +44,6 @@ struct WingsResolver {
     private let stopwatch: StopwatchModel
     private let pomodoro: PomodoroModel
     private let calendar: CalendarStore
-    private let hud: HUDController
     private let settings: AppSettings
 
     init(
@@ -52,14 +51,12 @@ struct WingsResolver {
         stopwatch: StopwatchModel = .shared,
         pomodoro: PomodoroModel = .shared,
         calendar: CalendarStore = .shared,
-        hud: HUDController = .shared,
         settings: AppSettings = .shared
     ) {
         self.battery = battery
         self.stopwatch = stopwatch
         self.pomodoro = pomodoro
         self.calendar = calendar
-        self.hud = hud
         self.settings = settings
     }
 
@@ -118,7 +115,6 @@ struct WingContent: View {
     @StateObject private var stopwatch = StopwatchModel.shared
     @StateObject private var pomodoro = PomodoroModel.shared
     @StateObject private var calendar = CalendarStore.shared
-    @StateObject private var hud = HUDController.shared
 
     var body: some View {
         switch provider {

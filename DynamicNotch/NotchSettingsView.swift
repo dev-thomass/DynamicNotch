@@ -397,23 +397,6 @@ struct NotchSettingsView: View {
     private var advancedSection: some View {
         sectionCard(title: "Avancé", systemImage: "wrench.and.screwdriver") {
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
-                Toggle(isOn: $settings.suppressNativeHUD) {
-                    settingLabel("Supprimer le HUD natif",
-                                 subtitle: hudStatusSubtitle)
-                }
-                if settings.suppressNativeHUD, !MediaKeyInterceptor.shared.isConsuming {
-                    DSButton(
-                        AccessibilityHelper.isTrusted
-                            ? "Re-grant : permission révoquée par rebuild"
-                            : "Ouvrir Réglages → Accessibilité",
-                        systemImage: "lock.shield",
-                        role: .warning,
-                        size: .small
-                    ) {
-                        AccessibilityHelper.openSystemSettings()
-                    }
-                }
-                Divider().padding(.vertical, 2)
                 DSButton(
                     "Réinitialiser les réglages",
                     systemImage: "arrow.counterclockwise",
@@ -424,28 +407,6 @@ struct NotchSettingsView: View {
                 }
             }
         }
-        // Re-render quand le statut du tap change pour mettre à jour
-        // le sous-titre live.
-        .onReceive(NotificationCenter.default.publisher(for: MediaKeyInterceptor.statusChangedNotification)) { _ in
-            // touch un state pour forcer SwiftUI à re-évaluer
-            statusTick &+= 1
-        }
-    }
-
-    @State private var statusTick: UInt8 = 0
-
-    private var hudStatusSubtitle: LocalizedStringKey {
-        let mki = MediaKeyInterceptor.shared
-        if !settings.suppressNativeHUD {
-            return "HUD natif macOS conservé"
-        }
-        if mki.isConsuming {
-            return "Actif — HUD natif supprimé ✓"
-        }
-        if AccessibilityHelper.isTrusted {
-            return "Permission accordée mais tap inactif — re-autoriser après rebuild"
-        }
-        return "Permission Accessibilité requise"
     }
 
     private func confirmAndReset() {
@@ -468,7 +429,6 @@ struct NotchSettingsView: View {
         settings.wingStopwatch = true
         settings.wingPomodoro = true
         settings.wingCalendar = true
-        settings.suppressNativeHUD = false
         vm.hapticFeedback = true
     }
 

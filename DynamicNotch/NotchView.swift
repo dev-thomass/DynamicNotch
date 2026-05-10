@@ -18,7 +18,6 @@ struct NotchView: View {
     @StateObject private var battery = BatteryMonitor.shared
     @StateObject private var stopwatch = StopwatchModel.shared
     @StateObject private var pomodoro = PomodoroModel.shared
-    @StateObject private var hud = HUDController.shared
     @StateObject private var calStore = CalendarStore.shared
 
     @State var dropTargeting: Bool = false
@@ -26,58 +25,32 @@ struct NotchView: View {
     /// Wings actives (latérales) au moment du rendu.
     private var activeWings: [WingProvider] { WingsResolver().activeProviders }
 
-    /// `true` quand le HUD volume/luminosité doit être affiché.
-    /// Le HUD est traité séparément des wings car il étend la silhouette
-    /// **vers le bas** (en hauteur), pas latéralement.
-    private var hudActive: Bool {
-        vm.status == .closed && hud.current != nil && settings.wingsEnabled
-    }
-
-    /// Hauteur additionnelle de l'extension HUD (vers le bas).
-    /// 32 pt = 8pt de marge interne (séparation visuelle avec le contenu
-    /// natif de l'encoche au-dessus, batterie / chrono / etc.) + 14pt
-    /// pour l'icône+barre + 10pt de padding inférieur.
-    private static let hudExtraHeight: CGFloat = 32
-
-    /// Marge entre le bord bas de l'encoche native et le début du
-    /// contenu HUD. Évite que l'icône volume / barre se "colle" au
-    /// pourcentage batterie ou à la pastille pomodoro juste au-dessus.
-    private static let hudTopMargin: CGFloat = 10
-
     /// Provider unique qui occupe les wings gauche + droite à la fois.
-    /// Première entrée de `activeWings`, ou nil si aucun. L'utilisateur
-    /// décide la priorité en désactivant les wings qu'il ne veut pas
-    /// voir gagner — par défaut l'ordre est : battery > stopwatch >
-    /// pomodoro > calendar (ordre de l'enum WingProvider).
+    /// L'utilisateur décide la priorité en désactivant les wings qu'il ne
+    /// veut pas voir gagner — par défaut l'ordre est : battery > stopwatch
+    /// > pomodoro > calendar (ordre de l'enum WingProvider).
     private var primaryWing: WingProvider? {
         guard vm.status == .closed else { return nil }
         return activeWings.first
     }
 
     /// Largeur additionnelle à donner à la silhouette pour englober le
-    /// wing gauche + droite (le provider primaire occupe les deux). 0 si
-    /// aucun wing actif.
+    /// wing gauche + droite. 0 si aucun wing actif.
     private var wingsExtraWidth: CGFloat {
         primaryWing == nil ? 0 : 2 * WingsLayout.oneWingWidth
-    }
-
-    /// Hauteur additionnelle pour l'extension verticale du HUD.
-    private var hudExtraHeight: CGFloat {
-        hudActive ? Self.hudExtraHeight : 0
     }
 
     var notchSize: CGSize {
         switch vm.status {
         case .closed:
             // Sur un Mac avec encoche matérielle : on doit COÏNCIDER pixel-
-            // perfect avec la silhouette physique (pas de marge -4 qui
-            // crée un liseré gris autour de notre silhouette noire).
-            // Sur un Mac sans : on garde la marge -4 pour que la pilule
-            // simulée ait un peu d'air autour d'elle.
+            // perfect avec la silhouette physique. Sur un Mac sans, on
+            // garde une marge -4 pour que la pilule simulée ait un peu
+            // d'air autour d'elle.
             let inset: CGFloat = hasHardwareNotch ? 0 : 4
             var ans = CGSize(
                 width: vm.deviceNotchRect.width - inset + wingsExtraWidth,
-                height: vm.deviceNotchRect.height - inset + hudExtraHeight
+                height: vm.deviceNotchRect.height - inset
             )
             if ans.width < 0 { ans.width = 0 }
             if ans.height < 0 { ans.height = 0 }
@@ -214,50 +187,7 @@ struct NotchView: View {
             radius: 16
         )
         .overlay { wingsOverlay }
-        .overlay(alignment: .bottom) { hudOverlay }
         .overlay(alignment: .trailing) { closedBadge }
-    }
-
-    /// Contenu du HUD volume / luminosité — affiché DANS la zone basse de
-    /// la silhouette (qui s'est étendue de `hudExtraHeight` vers le bas).
-    /// Strictement monochrome blanc, pas de couleur.
-    @ViewBuilder
-    private var hudOverlay: some View {
-        if hudActive, let kind = hud.current {
-            HStack(spacing: 6) {
-                Image(systemName: hudIcon(kind))
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(.white)
-                MonochromeBar(level: hudLevel(kind))
-                    .frame(height: 3)
-                    .frame(maxWidth: .infinity)
-            }
-            .padding(.horizontal, 14)
-            // La zone HUD totale fait `hudExtraHeight`. Le contenu
-            // (icône + barre) est positionné en bas avec une marge
-            // supérieure de `hudTopMargin` pour bien séparer
-            // visuellement de la zone "encoche normale" qui contient
-            // déjà du contenu (batterie / chrono / etc.).
-            .frame(height: Self.hudExtraHeight - Self.hudTopMargin, alignment: .center)
-            .frame(maxWidth: .infinity)
-            .padding(.top, Self.hudTopMargin)
-            .padding(.bottom, 4)
-            .transition(.opacity)
-        }
-    }
-
-    private func hudIcon(_ kind: HUDController.HUDKind) -> String {
-        switch kind {
-        case .volume(_, let muted): muted ? "speaker.slash.fill" : "speaker.wave.2.fill"
-        case .brightness:           "sun.max.fill"
-        }
-    }
-
-    private func hudLevel(_ kind: HUDController.HUDKind) -> Float {
-        switch kind {
-        case .volume(let l, _): l
-        case .brightness(let l): l
-        }
     }
 
     /// Contenu des wings — UN seul provider occupe les deux slots (gauche

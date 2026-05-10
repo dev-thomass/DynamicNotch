@@ -49,13 +49,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         installEditMenu()
 
         _ = EventMonitors.shared
-        // Démarre les managers + tap des touches média pour afficher le HUD
-        // sous l'encoche dès le premier appui sur volume / luminosité.
+        // Singletons des managers utilisés par les wings.
         _ = BatteryMonitor.shared
-        _ = VolumeManager.shared
-        _ = BrightnessManager.shared
-        MediaKeyInterceptor.shared.start()
-        _ = HUDController.shared
 
         // Rebuild the windows when the user picks a different display
         // OU bascule "afficher sur tous les écrans".
