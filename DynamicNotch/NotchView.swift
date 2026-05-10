@@ -134,6 +134,10 @@ struct NotchView: View {
                 .allowsHitTesting(false)
         }
         .animation(vm.animation, value: vm.status)
+        // Anime l'élargissement de la silhouette quand un wing s'active /
+        // se désactive (charge branchée, chrono lancé, …). Spring identique
+        // à l'ouverture de l'encoche pour cohérence visuelle.
+        .animation(vm.animation, value: notchSize.width)
         // The opened panel resizes when the user enters Settings (large
         // form) or Menu (compact tile row). Animate the size change with
         // the same spring as the open/close transition for visual cohesion.

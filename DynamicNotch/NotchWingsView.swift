@@ -29,6 +29,7 @@ enum WingProvider: String, CaseIterable, Identifiable {
     case battery
     case stopwatch
     case pomodoro
+    case calendar
 
     var id: String { rawValue }
 }
@@ -41,17 +42,20 @@ struct WingsResolver {
     private let battery: BatteryMonitor
     private let stopwatch: StopwatchModel
     private let pomodoro: PomodoroModel
+    private let calendar: CalendarStore
     private let settings: AppSettings
 
     init(
         battery: BatteryMonitor = .shared,
         stopwatch: StopwatchModel = .shared,
         pomodoro: PomodoroModel = .shared,
+        calendar: CalendarStore = .shared,
         settings: AppSettings = .shared
     ) {
         self.battery = battery
         self.stopwatch = stopwatch
         self.pomodoro = pomodoro
+        self.calendar = calendar
         self.settings = settings
     }
 
@@ -68,6 +72,15 @@ struct WingsResolver {
         }
         if settings.wingPomodoro, pomodoro.phase != .idle {
             out.append(.pomodoro)
+        }
+        // Wing Calendar : actif uniquement si un événement est dans la
+        // prochaine heure (sinon ce serait du bruit visuel permanent).
+        if settings.wingCalendar,
+           let event = calendar.nextEvent,
+           event.startDate.timeIntervalSinceNow > 0,
+           event.startDate.timeIntervalSinceNow < 60 * 60
+        {
+            out.append(.calendar)
         }
         return out
     }
@@ -102,12 +115,14 @@ struct WingContent: View {
     @StateObject private var battery = BatteryMonitor.shared
     @StateObject private var stopwatch = StopwatchModel.shared
     @StateObject private var pomodoro = PomodoroModel.shared
+    @StateObject private var calendar = CalendarStore.shared
 
     var body: some View {
         switch provider {
         case .battery:   batteryContent
         case .stopwatch: stopwatchContent
         case .pomodoro:  pomodoroContent
+        case .calendar:  calendarContent
         }
     }
 
@@ -175,6 +190,26 @@ struct WingContent: View {
                 .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(.white)
+        }
+    }
+
+    // ─── Calendar (countdown vers next event < 60 min) ───────────────────
+
+    @ViewBuilder
+    private var calendarContent: some View {
+        switch slot {
+        case .left:
+            Image(systemName: "calendar")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.white)
+        case .right:
+            if let event = calendar.nextEvent {
+                let mins = max(0, Int(event.startDate.timeIntervalSinceNow / 60))
+                Text(mins == 0 ? "main." : "\(mins)′")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+            }
         }
     }
 }

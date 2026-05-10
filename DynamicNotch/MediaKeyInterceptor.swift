@@ -16,6 +16,7 @@ import Cocoa
 import Combine
 import CoreGraphics
 import Foundation
+import ApplicationServices
 
 @MainActor
 final class MediaKeyInterceptor: ObservableObject {
@@ -32,20 +33,42 @@ final class MediaKeyInterceptor: ObservableObject {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private(set) var isActive: Bool = false
+    /// `true` quand on intercepte ET consomme les events (HUD natif supprimé).
+    /// `false` en mode lecture seule via NSEvent.
+    private(set) var isConsuming: Bool = false
 
-    private init() {}
+    private init() {
+        // Démarrage initial selon le setting persisté.
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshFromSettings()
+        }
+        // Re-évalue quand le setting change.
+        AppSettings.shared.$suppressNativeHUD
+            .removeDuplicates()
+            .sink { [weak self] _ in self?.refreshFromSettings() }
+            .store(in: &cancellables)
+    }
+
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: lifecycle
 
-    /// Tente d'installer le tap. À appeler depuis `applicationDidFinishLaunching`
-    /// si l'utilisateur a activé l'interception dans les réglages.
+    /// Démarre l'interception. Appelée une fois depuis AppDelegate.
+    /// Le mode (lecture seule vs consommation) est piloté par le setting
+    /// `AppSettings.suppressNativeHUD`.
     func start() {
-        guard eventTap == nil else { return }
-        // Les touches media génèrent des events de type
-        // NSEventType.systemDefined avec subtype 8 (NSEventSubtypeAuxControlButtons).
-        // On capte la couche basse via CGEventType.systemDefined si dispo,
-        // sinon via NSEvent.addGlobalMonitorForEvents.
-        installNSEventMonitor()
+        refreshFromSettings()
+    }
+
+    /// Re-démarre dans le bon mode selon `suppressNativeHUD` + permission
+    /// Accessibility.
+    private func refreshFromSettings() {
+        stop()
+        if AppSettings.shared.suppressNativeHUD, AccessibilityHelper.isTrusted {
+            installCGEventTap()
+        } else {
+            installNSEventMonitor()
+        }
     }
 
     func stop() {
@@ -55,31 +78,113 @@ final class MediaKeyInterceptor: ObservableObject {
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
         }
+        if let g = globalMonitor {
+            NSEvent.removeMonitor(g)
+            globalMonitor = nil
+        }
+        if let l = localMonitor {
+            NSEvent.removeMonitor(l)
+            localMonitor = nil
+        }
         eventTap = nil
         runLoopSource = nil
         isActive = false
+        isConsuming = false
     }
 
-    // MARK: NSEvent global monitor (sans suppression du HUD natif)
+    // MARK: NSEvent global monitor (lecture seule, HUD natif coexiste)
 
     private var globalMonitor: Any?
+    private var localMonitor: Any?
 
-    /// Mode "lecture seule" : on observe les touches media quand elles
-    /// arrivent à n'importe quelle app, mais on ne les *consomme pas*. Le
-    /// HUD natif macOS s'affiche en plus du nôtre — pas idéal mais ne
-    /// nécessite pas la permission Accessibility.
+    /// Mode "lecture seule" : on observe les touches média quand elles
+    /// arrivent à n'importe quelle app, mais on ne les *consomme pas*.
+    /// Le HUD natif macOS s'affiche en plus du nôtre — utilisé en
+    /// fallback quand la permission Accessibility n'est pas accordée.
     private func installNSEventMonitor() {
         let mask = NSEvent.EventTypeMask.systemDefined
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: mask) { [weak self] event in
             self?.handle(event: event)
         }
-        // Local monitor pour aussi capter quand notre app est au premier plan
-        NSEvent.addLocalMonitorForEvents(matching: mask) { [weak self] event in
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: mask) { [weak self] event in
             self?.handle(event: event)
             return event
         }
         isActive = true
-        Log.app.info("MediaKeyInterceptor démarré (mode lecture seule, HUD natif non supprimé)")
+        isConsuming = false
+        Log.app.info("MediaKeyInterceptor : mode lecture seule (HUD natif coexistant)")
+    }
+
+    // MARK: CGEvent tap (consume → HUD natif supprimé)
+
+    /// Mode "consommation" : on installe un tap CGEvent au niveau HID.
+    /// Quand une touche média arrive, on la lit, on la traite, puis on
+    /// retourne `nil` → le système ne la voit pas → pas de HUD natif.
+    /// Requiert la permission Accessibility (sinon `tapCreate` retourne nil).
+    private func installCGEventTap() {
+        // CGEventType.systemDefined n'est pas exposé directement, on doit
+        // utiliser la valeur brute (14 = NSSystemDefined). On l'inclut dans
+        // le bit-mask des events à observer.
+        let systemDefinedType: CGEventType = .init(rawValue: 14)!
+        let mask = (1 << systemDefinedType.rawValue)
+
+        let callback: CGEventTapCallBack = { proxy, type, event, refcon in
+            guard let refcon else { return Unmanaged.passUnretained(event) }
+            let interceptor = Unmanaged<MediaKeyInterceptor>.fromOpaque(refcon).takeUnretainedValue()
+            return interceptor.tapCallback(proxy: proxy, type: type, event: event)
+        }
+
+        let refcon = Unmanaged.passUnretained(self).toOpaque()
+        guard let tap = CGEvent.tapCreate(
+            tap: .cghidEventTap,
+            place: .headInsertEventTap,
+            options: .defaultTap,
+            eventsOfInterest: CGEventMask(mask),
+            callback: callback,
+            userInfo: refcon
+        ) else {
+            Log.app.error("CGEvent.tapCreate a échoué — fallback NSEvent (lecture seule)")
+            installNSEventMonitor()
+            return
+        }
+        eventTap = tap
+        runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+        if let src = runLoopSource {
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), src, .commonModes)
+        }
+        CGEvent.tapEnable(tap: tap, enable: true)
+        isActive = true
+        isConsuming = true
+        Log.app.info("MediaKeyInterceptor : mode consommation (HUD natif supprimé)")
+    }
+
+    /// Callback du CGEventTap. Si l'event est une touche média, on la
+    /// traite + on retourne nil pour la consommer. Sinon on la laisse
+    /// passer.
+    private func tapCallback(
+        proxy _: CGEventTapProxy,
+        type: CGEventType,
+        event: CGEvent
+    ) -> Unmanaged<CGEvent>? {
+        // Re-enable si le tap a été désactivé par le système (timeout, etc.)
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            if let tap = eventTap { CGEvent.tapEnable(tap: tap, enable: true) }
+            return Unmanaged.passUnretained(event)
+        }
+        // Convertit en NSEvent pour réutiliser la logique existante.
+        guard let nsEvent = NSEvent(cgEvent: event),
+              nsEvent.type == .systemDefined,
+              nsEvent.subtype.rawValue == 8
+        else {
+            return Unmanaged.passUnretained(event)
+        }
+        let keyCode = (nsEvent.data1 & 0xFFFF_0000) >> 16
+        // Touches volume / mute : on consomme.
+        if [0, 1, 4, 5, 7].contains(keyCode) {
+            handle(event: nsEvent)
+            return nil // consume → pas de HUD natif
+        }
+        return Unmanaged.passUnretained(event)
     }
 
     private func handle(event: NSEvent) {

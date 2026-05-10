@@ -212,6 +212,10 @@ struct NotchSettingsView: View {
                         settingLabel("Pomodoro en cours",
                                      subtitle: "Pastille de phase + temps restant")
                     }
+                    Toggle(isOn: $settings.wingCalendar) {
+                        settingLabel("Événement imminent",
+                                     subtitle: "Countdown vers le prochain RDV (< 60 min)")
+                    }
                 }
                 .disabled(!settings.wingsEnabled)
                 .opacity(settings.wingsEnabled ? 1 : 0.5)
@@ -387,7 +391,24 @@ struct NotchSettingsView: View {
 
     private var advancedSection: some View {
         sectionCard(title: "Avancé", systemImage: "wrench.and.screwdriver") {
-            HStack {
+            VStack(alignment: .leading, spacing: DS.Spacing.sm) {
+                Toggle(isOn: $settings.suppressNativeHUD) {
+                    settingLabel("Supprimer le HUD natif",
+                                 subtitle: AccessibilityHelper.isTrusted
+                                     ? "Affiche uniquement notre HUD (permission OK)"
+                                     : "Demande la permission Accessibilité au prochain appui")
+                }
+                if !AccessibilityHelper.isTrusted, settings.suppressNativeHUD {
+                    DSButton(
+                        "Ouvrir Réglages → Accessibilité",
+                        systemImage: "lock.shield",
+                        role: .secondary,
+                        size: .small
+                    ) {
+                        AccessibilityHelper.openSystemSettings()
+                    }
+                }
+                Divider().padding(.vertical, 2)
                 DSButton(
                     "Réinitialiser les réglages",
                     systemImage: "arrow.counterclockwise",
@@ -418,6 +439,8 @@ struct NotchSettingsView: View {
         settings.wingBattery = true
         settings.wingStopwatch = true
         settings.wingPomodoro = true
+        settings.wingCalendar = true
+        settings.suppressNativeHUD = false
         vm.hapticFeedback = true
     }
 

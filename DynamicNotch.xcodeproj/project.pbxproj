@@ -65,6 +65,7 @@
 		WG1100020000000000000004 /* BrightnessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000004 /* BrightnessManager.swift */; };
 		WG1100020000000000000005 /* MediaKeyInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000005 /* MediaKeyInterceptor.swift */; };
 		WG1100020000000000000006 /* NotchHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000006 /* NotchHUDView.swift */; };
+		WG1100020000000000000007 /* AccessibilityHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000007 /* AccessibilityHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -121,6 +122,7 @@
 		WG1100010000000000000004 /* BrightnessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessManager.swift; sourceTree = "<group>"; };
 		WG1100010000000000000005 /* MediaKeyInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaKeyInterceptor.swift; sourceTree = "<group>"; };
 		WG1100010000000000000006 /* NotchHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchHUDView.swift; sourceTree = "<group>"; };
+		WG1100010000000000000007 /* AccessibilityHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -205,6 +207,7 @@
 				WG1100010000000000000004 /* BrightnessManager.swift */,
 				WG1100010000000000000005 /* MediaKeyInterceptor.swift */,
 				WG1100010000000000000006 /* NotchHUDView.swift */,
+				WG1100010000000000000007 /* AccessibilityHelper.swift */,
 				W1D100010000000000000001 /* Widget.swift */,
 				W1D100040000000000000000 /* Widgets */,
 				DEC100030000000000000000 /* DesignSystem */,
@@ -379,6 +382,7 @@
 				WG1100020000000000000004 /* BrightnessManager.swift in Sources */,
 				WG1100020000000000000005 /* MediaKeyInterceptor.swift in Sources */,
 				WG1100020000000000000006 /* NotchHUDView.swift in Sources */,
+				WG1100020000000000000007 /* AccessibilityHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

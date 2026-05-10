@@ -88,4 +88,17 @@ final class AppSettings: ObservableObject {
     /// Affiche le temps restant du pomodoro tant qu'une session est active.
     @PublishedPersist(key: "wingPomodoro", defaultValue: true)
     var wingPomodoro: Bool
+
+    /// Affiche le countdown vers le prochain événement (si dans < 60 min).
+    @PublishedPersist(key: "wingCalendar", defaultValue: true)
+    var wingCalendar: Bool
+
+    // MARK: HUD système
+
+    /// Quand `true`, on capture les touches volume/mute via `CGEvent.tapCreate`
+    /// et on les CONSOMME → le HUD natif macOS ne s'affiche plus, seul le
+    /// nôtre est visible. Demande la permission Accessibility ; sans elle
+    /// on retombe sur le mode "lecture seule" (HUD natif coexistant).
+    @PublishedPersist(key: "suppressNativeHUD", defaultValue: false)
+    var suppressNativeHUD: Bool
 }
