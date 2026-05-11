@@ -61,6 +61,7 @@
 		W1D100020000000000000006 /* CalendarWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000006 /* CalendarWidget.swift */; };
 		WG1100020000000000000001 /* BatteryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000001 /* BatteryMonitor.swift */; };
 		WG1100020000000000000002 /* NotchWingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000002 /* NotchWingsView.swift */; };
+		WG1100020000000000000008 /* NotchShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000008 /* NotchShape.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -113,6 +114,7 @@
 		W1D100010000000000000006 /* CalendarWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarWidget.swift; sourceTree = "<group>"; };
 		WG1100010000000000000001 /* BatteryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryMonitor.swift; sourceTree = "<group>"; };
 		WG1100010000000000000002 /* NotchWingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchWingsView.swift; sourceTree = "<group>"; };
+		WG1100010000000000000008 /* NotchShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchShape.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -193,6 +195,7 @@
 				F3X100010000000000000002 /* DisplayPreference.swift */,
 				WG1100010000000000000001 /* BatteryMonitor.swift */,
 				WG1100010000000000000002 /* NotchWingsView.swift */,
+				WG1100010000000000000008 /* NotchShape.swift */,
 				W1D100010000000000000001 /* Widget.swift */,
 				W1D100040000000000000000 /* Widgets */,
 				DEC100030000000000000000 /* DesignSystem */,
@@ -363,6 +366,7 @@
 				W1D100020000000000000006 /* CalendarWidget.swift in Sources */,
 				WG1100020000000000000001 /* BatteryMonitor.swift in Sources */,
 				WG1100020000000000000002 /* NotchWingsView.swift in Sources */,
+				WG1100020000000000000008 /* NotchShape.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

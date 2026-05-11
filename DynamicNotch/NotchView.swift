@@ -162,11 +162,11 @@ struct NotchView: View {
     var notch: some View {
         Group {
             if hasHardwareNotch {
-                // Signature shape: rectangular body with concave outer corners
-                // that meet the screen bezel. Only meaningful on real notches.
-                Rectangle()
-                    .foregroundStyle(.black)
-                    .mask(notchBackgroundMaskGroup)
+                // Silhouette dessinée d'un seul tenant via `NotchShape`.
+                // Plus fragile / pixel-désynchro de l'ancien composite
+                // Rectangle + mask + overlays décalés.
+                NotchShape(cornerRadius: notchCornerRadius)
+                    .fill(Color.black)
                     .frame(
                         width: notchSize.width + notchCornerRadius * 2,
                         height: notchSize.height
@@ -224,54 +224,11 @@ struct NotchView: View {
         }
     }
 
-    var notchBackgroundMaskGroup: some View {
-        Rectangle()
-            .foregroundStyle(.black)
-            .frame(
-                width: notchSize.width,
-                height: notchSize.height
-            )
-            .clipShape(.rect(
-                bottomLeadingRadius: notchCornerRadius,
-                bottomTrailingRadius: notchCornerRadius
-            ))
-            .overlay {
-                ZStack(alignment: .topTrailing) {
-                    Rectangle()
-                        .frame(width: notchCornerRadius, height: notchCornerRadius)
-                        .foregroundStyle(.black)
-                    Rectangle()
-                        .clipShape(.rect(topTrailingRadius: notchCornerRadius))
-                        .foregroundStyle(.white)
-                        .frame(
-                            width: notchCornerRadius + vm.spacing,
-                            height: notchCornerRadius + vm.spacing
-                        )
-                        .blendMode(.destinationOut)
-                }
-                .compositingGroup()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .offset(x: -notchCornerRadius - vm.spacing + 0.5, y: -0.5)
-            }
-            .overlay {
-                ZStack(alignment: .topLeading) {
-                    Rectangle()
-                        .frame(width: notchCornerRadius, height: notchCornerRadius)
-                        .foregroundStyle(.black)
-                    Rectangle()
-                        .clipShape(.rect(topLeadingRadius: notchCornerRadius))
-                        .foregroundStyle(.white)
-                        .frame(
-                            width: notchCornerRadius + vm.spacing,
-                            height: notchCornerRadius + vm.spacing
-                        )
-                        .blendMode(.destinationOut)
-                }
-                .compositingGroup()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                .offset(x: notchCornerRadius + vm.spacing - 0.5, y: -0.5)
-            }
-    }
+    // `notchBackgroundMaskGroup` retiré — remplacé par `NotchShape` (Path
+    // unique). L'ancienne composition Rectangle + clipShape + 2 overlays
+    // avec offset manuel laissait apparaître un petit carré parasite en
+    // haut à gauche pendant les transitions d'animation, et nécessitait
+    // un hover pour se réparer (re-render forcé).
 
     @ViewBuilder
     var dragDetector: some View {
