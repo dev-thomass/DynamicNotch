@@ -233,10 +233,14 @@ struct ClaudeUsageWidgetView: View {
         .onReceive(clock) { now = $0 }
     }
 
+    /// Bleu de la mini-fenêtre du dashboard usage (#5B8DEF) — plus saturé
+    /// que DS.Color.brand, gardé ici pour la continuité visuelle.
+    private static let claudeBlue = Color(red: 0x5B / 255, green: 0x8D / 255, blue: 0xEF / 255)
+
     private func tint(for pct: Double) -> Color {
         if pct >= 90 { return DS.Color.destructive }
         if pct >= 70 { return DS.Color.warning }
-        return DS.Color.brand
+        return Self.claudeBlue
     }
 
     @ViewBuilder
