@@ -32,6 +32,9 @@ extension NotchViewModel {
         // ─── Media ───────────────────────────────────────────────────────────
         case nowPlaying
 
+        // ─── Outils dev ──────────────────────────────────────────────────────
+        case claude
+
         public var id: String { rawValue }
 
         // MARK: legacy migration
@@ -66,6 +69,7 @@ extension NotchViewModel {
             case .stopwatch:  "stopwatch"
             case .pomodoro:   "brain.head.profile"
             case .nowPlaying: "music.note"
+            case .claude:     "sparkles"
             }
         }
 
@@ -79,6 +83,7 @@ extension NotchViewModel {
             case .stopwatch:  "Chrono"
             case .pomodoro:   "Focus"
             case .nowPlaying: "Musique"
+            case .claude:     "Claude"
             }
         }
     }

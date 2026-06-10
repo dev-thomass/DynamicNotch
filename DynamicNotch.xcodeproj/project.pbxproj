@@ -58,6 +58,7 @@
 		W1D100020000000000000003 /* StopwatchWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000003 /* StopwatchWidget.swift */; };
 		W1D100020000000000000004 /* PomodoroWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000004 /* PomodoroWidget.swift */; };
 		W1D100020000000000000005 /* NowPlayingWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000005 /* NowPlayingWidget.swift */; };
+		W1D100020000000000000009 /* ClaudeUsageWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000009 /* ClaudeUsageWidget.swift */; };
 		W1D100020000000000000006 /* CalendarWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000006 /* CalendarWidget.swift */; };
 		WG1100020000000000000001 /* BatteryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000001 /* BatteryMonitor.swift */; };
 		WG1100020000000000000002 /* NotchWingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WG1100010000000000000002 /* NotchWingsView.swift */; };
@@ -111,6 +112,7 @@
 		W1D100010000000000000003 /* StopwatchWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopwatchWidget.swift; sourceTree = "<group>"; };
 		W1D100010000000000000004 /* PomodoroWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroWidget.swift; sourceTree = "<group>"; };
 		W1D100010000000000000005 /* NowPlayingWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingWidget.swift; sourceTree = "<group>"; };
+		W1D100010000000000000009 /* ClaudeUsageWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeUsageWidget.swift; sourceTree = "<group>"; };
 		W1D100010000000000000006 /* CalendarWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarWidget.swift; sourceTree = "<group>"; };
 		WG1100010000000000000001 /* BatteryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryMonitor.swift; sourceTree = "<group>"; };
 		WG1100010000000000000002 /* NotchWingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchWingsView.swift; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 				W1D100010000000000000003 /* StopwatchWidget.swift */,
 				W1D100010000000000000004 /* PomodoroWidget.swift */,
 				W1D100010000000000000005 /* NowPlayingWidget.swift */,
+				W1D100010000000000000009 /* ClaudeUsageWidget.swift */,
 				W1D100010000000000000006 /* CalendarWidget.swift */,
 			);
 			path = Widgets;
@@ -363,6 +366,7 @@
 				W1D100020000000000000003 /* StopwatchWidget.swift in Sources */,
 				W1D100020000000000000004 /* PomodoroWidget.swift in Sources */,
 				W1D100020000000000000005 /* NowPlayingWidget.swift in Sources */,
+				W1D100020000000000000009 /* ClaudeUsageWidget.swift in Sources */,
 				W1D100020000000000000006 /* CalendarWidget.swift in Sources */,
 				WG1100020000000000000001 /* BatteryMonitor.swift in Sources */,
 				WG1100020000000000000002 /* NotchWingsView.swift in Sources */,

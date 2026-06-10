@@ -112,6 +112,8 @@ struct NotchContentView: View {
             NowPlayingWidgetView(vm: vm)
         case .calendar:
             CalendarWidgetView(vm: vm)
+        case .claude:
+            ClaudeUsageWidgetView(vm: vm)
         }
     }
 }
