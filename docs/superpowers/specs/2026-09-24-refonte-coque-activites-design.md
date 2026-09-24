@@ -267,3 +267,41 @@ déclenche chaque ponctuelle et bascule chaque persistante.
   ici : publication d'événements par Pomodoro, TrayDrop et Share, et observation
   `@Observable`.
 - Plusieurs activités affichées simultanément (îlot scindé en deux).
+
+## Amendements (rédaction du plan, 2026-09-24)
+
+La lecture détaillée du code pendant la rédaction du plan a conduit à ces ajustements.
+Ils remplacent les passages correspondants plus haut.
+
+1. **`@Observable` reporté au sous-projet 4.** `NotchViewModel` garde son nom et reste
+   `ObservableObject` (18 fichiers en dépendent, et `@PublishedPersist` exige
+   `ObservableObject`). Il devient `@MainActor`, et `status` + `contentType` sont
+   remplacés par `presentation: NotchPresentation` (`contentType` reste un accesseur
+   calculé). Le problème de performance est réglé autrement : `NotchView`
+   n'observe plus aucun modèle de widget, chaque vue d'aile observe seulement son
+   modèle (`@ObservedObject`), et le chrono calcule son temps à partir de dates
+   (plus de minuterie à 30 Hz ; affichage via `TimelineView`). La cible macOS 14
+   est conservée (`MainActor.assumeIsolated`, `onChange` à deux paramètres).
+2. **Largeur des ailes** : calculée à partir d'un gabarit typographique par activité
+   (« 100 % », « 00:00 », « 60 min »), mesuré avec `NSFont` en 13 pt semi-gras à
+   chiffres fixes, et non par `PreferenceKey`. C'est déterministe, testable, sans
+   boucle de layout et sans « respiration » quand les chiffres changent. Les deux
+   ailes ont la même largeur (la coque reste centrée sur l'encoche).
+3. **Ailes calendrier conservées** (activité persistante `calendarSoon`, priorité 15,
+   entre musique et charge) pour ne pas régresser par rapport à l'app actuelle.
+4. **Minuterie d'`ActivityCenter`** : un `ActivityScheduler` injectable qui renvoie
+   un travail annulable (`ScheduledWork`) remplace l'horloge + `Task.sleep`. Les
+   tests avancent le temps de façon synchrone.
+5. **Coins** : quarts de cercle approchés en Bézier (k = 0,448). À ces rayons (6 à 28 pt),
+   l'écart avec un squircle est imperceptible.
+6. **Migration des données** : le dossier `CopiedItems` (fichiers du plateau) migre
+   avec `Config`, tout le répertoire de l'app passe dans Application Support
+   (`dataDirectory`).
+7. **Simulation** : l'app n'a pas de barre de menus visible, donc le menu « Simuler une
+   activité » devient une tuile dans le menu de l'encoche (Debug), plus l'argument
+   de lancement `--simulate <activité>`. S'y ajoute `--render-states <dossier>`, qui
+   rend chaque état en PNG via `ImageRenderer` : la vérification visuelle ne dépend
+   plus de l'autorisation d'enregistrement de l'écran.
+8. **Spike MediaRemote** : un premier essai sans lecture en cours renvoie un
+   dictionnaire vide, ce qui ne permet pas de conclure. Le spike doit être refait
+   avec une musique en lecture (tâche 1 du plan).
