@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0400A1DFBEFE93A0B6C36AE2 /* NotchGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22DCF6B4AFAE9DE74C78F09 /* NotchGeometry.swift */; };
 		0810ACE9E511B32EEC8292E2 /* DataMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5615EECF941D6FDB2D216236 /* DataMigrationTests.swift */; };
 		148901532DC9149900F2E06C /* Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901512DC9149900F2E06C /* Share.swift */; };
 		148901542DC9149900F2E06C /* Share+View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901522DC9149900F2E06C /* Share+View.swift */; };
@@ -48,6 +49,7 @@
 		50E26E292C3AF67B007CF247 /* TrayDrop+DropItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E26E282C3AF67B007CF247 /* TrayDrop+DropItem.swift */; };
 		50EFDB522C3BF7B4002D3E0F /* Ext+NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50EFDB512C3BF7B4002D3E0F /* Ext+NSImage.swift */; };
 		60AD62872C579F4400299297 /* NotchSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD62862C579F4400299297 /* NotchSettingsView.swift */; };
+		73BD685AB2E6957B25E85F73 /* NotchGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7762F5627C1BACEF1F6FF502 /* NotchGeometryTests.swift */; };
 		7C2DA7EB72C0B19F6E5F01E2 /* PersistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A990D514073038A2109BCE6 /* PersistTests.swift */; };
 		86D524CA874567BEC119C0DD /* DisplayPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */; };
 		DEC100020000000000000001 /* DSTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC100010000000000000001 /* DSTokens.swift */; };
@@ -115,7 +117,9 @@
 		50EFDB512C3BF7B4002D3E0F /* Ext+NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ext+NSImage.swift"; sourceTree = "<group>"; };
 		5615EECF941D6FDB2D216236 /* DataMigrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataMigrationTests.swift; sourceTree = "<group>"; };
 		60AD62862C579F4400299297 /* NotchSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchSettingsView.swift; sourceTree = "<group>"; };
+		7762F5627C1BACEF1F6FF502 /* NotchGeometryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchGeometryTests.swift; sourceTree = "<group>"; };
 		9A990D514073038A2109BCE6 /* PersistTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistTests.swift; sourceTree = "<group>"; };
+		D22DCF6B4AFAE9DE74C78F09 /* NotchGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchGeometry.swift; sourceTree = "<group>"; };
 		D8E4BA15F311855328EB2CFD /* DynamicNotchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DynamicNotchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DEC100010000000000000001 /* DSTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSTokens.swift; sourceTree = "<group>"; };
 		DEC100010000000000000002 /* DSComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSComponents.swift; sourceTree = "<group>"; };
@@ -171,9 +175,19 @@
 				9A990D514073038A2109BCE6 /* PersistTests.swift */,
 				E726E1E067BC9371BC7E829D /* TrayDropFileStorageTimeTests.swift */,
 				5615EECF941D6FDB2D216236 /* DataMigrationTests.swift */,
+				7762F5627C1BACEF1F6FF502 /* NotchGeometryTests.swift */,
 			);
 			name = DynamicNotchTests;
 			path = DynamicNotchTests;
+			sourceTree = "<group>";
+		};
+		4686FD7FADA6F766590BB65F /* Geometry */ = {
+			isa = PBXGroup;
+			children = (
+				D22DCF6B4AFAE9DE74C78F09 /* NotchGeometry.swift */,
+			);
+			name = Geometry;
+			path = Geometry;
 			sourceTree = "<group>";
 		};
 		504381772C3A86EA000ED325 = {
@@ -241,6 +255,7 @@
 				W1D100040000000000000000 /* Widgets */,
 				DEC100030000000000000000 /* DesignSystem */,
 				E01F8D6B671F66BA46A29DEA /* DataMigration.swift */,
+				4686FD7FADA6F766590BB65F /* Geometry */,
 			);
 			path = DynamicNotch;
 			sourceTree = "<group>";
@@ -388,6 +403,7 @@
 				7C2DA7EB72C0B19F6E5F01E2 /* PersistTests.swift in Sources */,
 				26DD788D17323348AFD58B31 /* TrayDropFileStorageTimeTests.swift in Sources */,
 				0810ACE9E511B32EEC8292E2 /* DataMigrationTests.swift in Sources */,
+				73BD685AB2E6957B25E85F73 /* NotchGeometryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -440,6 +456,7 @@
 				WG1100020000000000000002 /* NotchWingsView.swift in Sources */,
 				WG1100020000000000000008 /* NotchShape.swift in Sources */,
 				4E089D09EABC90830008735F /* DataMigration.swift in Sources */,
+				0400A1DFBEFE93A0B6C36AE2 /* NotchGeometry.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

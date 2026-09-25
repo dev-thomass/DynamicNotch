@@ -27,7 +27,7 @@ enum DisplayPreference: Codable, Equatable, Hashable {
     func resolve() -> NSScreen? {
         switch self {
         case .builtInWithNotch:
-            if let screen = NSScreen.buildin, screen.notchSize != .zero { return screen }
+            if let screen = NSScreen.buildin, screen.safeAreaInsets.top > 0 { return screen }
             return .main
 
         case .mainAtResolveTime:

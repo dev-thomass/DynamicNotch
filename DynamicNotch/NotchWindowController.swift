@@ -29,25 +29,11 @@ class NotchWindowController: NSWindowController {
 
         super.init(window: window)
 
-        var notchSize = screen.notchSize
-
-        let vm = NotchViewModel(inset: notchSize == .zero ? 0 : -4)
+        let geometry = NotchGeometry(screen: ScreenDescriptor(screen))
+        let vm = NotchViewModel(inset: geometry.hasHardwareNotch ? -4 : 0)
         self.vm = vm
         contentViewController = NotchViewController(vm)
-
-        if notchSize == .zero {
-            notchSize = .init(width: 150, height: 28)
-        }
-        vm.deviceNotchRect = CGRect(
-            x: screen.frame.origin.x + (screen.frame.width - notchSize.width) / 2,
-            y: screen.frame.origin.y + screen.frame.height - notchSize.height,
-            width: notchSize.width,
-            height: notchSize.height
-        )
-
-        // Set screenRect synchronously so the first render lays out at the
-        // correct position. The previous 100 ms asyncAfter caused a one-frame
-        // flicker where notchOpenedRect was computed against `.zero`.
+        vm.deviceNotchRect = geometry.notchRect
         vm.screenRect = screen.frame
 
         window.makeKeyAndOrderFront(nil)
