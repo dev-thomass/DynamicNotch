@@ -103,7 +103,7 @@ class TrayDrop: ObservableObject {
         do {
             // loops up to the main directory
             url = url.deletingLastPathComponent()
-            while url.lastPathComponent != DropItem.mainDir, url != documentsDirectory {
+            while url.lastPathComponent != DropItem.mainDir, url != dataDirectory {
                 let contents = try FileManager.default.contentsOfDirectory(atPath: url.path)
                 guard contents.isEmpty else { break }
                 try FileManager.default.removeItem(at: url)

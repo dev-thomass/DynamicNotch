@@ -385,7 +385,7 @@ struct NotchSettingsView: View {
                 }
                 DSButton("Afficher le dossier de stockage", systemImage: "folder", role: .secondary, size: .small) {
                     NSWorkspace.shared.activateFileViewerSelecting([
-                        documentsDirectory.appendingPathComponent(TrayDrop.DropItem.mainDir)
+                        dataDirectory.appendingPathComponent(TrayDrop.DropItem.mainDir)
                     ])
                 }
             }

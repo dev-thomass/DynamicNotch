@@ -20,7 +20,7 @@ private let valueDecoder = JSONDecoder()
 /// changements rapprochés d'une même clé ne peuvent plus être réordonnés.
 /// Les tests appellent `persistWriteQueue.sync {}` pour attendre l'écriture.
 let persistWriteQueue = DispatchQueue(label: "wiki.qaq.DynamicNotch.persist")
-private let configDir = documentsDirectory
+private let configDir = dataDirectory
     .appendingPathComponent("Config")
 
 class FileStorage: PersistProvider {
@@ -34,7 +34,7 @@ class FileStorage: PersistProvider {
     }
 
     func set(_ data: Data?, forKey key: String) {
-        try? data?.write(to: pathForKey(key))
+        try? data?.write(to: pathForKey(key), options: .atomic)
     }
 }
 

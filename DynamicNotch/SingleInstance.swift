@@ -31,9 +31,10 @@ enum SingleInstance {
     /// Distributed notification name used to wake the existing instance.
     static let wakeUpNotification = Notification.Name("app.notchdrop.wakeUp")
 
-    /// Path to the lock sentinel. Lives next to other app config under ~/Documents/DynamicNotch.
+    /// Path to the lock sentinel. Lives next to other app config under
+    /// ~/Library/Application Support/DynamicNotch.
     private static var lockURL: URL {
-        documentsDirectory.appendingPathComponent(".instance.lock")
+        dataDirectory.appendingPathComponent(".instance.lock")
     }
 
     // MARK: lock state
@@ -49,10 +50,10 @@ enum SingleInstance {
     /// - Returns: `true` if this is the live instance, `false` if another instance
     ///   is already running (in which case we've already posted a wake-up notification).
     static func acquire() -> Bool {
-        // Make sure the parent directory exists (the same `documentsDirectory`
+        // Make sure the parent directory exists (the same `dataDirectory`
         // bootstrap from main.swift normally creates it, but be defensive).
         try? FileManager.default.createDirectory(
-            at: documentsDirectory,
+            at: dataDirectory,
             withIntermediateDirectories: true
         )
 

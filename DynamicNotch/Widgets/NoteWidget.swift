@@ -3,14 +3,14 @@
 //  DynamicNotch
 //
 //  Quick-note widget. Plain UTF-8 file persisted under
-//  ~/Documents/DynamicNotch/Config/quickNote.txt with a 0.5 s debounce so
+//  <dataDirectory>/Config/quickNote.txt with a 0.5 s debounce so
 //  every keystroke doesn't hit the disk.
 //
 
 import Combine
 import SwiftUI
 
-private let noteFileURL = documentsDirectory.appendingPathComponent("Config/quickNote.txt")
+private let noteFileURL = dataDirectory.appendingPathComponent("Config/quickNote.txt")
 
 struct NoteView: View {
     @StateObject var vm: NotchViewModel

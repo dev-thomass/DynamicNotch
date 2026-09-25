@@ -60,7 +60,7 @@ final class PersistTests: XCTestCase {
 }
 
 /// In-memory `PersistProvider` used by tests. Avoids touching the user's
-/// `~/Documents/DynamicNotch/Config` folder during test runs.
+/// `~/Library/Application Support/DynamicNotch/Config` folder during test runs.
 private final class InMemoryStore: PersistProvider {
     private var storage: [String: Data] = [:]
     func data(forKey key: String) -> Data? { storage[key] }

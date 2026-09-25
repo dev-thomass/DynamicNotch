@@ -13,24 +13,20 @@ let sponsorPage = URL(string: "https://github.com/sponsors/Lakr233")!
 let bundleIdentifier = Bundle.main.bundleIdentifier!
 let appVersion = "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""))"
 
-private let availableDirectories = FileManager
-    .default
-    .urls(for: .documentDirectory, in: .userDomainMask)
-let documentsDirectory = availableDirectories[0]
+private let fileManager = FileManager.default
+/// Répertoire des données de l'app (réglages, fichiers du plateau, verrou).
+let dataDirectory = fileManager
+    .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    .appendingPathComponent("DynamicNotch")
+/// Ancien emplacement, lu une seule fois par `DataMigration`.
+let legacyDataDirectory = fileManager
+    .urls(for: .documentDirectory, in: .userDomainMask)[0]
     .appendingPathComponent("DynamicNotch")
 let temporaryDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
     .appendingPathComponent(bundleIdentifier)
-try? FileManager.default.removeItem(at: temporaryDirectory)
-try? FileManager.default.createDirectory(
-    at: documentsDirectory,
-    withIntermediateDirectories: true,
-    attributes: nil
-)
-try? FileManager.default.createDirectory(
-    at: temporaryDirectory,
-    withIntermediateDirectories: true,
-    attributes: nil
-)
+try? fileManager.removeItem(at: temporaryDirectory)
+try? fileManager.createDirectory(at: dataDirectory, withIntermediateDirectories: true)
+try? fileManager.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
 
 // Hôte des tests unitaires : XCTest injecte le bundle de tests dans l'app en
 // cours d'exécution. On démarre une app nue : ni verrou d'instance unique, ni
@@ -45,6 +41,8 @@ if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
 guard SingleInstance.acquire() else {
     exit(0)
 }
+
+DataMigration.run(from: legacyDataDirectory, to: dataDirectory)
 
 _ = TrayDrop.shared
 TrayDrop.shared.cleanExpiredFiles()
