@@ -34,7 +34,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7790C43A3A503BFEBF7A0A5E"
+               BlueprintIdentifier = "16C554D5E7A7B555A950A846"
                BuildableName = "DynamicNotchTests.xctest"
                BlueprintName = "DynamicNotchTests"
                ReferencedContainer = "container:DynamicNotch.xcodeproj">

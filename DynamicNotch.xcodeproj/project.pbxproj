@@ -7,10 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B55DC607D6786A5204D4A11 /* PersistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4E062B954DAFE39F5E21CE /* PersistTests.swift */; };
 		148901532DC9149900F2E06C /* Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901512DC9149900F2E06C /* Share.swift */; };
 		148901542DC9149900F2E06C /* Share+View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901522DC9149900F2E06C /* Share+View.swift */; };
-		211176BF3EE0C82A048E84D7 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50F3FCC230248ECC7C31B9B1 /* Cocoa.framework */; };
+		26DD788D17323348AFD58B31 /* TrayDropFileStorageTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E726E1E067BC9371BC7E829D /* TrayDropFileStorageTimeTests.swift */; };
 		2700D8EE2C3CFD37005ACDDF /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 2700D8ED2C3CFD37005ACDDF /* Localizable.xcstrings */; };
 		501F0E8C2C59E6BD00F0113C /* Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501F0E8B2C59E6BD00F0113C /* Language.swift */; };
 		502E41D62C3CEC990060660E /* Ext+NSAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 502E41D52C3CEC990060660E /* Ext+NSAlert.swift */; };
@@ -47,11 +46,11 @@
 		50E26E292C3AF67B007CF247 /* TrayDrop+DropItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E26E282C3AF67B007CF247 /* TrayDrop+DropItem.swift */; };
 		50EFDB522C3BF7B4002D3E0F /* Ext+NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50EFDB512C3BF7B4002D3E0F /* Ext+NSImage.swift */; };
 		60AD62872C579F4400299297 /* NotchSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD62862C579F4400299297 /* NotchSettingsView.swift */; };
-		783CF4CB4F61FC575B444EA1 /* TrayDropFileStorageTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA59CC5CD0E67D62EBA320AB /* TrayDropFileStorageTimeTests.swift */; };
+		7C2DA7EB72C0B19F6E5F01E2 /* PersistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A990D514073038A2109BCE6 /* PersistTests.swift */; };
+		86D524CA874567BEC119C0DD /* DisplayPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */; };
 		DEC100020000000000000001 /* DSTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC100010000000000000001 /* DSTokens.swift */; };
 		DEC100020000000000000002 /* DSComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC100010000000000000002 /* DSComponents.swift */; };
 		DEC100020000000000000003 /* DSGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC100010000000000000003 /* DSGallery.swift */; };
-		DF70A469C9287C338DABE322 /* DisplayPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E8F8D2E7C90C53BFDC7359 /* DisplayPreferenceTests.swift */; };
 		F1X100020000000000000001 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1X100010000000000000001 /* Log.swift */; };
 		F1X100020000000000000002 /* DynamicNotchError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1X100010000000000000002 /* DynamicNotchError.swift */; };
 		F1X100020000000000000003 /* SingleInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1X100010000000000000003 /* SingleInstance.swift */; };
@@ -69,7 +68,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		88BD2029F17F8DC50074C1E8 /* PBXContainerItemProxy */ = {
+		63FAD2FD84CE67CE8DD62F4B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 504381782C3A86EA000ED325 /* Project object */;
 			proxyType = 1;
@@ -79,6 +78,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DisplayPreferenceTests.swift; sourceTree = "<group>"; };
 		148901512DC9149900F2E06C /* Share.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Share.swift; sourceTree = "<group>"; };
 		148901522DC9149900F2E06C /* Share+View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Share+View.swift"; sourceTree = "<group>"; };
 		2700D8ED2C3CFD37005ACDDF /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -111,15 +111,13 @@
 		50E26E262C3AF5E9007CF247 /* TrayDrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrayDrop.swift; sourceTree = "<group>"; };
 		50E26E282C3AF67B007CF247 /* TrayDrop+DropItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrayDrop+DropItem.swift"; sourceTree = "<group>"; };
 		50EFDB512C3BF7B4002D3E0F /* Ext+NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ext+NSImage.swift"; sourceTree = "<group>"; };
-		50F3FCC230248ECC7C31B9B1 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
-		52E8F8D2E7C90C53BFDC7359 /* DisplayPreferenceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DisplayPreferenceTests.swift; sourceTree = "<group>"; };
 		60AD62862C579F4400299297 /* NotchSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchSettingsView.swift; sourceTree = "<group>"; };
-		D0761E4E8ED04C007A722217 /* DynamicNotchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DynamicNotchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		DA59CC5CD0E67D62EBA320AB /* TrayDropFileStorageTimeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrayDropFileStorageTimeTests.swift; sourceTree = "<group>"; };
+		9A990D514073038A2109BCE6 /* PersistTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistTests.swift; sourceTree = "<group>"; };
+		D8E4BA15F311855328EB2CFD /* DynamicNotchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DynamicNotchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DEC100010000000000000001 /* DSTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSTokens.swift; sourceTree = "<group>"; };
 		DEC100010000000000000002 /* DSComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSComponents.swift; sourceTree = "<group>"; };
 		DEC100010000000000000003 /* DSGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSGallery.swift; sourceTree = "<group>"; };
-		EC4E062B954DAFE39F5E21CE /* PersistTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistTests.swift; sourceTree = "<group>"; };
+		E726E1E067BC9371BC7E829D /* TrayDropFileStorageTimeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrayDropFileStorageTimeTests.swift; sourceTree = "<group>"; };
 		F1X100010000000000000001 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		F1X100010000000000000002 /* DynamicNotchError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicNotchError.swift; sourceTree = "<group>"; };
 		F1X100010000000000000003 /* SingleInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleInstance.swift; sourceTree = "<group>"; };
@@ -137,14 +135,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		4D7B0EF8552099349CEA5418 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				211176BF3EE0C82A048E84D7 /* Cocoa.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		5043817D2C3A86EA000ED325 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -160,16 +150,33 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C0797951290DDE52626A5847 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		46790F07371629485592CCE5 /* DynamicNotchTests */ = {
+			isa = PBXGroup;
+			children = (
+				10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */,
+				9A990D514073038A2109BCE6 /* PersistTests.swift */,
+				E726E1E067BC9371BC7E829D /* TrayDropFileStorageTimeTests.swift */,
+			);
+			name = DynamicNotchTests;
+			path = DynamicNotchTests;
+			sourceTree = "<group>";
+		};
 		504381772C3A86EA000ED325 = {
 			isa = PBXGroup;
 			children = (
 				504381822C3A86EA000ED325 /* DynamicNotch */,
 				504381812C3A86EA000ED325 /* Products */,
-				504381AD2C3ADDAB000ED325 /* Frameworks */,
-				8CC3F566527A006BDF2E1B56 /* DynamicNotchTests */,
+				46790F07371629485592CCE5 /* DynamicNotchTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -177,7 +184,7 @@
 			isa = PBXGroup;
 			children = (
 				504381802C3A86EA000ED325 /* DynamicNotch.app */,
-				D0761E4E8ED04C007A722217 /* DynamicNotchTests.xctest */,
+				D8E4BA15F311855328EB2CFD /* DynamicNotchTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -232,33 +239,6 @@
 			path = DynamicNotch;
 			sourceTree = "<group>";
 		};
-		504381AD2C3ADDAB000ED325 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				633998D75EC47ABC46A9AFAE /* OS X */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		633998D75EC47ABC46A9AFAE /* OS X */ = {
-			isa = PBXGroup;
-			children = (
-				50F3FCC230248ECC7C31B9B1 /* Cocoa.framework */,
-			);
-			name = "OS X";
-			sourceTree = "<group>";
-		};
-		8CC3F566527A006BDF2E1B56 /* DynamicNotchTests */ = {
-			isa = PBXGroup;
-			children = (
-				52E8F8D2E7C90C53BFDC7359 /* DisplayPreferenceTests.swift */,
-				EC4E062B954DAFE39F5E21CE /* PersistTests.swift */,
-				DA59CC5CD0E67D62EBA320AB /* TrayDropFileStorageTimeTests.swift */,
-			);
-			name = DynamicNotchTests;
-			path = DynamicNotchTests;
-			sourceTree = "<group>";
-		};
 		DEC100030000000000000000 /* DesignSystem */ = {
 			isa = PBXGroup;
 			children = (
@@ -284,6 +264,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		16C554D5E7A7B555A950A846 /* DynamicNotchTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F63C80CAB67FF339D68ABACB /* Build configuration list for PBXNativeTarget "DynamicNotchTests" */;
+			buildPhases = (
+				2EB4B06B66554423F07929C6 /* Sources */,
+				C0797951290DDE52626A5847 /* Frameworks */,
+				E3B95847D243168DE3E87FEF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				375AE8B66A166A9DAC9F5C20 /* PBXTargetDependency */,
+			);
+			name = DynamicNotchTests;
+			productName = DynamicNotchTests;
+			productReference = D8E4BA15F311855328EB2CFD /* DynamicNotchTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		5043817F2C3A86EA000ED325 /* DynamicNotch */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5043818F2C3A86EC000ED325 /* Build configuration list for PBXNativeTarget "DynamicNotch" */;
@@ -310,24 +308,6 @@
 			productName = DynamicNotch;
 			productReference = 504381802C3A86EA000ED325 /* DynamicNotch.app */;
 			productType = "com.apple.product-type.application";
-		};
-		7790C43A3A503BFEBF7A0A5E /* DynamicNotchTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 238DD93BE159A3F6A761FBD2 /* Build configuration list for PBXNativeTarget "DynamicNotchTests" */;
-			buildPhases = (
-				2F8EDF5C76DBE374D747552F /* Sources */,
-				4D7B0EF8552099349CEA5418 /* Frameworks */,
-				9A6021B8082C5A67D5122BD8 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				16B416481F351EAE9167575D /* PBXTargetDependency */,
-			);
-			name = DynamicNotchTests;
-			productName = DynamicNotchTests;
-			productReference = D0761E4E8ED04C007A722217 /* DynamicNotchTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -368,7 +348,7 @@
 			projectRoot = "";
 			targets = (
 				5043817F2C3A86EA000ED325 /* DynamicNotch */,
-				7790C43A3A503BFEBF7A0A5E /* DynamicNotchTests */,
+				16C554D5E7A7B555A950A846 /* DynamicNotchTests */,
 			);
 		};
 /* End PBXProject section */
@@ -384,7 +364,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9A6021B8082C5A67D5122BD8 /* Resources */ = {
+		E3B95847D243168DE3E87FEF /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -394,13 +374,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		2F8EDF5C76DBE374D747552F /* Sources */ = {
+		2EB4B06B66554423F07929C6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DF70A469C9287C338DABE322 /* DisplayPreferenceTests.swift in Sources */,
-				0B55DC607D6786A5204D4A11 /* PersistTests.swift in Sources */,
-				783CF4CB4F61FC575B444EA1 /* TrayDropFileStorageTimeTests.swift in Sources */,
+				86D524CA874567BEC119C0DD /* DisplayPreferenceTests.swift in Sources */,
+				7C2DA7EB72C0B19F6E5F01E2 /* PersistTests.swift in Sources */,
+				26DD788D17323348AFD58B31 /* TrayDropFileStorageTimeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -458,15 +438,29 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		16B416481F351EAE9167575D /* PBXTargetDependency */ = {
+		375AE8B66A166A9DAC9F5C20 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = DynamicNotch;
 			target = 5043817F2C3A86EA000ED325 /* DynamicNotch */;
-			targetProxy = 88BD2029F17F8DC50074C1E8 /* PBXContainerItemProxy */;
+			targetProxy = 63FAD2FD84CE67CE8DD62F4B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		45EC68A8CB06CCB156634DE8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.DynamicNotchTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DynamicNotch.app/Contents/MacOS/DynamicNotch";
+			};
+			name = Debug;
+		};
 		5043818D2C3A86EC000ED325 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -665,21 +659,7 @@
 			};
 			name = Release;
 		};
-		531856312F8D71F74D66DCFE /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.DynamicNotchTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DynamicNotch.app/Contents/MacOS/DynamicNotch";
-			};
-			name = Debug;
-		};
-		AE66AB25415DF496F8526BEA /* Release */ = {
+		C67B6B33BB64902490287C7E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -696,15 +676,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		238DD93BE159A3F6A761FBD2 /* Build configuration list for PBXNativeTarget "DynamicNotchTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				AE66AB25415DF496F8526BEA /* Release */,
-				531856312F8D71F74D66DCFE /* Debug */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		5043817B2C3A86EA000ED325 /* Build configuration list for PBXProject "DynamicNotch" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -719,6 +690,15 @@
 			buildConfigurations = (
 				504381902C3A86EC000ED325 /* Debug */,
 				504381912C3A86EC000ED325 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F63C80CAB67FF339D68ABACB /* Build configuration list for PBXNativeTarget "DynamicNotchTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C67B6B33BB64902490287C7E /* Release */,
+				45EC68A8CB06CCB156634DE8 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

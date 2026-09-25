@@ -6,6 +6,8 @@
 #   ruby Tools/xcproj.rb set-deployment <Cible> <version>
 require 'xcodeproj'
 
+# Ce script est autonome (pas de Bundler/Gemfile) : il doit tourner tel
+# quel avec le Ruby système et le gem xcodeproj installé en --user-install.
 # La locale du shell (C/POSIX) force Ruby en US-ASCII, ce qui fait planter
 # xcodeproj sur les noms d'auteur non-ASCII du pbxproj (ex. « 秋星桥 »).
 Encoding.default_external = Encoding::UTF_8
@@ -54,6 +56,27 @@ def remove_files(project, files)
   end
 end
 
+# xcodeproj lie par défaut Cocoa.framework, via un chemin absolu figé sur
+# un vieux SDK (MacOSX10.15.sdk, sourceTree DEVELOPER_DIR), à toute cible
+# :unit_test_bundle qu'il crée — un risque de portabilité pour un fichier
+# de projet versionné. XCTest lie déjà Cocoa implicitement via l'app hôte,
+# donc ce lien est inutile : on le retire, avec les groupes que le gem a
+# créés uniquement pour l'héberger (ex. « Frameworks » / « OS X »).
+def strip_default_frameworks(project, target)
+  target.frameworks_build_phase.files.dup.each do |build_file|
+    ref = build_file.file_ref
+    group = ref&.parent
+    build_file.remove_from_project
+    next unless ref
+    ref.remove_from_project
+    while group && group != project.main_group && group.children.empty?
+      parent = group.parent
+      group.remove_from_project
+      group = parent
+    end
+  end
+end
+
 def setup_tests(project)
   if project.targets.any? { |t| t.name == 'DynamicNotchTests' }
     puts 'cible DynamicNotchTests déjà présente'
@@ -62,6 +85,7 @@ def setup_tests(project)
   app = target_named(project, 'DynamicNotch')
   tests = project.new_target(:unit_test_bundle, 'DynamicNotchTests', :osx, '14.0', nil, :swift)
   tests.add_dependency(app)
+  strip_default_frameworks(project, tests)
   tests.build_configurations.each do |config|
     s = config.build_settings
     s['TEST_HOST'] = '$(BUILT_PRODUCTS_DIR)/DynamicNotch.app/Contents/MacOS/DynamicNotch'
