@@ -30,6 +30,7 @@ final class PersistTests: XCTestCase {
         // simulates what happens across app restarts.
         var mutable = persist
         mutable.wrappedValue = "beta"
+        persistWriteQueue.sync {} // attend l'écriture asynchrone
 
         let reread = Persist(key: key, defaultValue: "alpha", engine: store)
         XCTAssertEqual(reread.wrappedValue, "beta", "value did not survive round trip")

@@ -15,6 +15,11 @@ protocol PersistProvider {
 
 private let valueEncoder = JSONEncoder()
 private let valueDecoder = JSONDecoder()
+
+/// File unique et sérielle pour toutes les écritures de réglages : deux
+/// changements rapprochés d'une même clé ne peuvent plus être réordonnés.
+/// Les tests appellent `persistWriteQueue.sync {}` pour attendre l'écriture.
+let persistWriteQueue = DispatchQueue(label: "wiki.qaq.DynamicNotch.persist")
 private let configDir = documentsDirectory
     .appendingPathComponent("Config")
 
@@ -53,7 +58,7 @@ struct Persist<Value: Codable> {
 
         var cancellables: Set<AnyCancellable> = .init()
         subject
-            .receive(on: DispatchQueue.global())
+            .receive(on: persistWriteQueue)
             .map { try? valueEncoder.encode($0) }
             .removeDuplicates()
             .sink { engine.set($0, forKey: key) }

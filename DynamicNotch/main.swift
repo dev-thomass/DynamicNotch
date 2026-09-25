@@ -32,6 +32,13 @@ try? FileManager.default.createDirectory(
     attributes: nil
 )
 
+// Hôte des tests unitaires : XCTest injecte le bundle de tests dans l'app en
+// cours d'exécution. On démarre une app nue : ni verrou d'instance unique, ni
+// fenêtres, ni migration de données.
+if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
+    _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
+}
+
 // Single-instance enforcement: claim a kernel-level flock(2) and bail out
 // (after waking the existing instance) if another copy is already running.
 // See SingleInstance.swift.

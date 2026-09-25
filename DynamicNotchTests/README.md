@@ -2,21 +2,13 @@
 
 XCTest target — unit tests for non-UI logic.
 
-## One-time wiring (Xcode UI, ~30 s)
+## Lancer les tests
 
-The `.swift` files here ship without an Xcode test target on purpose:
-adding a `PBXNativeTarget` from outside Xcode is fragile. To enable them:
+    Tools/test.sh               # tous les tests
+    Tools/test.sh PersistTests  # une seule classe
 
-1. Open `DynamicNotch.xcodeproj` in Xcode.
-2. **File → New → Target… → macOS → Test Bundle**.
-3. Name it exactly `DynamicNotchTests`. **Set "Target to be Tested" to `DynamicNotch`**.
-4. In the Project Navigator, drag every `.swift` file from this directory
-   into the new `DynamicNotchTests` group (uncheck "Copy items if needed",
-   check "DynamicNotchTests" in "Add to targets").
-5. Build & test (⌘U).
-
-The CI workflow (`.github/workflows/ci.yml`) auto-detects the target the
-moment it appears in the project file — no further config needed.
+La cible `DynamicNotchTests` est branchée dans le projet. Pour ajouter un
+fichier de test : `ruby Tools/xcproj.rb add DynamicNotchTests DynamicNotchTests/MonTest.swift`.
 
 ## Files
 
