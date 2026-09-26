@@ -44,7 +44,7 @@ struct DropItemView: View {
         .accessibilityHint(Text("Double-cliquez pour ouvrir. Maintenez Option et cliquez sur le X pour supprimer."))
         .accessibilityAddTraits(.isButton)
         .transition(.asymmetric(
-            insertion: .opacity,
+            insertion: .opacity.combined(with: .scale(scale: 0.8)),
             removal: .movingParts.poof
         ))
         .contentShape(Rectangle())

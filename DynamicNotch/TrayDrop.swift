@@ -2,6 +2,7 @@ import Cocoa
 import Combine
 import Foundation
 import OrderedCollections
+import SwiftUI
 
 class TrayDrop: ObservableObject {
     static let shared = TrayDrop()
@@ -72,7 +73,9 @@ class TrayDrop: ObservableObject {
         do {
             let items = try urls.map { try DropItem(url: $0) }
             DispatchQueue.main.async {
-                items.forEach { self.items.updateOrInsert($0, at: 0) }
+                withAnimation(DS.Motion.expand) {
+                    items.forEach { self.items.updateOrInsert($0, at: 0) }
+                }
                 self.isLoading -= 1
                 self.onItemsAdded?(items.count)
             }

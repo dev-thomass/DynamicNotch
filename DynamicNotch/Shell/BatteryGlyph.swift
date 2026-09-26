@@ -14,6 +14,7 @@ struct BatteryGlyph: View {
     let tint: Color
     let isCharging: Bool
     var width: CGFloat = 22
+    var pulsesBolt = false
 
     var body: some View {
         let height = (width / 2).rounded()
@@ -36,6 +37,7 @@ struct BatteryGlyph: View {
                         .font(.system(size: height * 0.8, weight: .bold))
                         .foregroundStyle(Color.white)
                         .shadow(color: .black.opacity(0.7), radius: 0.5)
+                        .symbolEffect(.pulse, options: .repeating, isActive: pulsesBolt)
                 }
             }
             RoundedRectangle(cornerRadius: 1, style: .continuous)

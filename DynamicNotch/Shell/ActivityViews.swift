@@ -197,13 +197,17 @@ private struct BatteryActivity: View {
     }
 
     private func glyph(width: CGFloat) -> some View {
-        BatteryGlyph(level: battery.level, tint: tint, isCharging: battery.isCharging, width: width)
-            .matchedGeometryEffect(id: "battery", in: namespace)
+        BatteryGlyph(
+            level: battery.level, tint: tint, isCharging: battery.isCharging, width: width,
+            pulsesBolt: place == .expanded && id == .charging
+        )
+        .matchedGeometryEffect(id: "battery", in: namespace)
     }
 
     private var percent: some View {
         Text("\(battery.percent) %")
             .contentTransition(.numericText(value: Double(battery.percent)))
+            .animation(DS.Motion.micro, value: battery.percent)
     }
 }
 
@@ -237,7 +241,9 @@ private struct PomodoroActivity: View {
     }
 
     private var remaining: some View {
-        Text(model.formatted).contentTransition(.numericText(countsDown: true))
+        Text(model.formatted)
+            .contentTransition(.numericText(countsDown: true))
+            .animation(DS.Motion.micro, value: model.formatted)
     }
 }
 
@@ -262,10 +268,22 @@ private struct StopwatchActivity: View {
         }
     }
 
+    @ViewBuilder
     private var time: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { context in
-            Text(StopwatchModel.minutesSeconds(model.elapsed(at: context.date)))
+        if let startedAt = model.startedAt {
+            TimelineView(.periodic(from: startedAt, by: 1)) { context in
+                label(model.elapsed(at: context.date))
+            }
+        } else {
+            label(model.elapsed(at: Date()))
         }
+    }
+
+    private func label(_ elapsed: TimeInterval) -> some View {
+        let text = StopwatchModel.minutesSeconds(elapsed)
+        return Text(text)
+            .contentTransition(.numericText())
+            .animation(DS.Motion.micro, value: text)
     }
 }
 
@@ -336,6 +354,8 @@ private struct CalendarActivity: View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
             let minutes = store.nextEvent.map { max(0, Int(ceil($0.startDate.timeIntervalSince(context.date) / 60))) } ?? 0
             Text("\(minutes) min")
+                .contentTransition(.numericText(countsDown: true))
+                .animation(DS.Motion.micro, value: minutes)
         }
     }
 }

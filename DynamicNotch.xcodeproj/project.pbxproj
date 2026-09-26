@@ -58,6 +58,7 @@
 		50EFDB522C3BF7B4002D3E0F /* Ext+NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50EFDB512C3BF7B4002D3E0F /* Ext+NSImage.swift */; };
 		53F65E3EB81554F5512BFBC5 /* DebugTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63ECCE76D68562305F5E3C4D /* DebugTools.swift */; };
 		562E94261A4F596914000AAD /* HomeTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B076EADF039785A5A0B5451A /* HomeTabView.swift */; };
+		57E7B49A4020DE18DB39D8BB /* ShareActivityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9AE9B52B866E7819DA4B220 /* ShareActivityTests.swift */; };
 		60AD62872C579F4400299297 /* NotchSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD62862C579F4400299297 /* NotchSettingsView.swift */; };
 		60B56CC912638C7452EE2813 /* NotchShellShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EAD3D3FF51AA7861ADF10A /* NotchShellShape.swift */; };
 		662A76DBC0B555F8A72F5297 /* WingLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F2EEDEB87473191497A4C4 /* WingLayout.swift */; };
@@ -178,6 +179,7 @@
 		E01F8D6B671F66BA46A29DEA /* DataMigration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataMigration.swift; sourceTree = "<group>"; };
 		E2CC1DE0FB4305F44D42D712 /* ActivityCenterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivityCenterTests.swift; sourceTree = "<group>"; };
 		E726E1E067BC9371BC7E829D /* TrayDropFileStorageTimeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrayDropFileStorageTimeTests.swift; sourceTree = "<group>"; };
+		E9AE9B52B866E7819DA4B220 /* ShareActivityTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareActivityTests.swift; sourceTree = "<group>"; };
 		EA8ADBBF6195483C8C93BFB4 /* AgendaPlannerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgendaPlannerTests.swift; sourceTree = "<group>"; };
 		F0E0A9B9EDFE3DC0CD55762B /* PowerEventsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PowerEventsTests.swift; sourceTree = "<group>"; };
 		F1X100010000000000000001 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
@@ -251,6 +253,7 @@
 				22E6D5D1C6719F493D05E13B /* NotchTabTests.swift */,
 				EA8ADBBF6195483C8C93BFB4 /* AgendaPlannerTests.swift */,
 				3909F68F1D9893523D61514F /* PomodoroProgressTests.swift */,
+				E9AE9B52B866E7819DA4B220 /* ShareActivityTests.swift */,
 			);
 			name = DynamicNotchTests;
 			path = DynamicNotchTests;
@@ -529,6 +532,7 @@
 				C16B4FE945E82F9F4BD9E558 /* NotchTabTests.swift in Sources */,
 				4ECE7DFB2AD13D7FED2B7E83 /* AgendaPlannerTests.swift in Sources */,
 				C14221CFE5E6BA34F31AAF10 /* PomodoroProgressTests.swift in Sources */,
+				57E7B49A4020DE18DB39D8BB /* ShareActivityTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

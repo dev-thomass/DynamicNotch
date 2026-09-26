@@ -42,6 +42,7 @@ struct TrayView: View {
             content.padding(DS.Spacing.sm)
         }
         .onDrop(of: [.data], isTargeted: $targeting) { providers in
+            vm.hapticSender.send()
             DispatchQueue.global().async { tvm.load(providers) }
             return true
         }
@@ -66,6 +67,7 @@ struct TrayView: View {
             Image(systemName: "tray.and.arrow.down.fill")
                 .font(.system(size: 22, weight: .light))
                 .foregroundStyle(DS.Color.textTertiary)
+                .symbolEffect(.bounce, value: targeting)
             Text("Glissez vos fichiers ici")
                 .font(DS.Typography.bodyEmphasis)
                 .foregroundStyle(DS.Color.textPrimary)

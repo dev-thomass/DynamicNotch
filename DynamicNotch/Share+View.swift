@@ -52,6 +52,7 @@ struct ShareView: View {
     @State var trigger: UUID = .init()
     @State var targeting = false
     @State private var hover = false
+    @ObservedObject private var shareActivity = ShareActivity.shared
 
     var body: some View {
         content
@@ -111,6 +112,8 @@ struct ShareView: View {
             Image(systemName: type.imageName)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(targeting ? DS.Color.textOnAccent : DS.Color.brand)
+                .symbolEffect(.variableColor.iterative, isActive: shareActivity.isSending)
+                .symbolEffect(.bounce, value: targeting)
         }
     }
 
