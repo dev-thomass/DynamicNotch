@@ -75,6 +75,7 @@
 		DEC100020000000000000002 /* DSComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC100010000000000000002 /* DSComponents.swift */; };
 		DEC100020000000000000003 /* DSGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC100010000000000000003 /* DSGallery.swift */; };
 		E08D7EC0C2A1DE37A64E2CEE /* ActivityCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CC1DE0FB4305F44D42D712 /* ActivityCenterTests.swift */; };
+		EF9954C4437D530BDB65A5D7 /* DSTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8FFDEC3358E79DBFEA7B5C /* DSTabBar.swift */; };
 		F1X100020000000000000001 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1X100010000000000000001 /* Log.swift */; };
 		F1X100020000000000000002 /* DynamicNotchError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1X100010000000000000002 /* DynamicNotchError.swift */; };
 		F1X100020000000000000003 /* SingleInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1X100010000000000000003 /* SingleInstance.swift */; };
@@ -151,6 +152,7 @@
 		97EAD3D3FF51AA7861ADF10A /* NotchShellShape.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchShellShape.swift; sourceTree = "<group>"; };
 		9A990D514073038A2109BCE6 /* PersistTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistTests.swift; sourceTree = "<group>"; };
 		A52148C73ECB0CE203AF01E2 /* ActivityWiringTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivityWiringTests.swift; sourceTree = "<group>"; };
+		BF8FFDEC3358E79DBFEA7B5C /* DSTabBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DSTabBar.swift; sourceTree = "<group>"; };
 		C838795216BE09B207860823 /* BatteryGlyph.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BatteryGlyph.swift; sourceTree = "<group>"; };
 		D22DCF6B4AFAE9DE74C78F09 /* NotchGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchGeometry.swift; sourceTree = "<group>"; };
 		D3D45AC6AE54D0C8F6AB26A2 /* ActivityScheduler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivityScheduler.swift; sourceTree = "<group>"; };
@@ -347,6 +349,7 @@
 				DEC100010000000000000001 /* DSTokens.swift */,
 				DEC100010000000000000002 /* DSComponents.swift */,
 				DEC100010000000000000003 /* DSGallery.swift */,
+				BF8FFDEC3358E79DBFEA7B5C /* DSTabBar.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -556,6 +559,7 @@
 				BF650DBD55E7D902C190A629 /* ActivityWiring.swift in Sources */,
 				53F65E3EB81554F5512BFBC5 /* DebugTools.swift in Sources */,
 				0A2852818EA13D47213C6CCE /* NotchTab.swift in Sources */,
+				EF9954C4437D530BDB65A5D7 /* DSTabBar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

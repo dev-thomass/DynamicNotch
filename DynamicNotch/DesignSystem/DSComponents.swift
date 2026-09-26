@@ -514,6 +514,137 @@ public struct DSNotchHeader: View {
     }
 }
 
+// MARK: - DSModule
+
+/// Module du panneau : carte gris sombre, rayon 16. Cliquable si `action`.
+public struct DSModule<Content: View>: View {
+    private let title: String?
+    private let action: (() -> Void)?
+    private let content: () -> Content
+
+    public init(_ title: String? = nil, action: (() -> Void)? = nil, @ViewBuilder content: @escaping () -> Content) {
+        self.title = title
+        self.action = action
+        self.content = content
+    }
+
+    public var body: some View {
+        if let action {
+            Button(action: action) { card }
+                .buttonStyle(DSHighlightButtonStyle(shape: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)))
+        } else {
+            card
+        }
+    }
+
+    private var card: some View {
+        VStack(alignment: .leading, spacing: DS.Spacing.sm) {
+            if let title {
+                Text(title)
+                    .font(DS.Typography.caption)
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            content()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .padding(DS.Spacing.md)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(
+            RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
+                .fill(DS.Color.module)
+        )
+    }
+}
+
+// MARK: - DSIconButton
+
+/// Bouton rond à icône seule. Survol plus clair, appui légèrement réduit
+/// (autorisé : il ne contient pas de texte), rebond du symbole à chaque action.
+public struct DSIconButton: View {
+    public enum Size {
+        case regular, large
+
+        var diameter: CGFloat { self == .regular ? 30 : 36 }
+        var iconSize: CGFloat { self == .regular ? 13 : 15 }
+    }
+
+    private let systemImage: String
+    private let label: String
+    private let size: Size
+    private let action: () -> Void
+    @State private var bounces = 0
+
+    public init(_ systemImage: String, label: String, size: Size = .regular, action: @escaping () -> Void) {
+        self.systemImage = systemImage
+        self.label = label
+        self.size = size
+        self.action = action
+    }
+
+    public var body: some View {
+        Button {
+            bounces += 1
+            action()
+        } label: {
+            Image(systemName: systemImage)
+                .font(.system(size: size.iconSize, weight: .semibold))
+                .contentTransition(.symbolEffect(.replace))
+                .symbolEffect(.bounce, value: bounces)
+                .foregroundStyle(DS.Color.textPrimary)
+                .frame(width: size.diameter, height: size.diameter)
+        }
+        .buttonStyle(DSIconButtonStyle())
+        .help(Text(label))
+        .accessibilityLabel(Text(label))
+    }
+}
+
+/// Surbrillance de survol (0,08) et d'appui (0,14) posée sur la forme.
+private struct DSHighlightButtonStyle<S: Shape>: ButtonStyle {
+    let shape: S
+
+    func makeBody(configuration: Configuration) -> some View {
+        DSHighlightBody(configuration: configuration, shape: shape)
+    }
+}
+
+private struct DSHighlightBody<S: Shape>: View {
+    let configuration: ButtonStyleConfiguration
+    let shape: S
+    @State private var isHovering = false
+
+    var body: some View {
+        configuration.label
+            .overlay(shape.fill(Color.white.opacity(configuration.isPressed ? 0.14 : (isHovering ? 0.08 : 0))))
+            .contentShape(shape)
+            .onHover { isHovering = $0 }
+            .animation(DS.Motion.micro, value: isHovering)
+            .animation(DS.Motion.micro, value: configuration.isPressed)
+    }
+}
+
+private struct DSIconButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        DSIconButtonBody(configuration: configuration)
+    }
+}
+
+private struct DSIconButtonBody: View {
+    let configuration: ButtonStyleConfiguration
+    @State private var isHovering = false
+
+    var body: some View {
+        configuration.label
+            .background(Circle().fill(Color.white.opacity(isHovering ? 0.16 : 0.10)))
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .opacity(configuration.isPressed ? 0.75 : 1)
+            .contentShape(Circle())
+            .onHover { isHovering = $0 }
+            .animation(DS.Motion.micro, value: isHovering)
+            .animation(DS.Motion.micro, value: configuration.isPressed)
+    }
+}
+
 // MARK: - Press events helper
 
 private struct PressActions: ViewModifier {

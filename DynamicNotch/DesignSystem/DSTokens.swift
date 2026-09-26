@@ -68,6 +68,9 @@ public extension DS {
         /// Trait fin unique des cartes (0,5 pt).
         public static let hairline = SwiftUI.Color.white.opacity(0.10)
 
+        /// Fond des modules du panneau (gris système sombre).
+        public static let module = SwiftUI.Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255)   // #1C1C1E
+
         // ─── Drop zone (specific to file drag affordances) ────────────────────
         public static let dropZoneIdle      = SwiftUI.Color.white.opacity(0.08)
         public static let dropZoneTargeted  = brand.opacity(0.45)
@@ -196,7 +199,7 @@ public extension View {
         self
             .background(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .fill(DS.Color.surfaceRaised)
+                    .fill(DS.Color.module)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
