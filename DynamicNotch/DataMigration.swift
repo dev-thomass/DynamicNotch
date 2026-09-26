@@ -31,24 +31,46 @@ enum DataMigration {
         let marker = destination.appendingPathComponent(markerName)
         guard !fileManager.fileExists(atPath: marker.path) else { return }
 
+        // Ancien dossier présent mais illisible (permissions…) : on ne pose
+        // pas le marqueur, la migration sera retentée au prochain lancement.
+        if fileManager.fileExists(atPath: legacy.path) {
+            do {
+                _ = try fileManager.contentsOfDirectory(atPath: legacy.path)
+            } catch {
+                Log.app.error("migration: ancien dossier illisible: \(error.localizedDescription, privacy: .public)")
+                return
+            }
+        }
+
         let legacyConfig = legacy.appendingPathComponent("Config")
         let config = destination.appendingPathComponent("Config")
         try? fileManager.createDirectory(at: config, withIntermediateDirectories: true)
+        var succeeded = true
         for name in configFiles {
-            copyIfAbsent(legacyConfig.appendingPathComponent(name), to: config.appendingPathComponent(name), fileManager)
+            succeeded = copyIfAbsent(legacyConfig.appendingPathComponent(name), to: config.appendingPathComponent(name), fileManager) && succeeded
         }
-        copyIfAbsent(
+        succeeded = copyIfAbsent(
             legacy.appendingPathComponent("CopiedItems"),
             to: destination.appendingPathComponent("CopiedItems"),
             fileManager
-        )
+        ) && succeeded
+        // Marqueur seulement si toutes les copies tentées ont réussi.
+        guard succeeded else { return }
         fileManager.createFile(atPath: marker.path, contents: Data())
     }
 
-    private static func copyIfAbsent(_ source: URL, to target: URL, _ fileManager: FileManager) {
+    /// Copie `source` vers `target` s'il existe et que `target` est absent.
+    /// Renvoie `false` seulement si une copie tentée a échoué.
+    private static func copyIfAbsent(_ source: URL, to target: URL, _ fileManager: FileManager) -> Bool {
         guard fileManager.fileExists(atPath: source.path),
               !fileManager.fileExists(atPath: target.path)
-        else { return }
-        try? fileManager.copyItem(at: source, to: target)
+        else { return true }
+        do {
+            try fileManager.copyItem(at: source, to: target)
+            return true
+        } catch {
+            Log.app.error("migration: copie impossible de \(source.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return false
+        }
     }
 }

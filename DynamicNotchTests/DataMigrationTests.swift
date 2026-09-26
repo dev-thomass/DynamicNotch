@@ -24,6 +24,8 @@ final class DataMigrationTests: XCTestCase {
     }
 
     override func tearDownWithError() throws {
+        // Rend l'ancien dossier à nouveau lisible (test des permissions).
+        try? fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: legacy.path)
         try? fm.removeItem(at: root)
     }
 
@@ -59,5 +61,23 @@ final class DataMigrationTests: XCTestCase {
     func test_missingLegacyFolder_isHarmless() {
         DataMigration.run(from: root.appendingPathComponent("absent"), to: destination)
         XCTAssertTrue(fm.fileExists(atPath: destination.appendingPathComponent(DataMigration.markerName).path))
+    }
+
+    /// Échec de copie : `Config` de destination occupé par un FICHIER ordinaire.
+    /// Le dossier ne peut pas être créé et chaque copie échoue (ENOTDIR), de
+    /// façon déterministe. Le marqueur ne doit pas être posé : la migration
+    /// sera retentée au prochain lancement.
+    func test_copyFailure_leavesNoMarker() throws {
+        try fm.createDirectory(at: destination, withIntermediateDirectories: true)
+        try Data("occupé".utf8).write(to: destination.appendingPathComponent("Config"))
+        DataMigration.run(from: legacy, to: destination)
+        XCTAssertFalse(fm.fileExists(atPath: destination.appendingPathComponent(DataMigration.markerName).path))
+    }
+
+    /// Ancien dossier présent mais illisible (permissions) : pas de marqueur.
+    func test_unreadableLegacyFolder_leavesNoMarker() throws {
+        try fm.setAttributes([.posixPermissions: 0o000], ofItemAtPath: legacy.path)
+        DataMigration.run(from: legacy, to: destination)
+        XCTAssertFalse(fm.fileExists(atPath: destination.appendingPathComponent(DataMigration.markerName).path))
     }
 }
