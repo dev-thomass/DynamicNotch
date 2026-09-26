@@ -22,7 +22,6 @@ final class CalendarStore: ObservableObject {
     static let shared = CalendarStore()
 
     @Published var nextEvent: EKEvent?
-    @Published var authorizationDenied: Bool = false
     @Published private(set) var access: AgendaAccess = CalendarStore.access(for: EKEventStore.authorizationStatus(for: .event))
     @Published private(set) var todayEvents: [AgendaEntry] = []
     @Published private(set) var tomorrowEvents: [AgendaEntry] = []
@@ -80,18 +79,15 @@ final class CalendarStore: ObservableObject {
             // requestAccess(to:); we use #available to keep the deployment
             // target reasonable while staying compliant on modern macOS.
             if #available(macOS 14, *) {
-                let granted = try await store.requestFullAccessToEvents()
-                authorizationDenied = !granted
+                _ = try await store.requestFullAccessToEvents()
             } else {
-                let granted: Bool = await withCheckedContinuation { cont in
+                _ = await withCheckedContinuation { cont in
                     store.requestAccess(to: .event) { ok, _ in cont.resume(returning: ok) }
                 }
-                authorizationDenied = !granted
             }
             refresh()
         } catch {
             Log.app.error("calendar access request failed: \(error.localizedDescription, privacy: .public)")
-            authorizationDenied = true
         }
     }
 

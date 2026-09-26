@@ -138,10 +138,7 @@ struct ShareView: View {
 
     func beginDrop(_ providers: [NSItemProvider]) {
         precondition(!Thread.isMainThread)
-        guard let urls = providers.interfaceConvert() else { return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            type.service(urls).begin()
-        }
+        Self.convertAndSend(providers, type: type, after: 0.4)
     }
 }
 
@@ -160,6 +157,25 @@ extension ShareView {
                         type.service(picker.urls).begin()
                     }
                 }
+            }
+        }
+    }
+
+    /// Ferme l'encoche, puis envoie les fichiers déposés avec `type`.
+    static func sendDropped(_ providers: [NSItemProvider], type: ShareType, vm: NotchViewModel) {
+        vm.notchClose()
+        DispatchQueue.global().async {
+            convertAndSend(providers, type: type, after: 0.25)
+        }
+    }
+
+    /// Conversion (hors thread principal) puis envoi (thread principal, après `delay`).
+    private static func convertAndSend(_ providers: [NSItemProvider], type: ShareType, after delay: TimeInterval) {
+        precondition(!Thread.isMainThread)
+        guard let urls = providers.interfaceConvert() else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            MainActor.assumeIsolated {
+                type.service(urls).begin()
             }
         }
     }

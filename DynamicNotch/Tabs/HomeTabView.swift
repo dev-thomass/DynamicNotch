@@ -15,6 +15,7 @@ struct HomeTabView: View {
     @ObservedObject private var stopwatch = StopwatchModel.shared
     @ObservedObject private var pomodoro = PomodoroModel.shared
     @State private var filesTargeted = false
+    @State private var airDropTargeted = false
 
     /// Largeur utile (640 − 2 × 16) moins deux espacements de 10, en 3,2 parts.
     private let unit: CGFloat = (640 - 32 - 20) / 3.2
@@ -133,7 +134,18 @@ struct HomeTabView: View {
                     action("dot.radiowaves.up.forward", "AirDrop") {
                         ShareView.pickFilesAndSend(.airdrop, vm: vm)
                     }
-                    action(stopwatch.running ? "pause.fill" : "stopwatch", "Chrono") {
+                    .overlay(alignment: .top) {
+                        Circle()
+                            .strokeBorder(Color.white.opacity(airDropTargeted ? 0.35 : 0), lineWidth: 1)
+                            .frame(width: 36, height: 36)
+                    }
+                    .animation(DS.Motion.micro, value: airDropTargeted)
+                    .onDrop(of: [.data], isTargeted: $airDropTargeted) { providers in
+                        vm.hapticSender.send()
+                        ShareView.sendDropped(providers, type: .airdrop, vm: vm)
+                        return true
+                    }
+                    action(stopwatch.running ? "pause.fill" : "play.fill", "Chrono") {
                         if !stopwatch.running { vm.hapticSender.send() }
                         stopwatch.toggle()
                     }
