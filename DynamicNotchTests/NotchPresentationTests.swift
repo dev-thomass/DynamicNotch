@@ -38,6 +38,20 @@ final class NotchPresentationTests: XCTestCase {
         XCTAssertEqual(metrics(.closed, hardware: false), ShellMetrics(bodyWidth: 190, bodyHeight: 24, topRadius: 0, bottomRadius: 12, hasShadow: false))
     }
 
+    func test_pill_otherStates() {
+        XCTAssertEqual(metrics(.peek, hardware: false), ShellMetrics(bodyWidth: 202, bodyHeight: 28, topRadius: 0, bottomRadius: 14, hasShadow: false))
+
+        let compact = metrics(.compact(.charging), hardware: false)
+        XCTAssertEqual(compact.bodyWidth, 190 + WingLayout.wingsWidth(for: .charging, scale: 2))
+        XCTAssertEqual(compact.bodyHeight, 24)
+        XCTAssertEqual(compact.topRadius, 0)
+        XCTAssertEqual(compact.bottomRadius, 12)
+        XCTAssertFalse(compact.hasShadow)
+
+        XCTAssertEqual(metrics(.expanded(.charging), hardware: false), ShellMetrics(bodyWidth: 340, bodyHeight: 80, topRadius: 0, bottomRadius: 24, hasShadow: true))
+        XCTAssertEqual(metrics(.opened(.normal), hardware: false), ShellMetrics(bodyWidth: 600, bodyHeight: 180, topRadius: 0, bottomRadius: 28, hasShadow: true))
+    }
+
     func test_motion() {
         XCTAssertEqual(NotchPresentation.motion(from: .closed, to: .peek), .micro)
         XCTAssertEqual(NotchPresentation.motion(from: .peek, to: .closed), .micro)
@@ -47,6 +61,11 @@ final class NotchPresentationTests: XCTestCase {
         XCTAssertEqual(NotchPresentation.motion(from: .expanded(.charging), to: .compact(.charging)), .collapse)
         XCTAssertEqual(NotchPresentation.motion(from: .opened(.normal), to: .opened(.settings)), .expand)
         XCTAssertEqual(NotchPresentation.motion(from: .opened(.settings), to: .opened(.normal)), .collapse)
+    }
+
+    func test_motion_equalMagnitude_usesExpand() {
+        XCTAssertEqual(NotchPresentation.motion(from: .compact(.charging), to: .compact(.stopwatch)), .expand)
+        XCTAssertEqual(NotchPresentation.motion(from: .expanded(.filesAdded(count: 2)), to: .expanded(.airDropSent)), .expand)
     }
 
     func test_wingWidth_fitsWidestValue_andIsPixelAligned() {
