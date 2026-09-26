@@ -82,7 +82,15 @@ extension NotchViewModel {
     }
 
     func handleMouseMove(to point: NSPoint) {
+        let insideShell = currentShellRect.insetBy(dx: inset, dy: inset).contains(point)
+        let wasInsideShell = isPointerInsideShell
+        isPointerInsideShell = insideShell
         guard AppSettings.shared.popOnHoverEnabled else { return }
+        // Ailes affichées : retour haptique à l'entrée dans la coque, sans
+        // agrandissement (l'aperçu reste réservé à l'encoche fermée).
+        if case .compact = presentation, insideShell, !wasInsideShell {
+            hapticSender.send()
+        }
         let inside = deviceNotchRect.insetBy(dx: inset, dy: inset).contains(point)
         if presentation == .closed, inside { notchPop() }
         if presentation == .peek, !inside { notchClose() }

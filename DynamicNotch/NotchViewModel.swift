@@ -11,6 +11,9 @@ final class NotchViewModel: NSObject, ObservableObject {
     var activityObservation: ActivityObservation?
     let activities: ActivityCenter
     private var isSuspendingActivities = false
+    /// Pointeur dans la coque au dernier mouvement : le retour haptique du
+    /// survol des ailes ne part qu'à l'entrée.
+    var isPointerInsideShell = false
 
     /// `activities` à `nil` → `ActivityCenter.shared`. (Une valeur par défaut
     /// `.shared` serait évaluée hors du MainActor en Swift 5 : avertissement.)
@@ -19,6 +22,9 @@ final class NotchViewModel: NSObject, ObservableObject {
         self.activities = activities ?? .shared
         super.init()
         setupCancellables()
+        // Une activité peut déjà être en cours (connexion, reconstruction des
+        // fenêtres) : on la reprend d'emblée, sans animation.
+        presentation = restingPresentation
     }
 
     /// Ressort des animations internes aux widgets.
@@ -180,11 +186,13 @@ final class NotchViewModel: NSObject, ObservableObject {
 
     func notchOpen(_ reason: OpenReason) {
         openReason = reason
+        // D'abord l'état ouvert : le rappel de la suspension (fin de la
+        // ponctuelle) tombe alors sur la garde `isOpened` d'`activityDidChange`.
+        transition(to: .opened(.normal))
         if !isSuspendingActivities {
             isSuspendingActivities = true
             activities.beginSuspension()
         }
-        transition(to: .opened(.normal))
         // Ne voler le focus que sur un clic explicite (pas pendant un
         // glisser-déposer depuis une autre app, ni au lancement).
         if reason == .click {
@@ -207,6 +215,8 @@ final class NotchViewModel: NSObject, ObservableObject {
     }
 
     func showSettings() {
+        // Hors de l'état ouvert : on passe par l'ouverture (suspension des activités).
+        if !presentation.isOpened { notchOpen(.click) }
         transition(to: .opened(.settings))
     }
 

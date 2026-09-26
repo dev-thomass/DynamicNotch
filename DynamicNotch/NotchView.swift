@@ -83,14 +83,22 @@ struct NotchView: View {
         .padding(vm.spacing)
     }
 
-    /// Pastille du nombre de fichiers en attente, à droite de l'encoche fermée.
+    /// Pastille du nombre de fichiers en attente, à droite de la coque au
+    /// repos (encoche nue ou ailes) ; masquée dans les autres états.
     @ViewBuilder
     private var closedBadge: some View {
-        if vm.presentation == .closed, !tray.items.isEmpty {
+        if showsBadge, !tray.items.isEmpty {
             DSBadge(count: tray.items.count, tone: .brand)
                 .accessibilityLabel(Text("\(tray.items.count) fichier(s) en attente"))
-                .position(x: centerX + vm.deviceNotchRect.width / 2 + 18, y: vm.deviceNotchRect.height / 2)
+                .position(x: centerX + vm.metrics.bodyWidth / 2 + 18, y: vm.deviceNotchRect.height / 2)
                 .transition(.opacity)
+        }
+    }
+
+    private var showsBadge: Bool {
+        switch vm.presentation {
+        case .closed, .compact: true
+        case .peek, .expanded, .opened: false
         }
     }
 
