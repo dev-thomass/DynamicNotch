@@ -202,10 +202,10 @@ public struct DSDropZone<Label: View>: View {
     public var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                .fill(isTargeted ? Color.white.opacity(0.10) : DS.Color.dropZoneIdle)
+                .fill(isTargeted ? DS.Color.dropZoneTargetedFill : DS.Color.dropZoneIdle)
                 .overlay(
                     RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                        .strokeBorder(Color.white.opacity(isTargeted ? 0.35 : 0.12), lineWidth: 1)
+                        .strokeBorder(isTargeted ? DS.Color.dropZoneTargetedBorder : DS.Color.borderDefault, lineWidth: 1)
                 )
                 .animation(DS.Motion.base, value: isTargeted)
                 .animation(DS.Motion.base, value: isLoading)

@@ -73,7 +73,10 @@ public extension DS {
 
         // ─── Drop zone (specific to file drag affordances) ────────────────────
         public static let dropZoneIdle      = SwiftUI.Color.white.opacity(0.08)
-        public static let dropZoneTargeted  = brand.opacity(0.45)
+        /// Fond de la zone de dépôt quand elle est ciblée par un glisser.
+        public static let dropZoneTargetedFill   = SwiftUI.Color.white.opacity(0.10)
+        /// Bordure de la zone de dépôt quand elle est ciblée par un glisser.
+        public static let dropZoneTargetedBorder = SwiftUI.Color.white.opacity(0.35)
     }
 }
 
