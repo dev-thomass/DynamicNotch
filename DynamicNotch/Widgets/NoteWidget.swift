@@ -37,7 +37,7 @@ struct NoteView: View {
 
             // ─── editor ──────────────────────────────────────────────────────
             TextEditor(text: $content)
-                .font(.system(size: 11))
+                .font(DS.Typography.body)
                 .foregroundStyle(DS.Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .focused($isFocused)

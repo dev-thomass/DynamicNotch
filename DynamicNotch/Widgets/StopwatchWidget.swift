@@ -79,7 +79,7 @@ struct StopwatchWidgetView: View {
 
             TimelineView(.periodic(from: .now, by: model.running ? 1.0 / 30 : 3600)) { context in
                 Text(model.formatted(at: context.date))
-                    .font(.system(size: 24, weight: .semibold))
+                    .font(DS.Typography.displayLarge)
                     .monospacedDigit()
                     .foregroundStyle(DS.Color.textPrimary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -95,7 +95,10 @@ struct StopwatchWidgetView: View {
                 circleBtn(
                     systemImage: model.running ? "pause.fill" : "play.fill",
                     role: model.running ? .warning : .primary
-                ) { model.toggle() }
+                ) {
+                    if !model.running { vm.hapticSender.send() }
+                    model.toggle()
+                }
             }
         }
         .padding(DS.Spacing.sm)
@@ -107,6 +110,7 @@ struct StopwatchWidgetView: View {
     private func circleBtn(systemImage: String, role: ButtonRole, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
+                .contentTransition(.symbolEffect(.replace))
                 .font(.system(size: 11, weight: .semibold))
                 .frame(width: 24, height: 24)
                 .background(role.background)

@@ -29,12 +29,9 @@ struct NotchContentView: View {
         case .home:
             HomeTabView(vm: vm)
         case .files:
-            TrayView(vm: vm)
+            FilesTabView(vm: vm)
         case .timers:
-            HStack(spacing: vm.spacing) {
-                StopwatchWidgetView(vm: vm)
-                PomodoroWidgetView(vm: vm)
-            }
+            TimersTabView(vm: vm)
         case .notes:
             NoteView(vm: vm)
         case .agenda:

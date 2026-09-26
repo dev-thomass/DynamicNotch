@@ -89,6 +89,18 @@ final class PomodoroModel: ObservableObject {
         return 1 - (remaining / phaseTotal)
     }
 
+    /// Progression de la phase à `date`, continue entre deux ticks.
+    func progress(at date: Date) -> Double {
+        guard phaseTotal > 0, phase != .idle else { return 0 }
+        let left: TimeInterval
+        if isRunning, let end = phaseEndDate {
+            left = max(0, end.timeIntervalSince(date))
+        } else {
+            left = remaining
+        }
+        return min(1, max(0, 1 - left / phaseTotal))
+    }
+
     /// Etat ergonomique du bouton principal — utilisé par la vue pour choisir
     /// l'icône / l'action. Sépare clairement les 3 transitions possibles
     /// (idle → work, paused → resume, running → pause) pour éviter le bug
@@ -222,14 +234,17 @@ struct PomodoroWidgetView: View {
         ZStack {
             Circle()
                 .stroke(DS.Color.borderSubtle, lineWidth: 3)
-            Circle()
-                .trim(from: 0, to: model.progress)
-                .stroke(model.phase.tint, style: .init(lineWidth: 3, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 0.5), value: model.progress)
+            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !model.isRunning)) { context in
+                Circle()
+                    .trim(from: 0, to: model.progress(at: context.date))
+                    .stroke(model.phase.tint, style: .init(lineWidth: 3, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            }
             Text(timeDisplayed)
-                .font(.system(size: 17, weight: .semibold))
+                .font(DS.Typography.title)
                 .monospacedDigit()
+                .contentTransition(.numericText(countsDown: true))
+                .animation(DS.Motion.micro, value: timeDisplayed)
                 .foregroundStyle(DS.Color.textPrimary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -257,6 +272,7 @@ struct PomodoroWidgetView: View {
             circleBtn(systemImage: primaryIcon,
                       label: primaryLabel,
                       tint: primaryTint) {
+                if !model.isRunning { vm.hapticSender.send() }
                 model.performPrimary()
             }
 
@@ -299,6 +315,7 @@ struct PomodoroWidgetView: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
+                .contentTransition(.symbolEffect(.replace))
                 .font(.system(size: 11, weight: .semibold))
                 .frame(width: 24, height: 24)
                 .background(tint)
