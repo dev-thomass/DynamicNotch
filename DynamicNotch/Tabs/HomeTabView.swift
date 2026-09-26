@@ -10,28 +10,28 @@ import SwiftUI
 
 struct HomeTabView: View {
     @ObservedObject var vm: NotchViewModel
-    @ObservedObject private var calendar = CalendarStore.shared
-    @ObservedObject private var tray = TrayDrop.shared
-    @ObservedObject private var stopwatch = StopwatchModel.shared
-    @ObservedObject private var pomodoro = PomodoroModel.shared
-    @State private var filesTargeted = false
-    @State private var airDropTargeted = false
 
     /// Largeur utile (640 − 2 × 16) moins deux espacements de 10, en 3,2 parts.
     private let unit: CGFloat = (640 - 32 - 20) / 3.2
 
+    // Chaque module observe seulement ses propres modèles : le Pomodoro qui
+    // avance deux fois par seconde ne réévalue ni l'agenda ni les aperçus.
     var body: some View {
         HStack(spacing: 10) {
-            todayModule.frame(width: unit * 1.2)
-            filesModule.frame(width: unit)
-            actionsModule.frame(width: unit)
+            HomeTodayModule(vm: vm).frame(width: unit * 1.2)
+            HomeFilesModule(vm: vm).frame(width: unit)
+            HomeActionsModule(vm: vm).frame(width: unit)
         }
-        .onAppear { calendar.refreshAccess() }
     }
+}
 
-    // MARK: aujourd'hui
+// MARK: aujourd'hui
 
-    private var todayModule: some View {
+private struct HomeTodayModule: View {
+    let vm: NotchViewModel
+    @ObservedObject private var calendar = CalendarStore.shared
+
+    var body: some View {
         DSModule(
             Date().formatted(.dateTime.weekday(.wide)).capitalized,
             action: calendar.access == .granted ? { vm.selectTab(.agenda) } : nil
@@ -40,13 +40,14 @@ struct HomeTabView: View {
                 Text(Date().formatted(.dateTime.weekday(.abbreviated).day()))
                     .font(DS.Typography.displayMedium)
                     .foregroundStyle(DS.Color.textPrimary)
-                todayDetail
+                detail
             }
         }
+        .onAppear { calendar.refreshAccess() }
     }
 
     @ViewBuilder
-    private var todayDetail: some View {
+    private var detail: some View {
         switch calendar.access {
         case .granted:
             let upcoming = AgendaPlanner.upcoming(calendar.todayEvents, now: Date(), limit: 2)
@@ -79,9 +80,21 @@ struct HomeTabView: View {
         }
     }
 
-    // MARK: fichiers
+    private func openCalendarPrivacy() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+}
 
-    private var filesModule: some View {
+// MARK: fichiers
+
+private struct HomeFilesModule: View {
+    let vm: NotchViewModel
+    @ObservedObject private var tray = TrayDrop.shared
+    @State private var targeted = false
+
+    var body: some View {
         DSModule("Fichiers", action: { vm.selectTab(.files) }) {
             VStack(alignment: .leading, spacing: 8) {
                 if tray.items.isEmpty {
@@ -113,21 +126,33 @@ struct HomeTabView: View {
                 }
             }
         }
-        .overlay(
-            RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                .strokeBorder(Color.white.opacity(filesTargeted ? 0.35 : 0), lineWidth: 1)
-        )
-        .animation(DS.Motion.micro, value: filesTargeted)
-        .onDrop(of: [.data], isTargeted: $filesTargeted) { providers in
+        .overlay(targetHighlight)
+        .animation(DS.Motion.micro, value: targeted)
+        .onDrop(of: [.data], isTargeted: $targeted) { providers in
             vm.hapticSender.send()
             DispatchQueue.global().async { TrayDrop.shared.load(providers) }
             return true
         }
     }
 
-    // MARK: actions
+    private var targetHighlight: some View {
+        let shape = RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
+        return shape
+            .fill(targeted ? DS.Color.dropZoneTargetedFill : .clear)
+            .overlay(shape.strokeBorder(targeted ? DS.Color.dropZoneTargetedBorder : .clear, lineWidth: 1))
+            .allowsHitTesting(false)
+    }
+}
 
-    private var actionsModule: some View {
+// MARK: actions
+
+private struct HomeActionsModule: View {
+    let vm: NotchViewModel
+    @ObservedObject private var stopwatch = StopwatchModel.shared
+    @ObservedObject private var pomodoro = PomodoroModel.shared
+    @State private var airDropTargeted = false
+
+    var body: some View {
         DSModule {
             Grid(horizontalSpacing: 8, verticalSpacing: 6) {
                 GridRow {
@@ -136,8 +161,9 @@ struct HomeTabView: View {
                     }
                     .overlay(alignment: .top) {
                         Circle()
-                            .strokeBorder(Color.white.opacity(airDropTargeted ? 0.35 : 0), lineWidth: 1)
+                            .strokeBorder(airDropTargeted ? DS.Color.dropZoneTargetedBorder : .clear, lineWidth: 1)
                             .frame(width: 36, height: 36)
+                            .allowsHitTesting(false)
                     }
                     .animation(DS.Motion.micro, value: airDropTargeted)
                     .onDrop(of: [.data], isTargeted: $airDropTargeted) { providers in
@@ -169,12 +195,6 @@ struct HomeTabView: View {
                 .font(DS.Typography.captionSmall)
                 .foregroundStyle(DS.Color.textSecondary)
                 .lineLimit(1)
-        }
-    }
-
-    private func openCalendarPrivacy() {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars") {
-            NSWorkspace.shared.open(url)
         }
     }
 }

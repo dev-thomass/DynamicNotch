@@ -46,18 +46,21 @@ struct ShareView: View {
         }
     }
 
-    @StateObject var vm: NotchViewModel
+    @ObservedObject var vm: NotchViewModel
     let type: ShareType
 
     @State var trigger: UUID = .init()
     @State var targeting = false
     @State private var hover = false
+    /// Incrémenté à l'entrée d'un glisser seulement : le rebond ne joue pas à la sortie.
+    @State private var dropBounces = 0
     @ObservedObject private var shareActivity = ShareActivity.shared
 
     var body: some View {
         content
             .onDrop(of: [.data], isTargeted: $targeting) { providers in
                 trigger = .init()
+                vm.hapticSender.send()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     vm.notchClose()
                 }
@@ -65,6 +68,9 @@ struct ShareView: View {
                 return true
             }
             .onTapGesture { handleTap() }
+            .onChange(of: targeting) { _, isTargeted in
+                if isTargeted { dropBounces += 1 }
+            }
     }
 
     // MARK: tile
@@ -113,7 +119,7 @@ struct ShareView: View {
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(targeting ? DS.Color.textOnAccent : DS.Color.brand)
                 .symbolEffect(.variableColor.iterative, isActive: shareActivity.isSending)
-                .symbolEffect(.bounce, value: targeting)
+                .symbolEffect(.bounce, value: dropBounces)
         }
     }
 
@@ -136,7 +142,8 @@ struct ShareView: View {
 
     private func handleTap() {
         trigger = .init()
-        Self.pickFilesAndSend(type, vm: vm)
+        // Fermeture différée : laisser la gerbe Pow jouer.
+        Self.pickFilesAndSend(type, vm: vm, closeAfter: 0.2)
     }
 
     func beginDrop(_ providers: [NSItemProvider]) {
@@ -146,10 +153,17 @@ struct ShareView: View {
 }
 
 extension ShareView {
-    /// Ferme l'encoche, puis ouvre le sélecteur de fichiers et envoie avec `type`.
-    static func pickFilesAndSend(_ type: ShareType, vm: NotchViewModel) {
-        vm.notchClose()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+    /// Ferme l'encoche (après `closeAfter` secondes), puis ouvre le sélecteur
+    /// de fichiers 0,25 s plus tard et envoie avec `type`.
+    static func pickFilesAndSend(_ type: ShareType, vm: NotchViewModel, closeAfter: TimeInterval = 0) {
+        if closeAfter > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + closeAfter) {
+                MainActor.assumeIsolated { vm.notchClose() }
+            }
+        } else {
+            vm.notchClose()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + closeAfter + 0.25) {
             MainActor.assumeIsolated {
                 let picker = NSOpenPanel()
                 picker.allowsMultipleSelection = true
