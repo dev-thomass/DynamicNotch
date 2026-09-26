@@ -305,3 +305,11 @@ Ils remplacent les passages correspondants plus haut.
 8. **Spike MediaRemote** : un premier essai sans lecture en cours renvoie un
    dictionnaire vide, ce qui ne permet pas de conclure. Le spike doit être refait
    avec une musique en lecture (tâche 1 du plan).
+9. **Ponctuelles pendant l'ouverture** : la plus récente est rejouée à la fermeture si
+   elle a moins de 5 s (sinon abandonnée) — sans cela l'activité « fichiers ajoutés »
+   n'apparaissait jamais.
+10. **Branchement des sources** par closures (`onChange`, `onPhaseChange`,
+    `onItemsAdded`, `Share.onAirDropSent`) plutôt qu'une interface `ActivitySink` ;
+    `BatteryMonitor` importe SwiftUI pour sa teinte.
+11. **Aile musique** : elle reste désactivée tant que la tâche 12 (MediaRemote) n'est
+    pas faite.
