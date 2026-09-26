@@ -67,6 +67,7 @@ final class ActivityWiring {
     }
 
     func install() {
+        guard timer == nil else { return } // installé une seule fois
         BatteryMonitor.shared.onChange = { [weak self] _, events in
             guard let self else { return }
             for event in events {
@@ -104,9 +105,11 @@ final class ActivityWiring {
             .sink { [weak self] in self?.reevaluate() }
             .store(in: &cancellables)
 
-        timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+        let newTimer = Timer(timeInterval: 30, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.reevaluate() }
         }
+        RunLoop.main.add(newTimer, forMode: .common)
+        timer = newTimer
         reevaluate()
     }
 
