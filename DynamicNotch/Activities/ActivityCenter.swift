@@ -8,8 +8,10 @@
 //   - Ponctuelles suivantes : en file, dans l'ordre d'arrivée ; abandonnées
 //     après `staleAfter` secondes d'attente ; la même que celle en cours la
 //     prolonge.
-//   - Suspendu (panneau ouvert par l'utilisateur) : les ponctuelles sont
-//     ignorées, les persistantes continuent d'être suivies.
+//   - Suspendu (panneau ouvert par l'utilisateur) : les ponctuelles ne sont
+//     pas affichées, les persistantes continuent d'être suivies. La plus
+//     récente est gardée et rejouée à la fin de la suspension si elle a moins
+//     de `staleAfter` secondes ; sinon elle est abandonnée.
 //
 
 import Foundation
@@ -32,6 +34,8 @@ final class ActivityCenter {
     private var persistent: Set<ActivityID> = []
     private var endWork: ScheduledWork?
     private var suspensionCount = 0
+    /// Ponctuelle la plus récente postée pendant la suspension.
+    private var postedWhileSuspended: Pending?
     private var observers: [UUID: (ActivityDisplay?) -> Void] = [:]
 
     init(scheduler: ActivityScheduler) {
@@ -41,8 +45,11 @@ final class ActivityCenter {
     var isSuspended: Bool { suspensionCount > 0 }
 
     func post(_ id: ActivityID) {
-        guard !isSuspended else { return }
         let pending = Pending(id: id, postedAt: scheduler.now)
+        guard !isSuspended else {
+            postedWhileSuspended = pending
+            return
+        }
         if transient == nil || transient?.id == id {
             start(pending)
         } else {
@@ -67,7 +74,16 @@ final class ActivityCenter {
 
     func endSuspension() {
         suspensionCount = max(0, suspensionCount - 1)
-        recompute()
+        guard !isSuspended, let replay = postedWhileSuspended else {
+            recompute()
+            return
+        }
+        postedWhileSuspended = nil
+        if scheduler.now.timeIntervalSince(replay.postedAt) <= Self.staleAfter {
+            start(replay)
+        } else {
+            recompute()
+        }
     }
 
     @discardableResult

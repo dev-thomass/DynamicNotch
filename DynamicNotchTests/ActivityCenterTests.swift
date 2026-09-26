@@ -120,6 +120,47 @@ final class ActivityCenterTests: XCTestCase {
         XCTAssertEqual(center.current, ActivityDisplay(id: .stopwatch, mode: .compact))
     }
 
+    /// La ponctuelle la plus récente postée pendant l'ouverture est rejouée à
+    /// la fermeture si elle est encore fraîche (< 5 s) ; les autres sont perdues.
+    func test_transientPostedDuringSuspension_replaysAfterIfFresh() {
+        center.setPersistent(.stopwatch, active: true)
+        center.beginSuspension()
+        center.post(.filesAdded(count: 2))
+        center.post(.airDropSent)
+        scheduler.advance(by: 4)
+        XCTAssertEqual(center.current, ActivityDisplay(id: .stopwatch, mode: .compact))
+        center.endSuspension()
+        XCTAssertEqual(center.current, ActivityDisplay(id: .airDropSent, mode: .expanded))
+        scheduler.advance(by: 1.2)
+        XCTAssertEqual(center.current, ActivityDisplay(id: .stopwatch, mode: .compact))
+        scheduler.advance(by: 5)
+        XCTAssertEqual(center.current, ActivityDisplay(id: .stopwatch, mode: .compact))
+    }
+
+    func test_transientPostedDuringSuspension_droppedIfStale() {
+        center.beginSuspension()
+        center.post(.filesAdded(count: 1))
+        scheduler.advance(by: 5.1)
+        center.endSuspension()
+        XCTAssertNil(center.current)
+    }
+
+    /// Suspensions imbriquées (plusieurs écrans) : rejeu seulement quand le
+    /// compte revient à zéro, et une seule fois.
+    func test_transientPostedDuringNestedSuspension_replaysOnLastEnd() {
+        center.beginSuspension()
+        center.beginSuspension()
+        center.post(.airDropSent)
+        center.endSuspension()
+        XCTAssertNil(center.current)
+        center.endSuspension()
+        XCTAssertEqual(center.current, ActivityDisplay(id: .airDropSent, mode: .expanded))
+        scheduler.advance(by: 1.2)
+        center.beginSuspension()
+        center.endSuspension()
+        XCTAssertNil(center.current)
+    }
+
     func test_observers_notifiedOncePerChange() {
         var received: [ActivityDisplay?] = []
         let observation = center.observe { received.append($0) }
