@@ -14,26 +14,35 @@ let bundleIdentifier = Bundle.main.bundleIdentifier!
 let appVersion = "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""))"
 
 private let fileManager = FileManager.default
+/// Hôte des tests unitaires : XCTest injecte le bundle de tests dans l'app.
+let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 /// Répertoire des données de l'app (réglages, fichiers du plateau, verrou).
-let dataDirectory = fileManager
-    .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-    .appendingPathComponent("DynamicNotch")
+/// Sous XCTest : un dossier temporaire, le vrai dossier n'est jamais touché.
+let dataDirectory = isRunningTests
+    ? fileManager.temporaryDirectory.appendingPathComponent("DynamicNotchTests-data")
+    : fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("DynamicNotch")
 /// Ancien emplacement, lu une seule fois par `DataMigration`.
 let legacyDataDirectory = fileManager
     .urls(for: .documentDirectory, in: .userDomainMask)[0]
     .appendingPathComponent("DynamicNotch")
 let temporaryDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
     .appendingPathComponent(bundleIdentifier)
+
+// Hôte des tests unitaires : on démarre une app nue (ni verrou d'instance
+// unique, ni fenêtres, ni migration de données) sur un dossier de données
+// temporaire remis à zéro, et sans toucher au dossier temporaire de l'app
+// éventuellement en cours d'exécution.
+if isRunningTests {
+    try? fileManager.removeItem(at: dataDirectory)
+    try? fileManager.createDirectory(at: dataDirectory, withIntermediateDirectories: true)
+    try? fileManager.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
+    _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
+}
+
 try? fileManager.removeItem(at: temporaryDirectory)
 try? fileManager.createDirectory(at: dataDirectory, withIntermediateDirectories: true)
 try? fileManager.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
-
-// Hôte des tests unitaires : XCTest injecte le bundle de tests dans l'app en
-// cours d'exécution. On démarre une app nue : ni verrou d'instance unique, ni
-// fenêtres, ni migration de données.
-if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
-    _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
-}
 
 #if DEBUG
     // Rendu des états en PNG, sans fenêtre ni verrou d'instance unique.

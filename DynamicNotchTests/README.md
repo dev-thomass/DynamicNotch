@@ -14,7 +14,7 @@ fichier de test : `ruby Tools/xcproj.rb add DynamicNotchTests DynamicNotchTests/
 
 | File | Covers |
 |---|---|
-| `PersistTests.swift` | `Persist` round-trip, default values, decode failures (uses an in-memory `PersistProvider` so the user's `~/Library/Application Support/DynamicNotch/Config` is never touched). |
+| `PersistTests.swift` | `Persist` round-trip, default values, decode failures, and that creating a setting never writes it back (uses an in-memory `PersistProvider`). |
 | `DisplayPreferenceTests.swift` | `DisplayPreference` `Codable` round-trip, equality semantics. |
 | `TrayDropFileStorageTimeTests.swift` | `TrayDrop.FileStorageTime.toTimeInterval` boundaries. |
 | `DataMigrationTests.swift` | `DataMigration.run` — copies only the still-used `Config` keys and `CopiedItems`, runs once (marker file), never overwrites an existing destination file, leaves the legacy `~/Documents/DynamicNotch` folder in place, and no-ops when that folder is missing. |
@@ -27,11 +27,22 @@ fichier de test : `ruby Tools/xcproj.rb add DynamicNotchTests DynamicNotchTests/
 | `PomodoroModelTests.swift` | `PomodoroModel` — activity titles per phase, and that skipping a phase reports a phase change rather than a natural end. |
 | `ActivityWiringTests.swift` | `ActivityWiring` — nothing active at rest, charging only reported with a battery present, disabling wings disables everything, chrono/Pomodoro/music timers, calendar events only surfaced within the hour, and power-event-to-activity mapping. |
 
+## Isolation des données
+
+Les tests tournent dans l'app hôte. Sous XCTest (`XCTestConfigurationFilePath`
+présent), `main.swift` fait pointer `dataDirectory` vers un dossier temporaire
+(`$TMPDIR/DynamicNotchTests-data`), vidé à chaque lancement, et ne touche pas
+au dossier temporaire de l'app éventuellement en cours d'exécution. Les
+réglages lus par les tests (`AppSettings.shared`, …) vivent donc là, jamais
+dans `~/Library/Application Support/DynamicNotch/`. De plus, créer un réglage
+ne l'écrit plus : seul un changement effectif crée le fichier.
+
 ## Adding tests
 
 - Use `@testable import DynamicNotch` (the new target lets you reach `internal`
   symbols without changing visibility).
-- Never touch `~/Library/Application Support/DynamicNotch/` from a test. Use mocks /
+- Never touch `~/Library/Application Support/DynamicNotch/` from a test (the
+  host already redirects `dataDirectory`, see above). Use mocks /
   `FileManager.default.temporaryDirectory` for filesystem tests.
 - Keep tests deterministic — no real `NSScreen`, no real time, no real
   network (there's no network anyway, but the rule stands).

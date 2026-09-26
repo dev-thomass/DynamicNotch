@@ -52,6 +52,20 @@ final class PersistTests: XCTestCase {
         XCTAssertEqual(persist.wrappedValue, "fallback")
     }
 
+    // MARK: écriture
+
+    /// Créer un réglage ne doit jamais l'écrire : sinon la simple lecture des
+    /// valeurs par défaut crée les fichiers (et masque la migration).
+    func test_persist_creation_neverWritesBack() {
+        let key = uniqueKey()
+        let store = InMemoryStore()
+        let persist = Persist(key: key, defaultValue: "default", engine: store)
+        withExtendedLifetime(persist) {
+            persistWriteQueue.sync {} // attend une éventuelle écriture asynchrone
+            XCTAssertNil(store.data(forKey: key))
+        }
+    }
+
     // MARK: helpers
 
     private func uniqueKey() -> String {

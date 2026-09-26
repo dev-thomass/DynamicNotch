@@ -57,10 +57,15 @@ struct Persist<Value: Codable> {
         }
 
         var cancellables: Set<AnyCancellable> = .init()
+        // `dropFirst()` : la valeur initiale (lue ou par défaut) n'est jamais
+        // réécrite ; seul un changement effectif crée ou met à jour le fichier.
+        // Placé après `removeDuplicates()` pour qu'écrire la valeur initiale
+        // soit aussi sans effet.
         subject
             .receive(on: persistWriteQueue)
             .map { try? valueEncoder.encode($0) }
             .removeDuplicates()
+            .dropFirst()
             .sink { engine.set($0, forKey: key) }
             .store(in: &cancellables)
         self.cancellables = cancellables
