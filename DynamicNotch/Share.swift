@@ -12,6 +12,11 @@ class Share: NSObject, NSSharingServiceDelegate {
     let files: [URL]
     let serviceName: NSSharingService.Name?
 
+    /// Partages en cours, retenus jusqu'au retour du délégué.
+    private static var inFlight: Set<Share> = []
+    /// Appelé sur la file principale quand un envoi AirDrop a réussi.
+    static var onAirDropSent: (() -> Void)?
+
     init(files: [URL], serviceName: NSSharingService.Name? = nil) {
         self.files = files
         self.serviceName = serviceName
@@ -19,11 +24,22 @@ class Share: NSObject, NSSharingServiceDelegate {
     }
 
     func begin() {
+        Share.inFlight.insert(self)
         do {
             try sendEx(files)
         } catch {
+            Share.inFlight.remove(self)
             NSAlert.popError(error)
         }
+    }
+
+    func sharingService(_: NSSharingService, didShareItems _: [Any]) {
+        if serviceName == .sendViaAirDrop { Share.onAirDropSent?() }
+        Share.inFlight.remove(self)
+    }
+
+    func sharingService(_: NSSharingService, didFailToShareItems _: [Any], error _: Error) {
+        Share.inFlight.remove(self)
     }
 
     private func sendEx(_ files: [URL]) throws {
@@ -43,6 +59,7 @@ class Share: NSObject, NSSharingServiceDelegate {
             service.delegate = self
             service.perform(withItems: files)
         } else {
+            Share.inFlight.remove(self)
             // 弹出分享面板
             let picker = NSSharingServicePicker(items: files)
             if let view = NSApp.keyWindow?.contentView {

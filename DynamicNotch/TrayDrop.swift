@@ -57,6 +57,9 @@ class TrayDrop: ObservableObject {
 
     @Published var isLoading: Int = 0
 
+    /// Appelé sur la file principale après un dépôt réussi, avec le nombre de fichiers.
+    var onItemsAdded: ((Int) -> Void)?
+
     func load(_ providers: [NSItemProvider]) {
         // This call does blocking I/O (provider semaphores, file copies).
         // Calling it on the main thread would freeze the UI — enforce in release too.
@@ -71,6 +74,7 @@ class TrayDrop: ObservableObject {
             DispatchQueue.main.async {
                 items.forEach { self.items.updateOrInsert($0, at: 0) }
                 self.isLoading -= 1
+                self.onItemsAdded?(items.count)
             }
         } catch {
             DispatchQueue.main.async {

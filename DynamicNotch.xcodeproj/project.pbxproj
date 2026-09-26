@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0400A1DFBEFE93A0B6C36AE2 /* NotchGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22DCF6B4AFAE9DE74C78F09 /* NotchGeometry.swift */; };
 		0810ACE9E511B32EEC8292E2 /* DataMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5615EECF941D6FDB2D216236 /* DataMigrationTests.swift */; };
+		14131CA1EE7EEF435E1B3976 /* StopwatchModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C22AE43DD3E7D647DD70C5 /* StopwatchModelTests.swift */; };
 		148901532DC9149900F2E06C /* Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901512DC9149900F2E06C /* Share.swift */; };
 		148901542DC9149900F2E06C /* Share+View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901522DC9149900F2E06C /* Share+View.swift */; };
 		180C4879C089AF91B8847641 /* NotchPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E8BA7466CAFC9B7AE2A908 /* NotchPresentation.swift */; };
@@ -57,6 +58,7 @@
 		7C2DA7EB72C0B19F6E5F01E2 /* PersistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A990D514073038A2109BCE6 /* PersistTests.swift */; };
 		7D17CF4F2A49DAC4F209F404 /* ActivityCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B8959B44F9BDF8A50AA925 /* ActivityCenter.swift */; };
 		86D524CA874567BEC119C0DD /* DisplayPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */; };
+		A29881747A6D9C96002A3807 /* PomodoroModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */; };
 		A5645F8AE368C1F708F386A5 /* PowerEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E1E8AE280B0D0C94CCFD71 /* PowerEvents.swift */; };
 		B5A34EDEA2B0DDD6262E0404 /* ActivityScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D45AC6AE54D0C8F6AB26A2 /* ActivityScheduler.swift */; };
 		CC722F36D46408F8CA691FC4 /* PowerEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E0A9B9EDFE3DC0CD55762B /* PowerEventsTests.swift */; };
@@ -134,10 +136,12 @@
 		7762F5627C1BACEF1F6FF502 /* NotchGeometryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchGeometryTests.swift; sourceTree = "<group>"; };
 		78E1E8AE280B0D0C94CCFD71 /* PowerEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PowerEvents.swift; sourceTree = "<group>"; };
 		88F2EEDEB87473191497A4C4 /* WingLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WingLayout.swift; sourceTree = "<group>"; };
+		8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PomodoroModelTests.swift; sourceTree = "<group>"; };
 		97EAD3D3FF51AA7861ADF10A /* NotchShellShape.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchShellShape.swift; sourceTree = "<group>"; };
 		9A990D514073038A2109BCE6 /* PersistTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistTests.swift; sourceTree = "<group>"; };
 		D22DCF6B4AFAE9DE74C78F09 /* NotchGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchGeometry.swift; sourceTree = "<group>"; };
 		D3D45AC6AE54D0C8F6AB26A2 /* ActivityScheduler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivityScheduler.swift; sourceTree = "<group>"; };
+		D8C22AE43DD3E7D647DD70C5 /* StopwatchModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StopwatchModelTests.swift; sourceTree = "<group>"; };
 		D8E4BA15F311855328EB2CFD /* DynamicNotchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DynamicNotchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB23AA22D21361C000488F50 /* Activity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		DEC100010000000000000001 /* DSTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSTokens.swift; sourceTree = "<group>"; };
@@ -202,6 +206,8 @@
 				E2CC1DE0FB4305F44D42D712 /* ActivityCenterTests.swift */,
 				F0E0A9B9EDFE3DC0CD55762B /* PowerEventsTests.swift */,
 				6D81B9560D6243B36771BC27 /* NotchPresentationTests.swift */,
+				D8C22AE43DD3E7D647DD70C5 /* StopwatchModelTests.swift */,
+				8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */,
 			);
 			name = DynamicNotchTests;
 			path = DynamicNotchTests;
@@ -459,6 +465,8 @@
 				E08D7EC0C2A1DE37A64E2CEE /* ActivityCenterTests.swift in Sources */,
 				CC722F36D46408F8CA691FC4 /* PowerEventsTests.swift in Sources */,
 				3B5F6E7E84AB8ADD66CB3A76 /* NotchPresentationTests.swift in Sources */,
+				14131CA1EE7EEF435E1B3976 /* StopwatchModelTests.swift in Sources */,
+				A29881747A6D9C96002A3807 /* PomodoroModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

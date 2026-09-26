@@ -32,6 +32,16 @@ final class PomodoroModel: ObservableObject {
             case .longBreak:  DS.Color.brand
             }
         }
+
+        /// Titre de l'activité affichée à l'entrée dans la phase.
+        var activityTitle: String {
+            switch self {
+            case .idle:       "Prêt"
+            case .work:       "Au travail"
+            case .shortBreak: "Pause"
+            case .longBreak:  "Pause longue"
+            }
+        }
     }
 
     // Durées lues depuis AppSettings — `var` plutôt que `let` static pour
@@ -54,7 +64,11 @@ final class PomodoroModel: ObservableObject {
     private var timer: Timer?
     private var phaseEndDate: Date?
 
-    private init() {}
+    /// Appelé à chaque changement de phase ; `naturalEnd` vaut `false` quand
+    /// l'utilisateur a passé la phase.
+    var onPhaseChange: ((_ phase: Phase, _ naturalEnd: Bool) -> Void)?
+
+    init() {}
 
     var formatted: String {
         let total = max(0, Int(remaining.rounded()))
@@ -106,7 +120,7 @@ final class PomodoroModel: ObservableObject {
     }
 
     func skip() {
-        advancePhase()
+        advancePhase(naturalEnd: false)
     }
 
     // MARK: internal
@@ -148,24 +162,26 @@ final class PomodoroModel: ObservableObject {
         guard let end = phaseEndDate else { return }
         remaining = end.timeIntervalSinceNow
         if remaining <= 0 {
-            advancePhase()
+            advancePhase(naturalEnd: true)
         }
     }
 
-    private func advancePhase() {
+    private func advancePhase(naturalEnd: Bool) {
         timer?.invalidate()
         timer = nil
         isRunning = false
         switch phase {
         case .work:
             sessionsCompleted += 1
-            let next: Phase = (sessionsCompleted % cyclesBeforeLongBreak == 0) ? .longBreak : .shortBreak
+            // max(1, …) : un réglage à 0 faisait planter le modulo.
+            let next: Phase = (sessionsCompleted % max(1, cyclesBeforeLongBreak) == 0) ? .longBreak : .shortBreak
             transition(to: next)
         case .shortBreak, .longBreak:
             transition(to: .work)
         case .idle:
-            break
+            return
         }
+        onPhaseChange?(phase, naturalEnd)
     }
 }
 
