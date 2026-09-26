@@ -200,8 +200,8 @@ final class PomodoroModel: ObservableObject {
 // MARK: - View
 
 struct PomodoroWidgetView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject private var model = PomodoroModel.shared
+    @ObservedObject var vm: NotchViewModel
+    @ObservedObject private var model = PomodoroModel.shared
 
     var body: some View {
         VStack(spacing: DS.Spacing.xs) {

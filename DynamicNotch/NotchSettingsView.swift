@@ -13,9 +13,9 @@ import LaunchAtLogin
 import SwiftUI
 
 struct NotchSettingsView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject var tvm: TrayDrop = .shared
-    @StateObject var settings: AppSettings = .shared
+    @ObservedObject var vm: NotchViewModel
+    @ObservedObject var tvm: TrayDrop = .shared
+    @ObservedObject var settings: AppSettings = .shared
 
     var body: some View {
         // Layout 3 colonnes pour les groupes thématiques. Le ScrollView

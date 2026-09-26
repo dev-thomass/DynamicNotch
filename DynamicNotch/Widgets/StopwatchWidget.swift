@@ -63,8 +63,8 @@ final class StopwatchModel: ObservableObject {
 }
 
 struct StopwatchWidgetView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject private var model = StopwatchModel.shared
+    @ObservedObject var vm: NotchViewModel
+    @ObservedObject private var model = StopwatchModel.shared
 
     var body: some View {
         VStack(spacing: DS.Spacing.xs) {

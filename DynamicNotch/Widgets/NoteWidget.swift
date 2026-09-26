@@ -13,7 +13,7 @@ import SwiftUI
 private let noteFileURL = dataDirectory.appendingPathComponent("Config/quickNote.txt")
 
 struct NoteView: View {
-    @StateObject var vm: NotchViewModel
+    @ObservedObject var vm: NotchViewModel
     @State private var content: String = ""
     @FocusState private var isFocused: Bool
     @State private var saveTask: DispatchWorkItem?
@@ -42,7 +42,7 @@ struct NoteView: View {
                 .scrollContentBackground(.hidden)
                 .focused($isFocused)
                 .padding(.horizontal, DS.Spacing.xs)
-                .onChange(of: content) { newValue in
+                .onChange(of: content) { _, newValue in
                     debounceSave(newValue)
                 }
                 // Quand le focus est demandé / repris, on (ré)active l'app
@@ -50,7 +50,7 @@ struct NoteView: View {
                 // d'édition) ne fonctionnent pas : SwiftUI a besoin que
                 // l'app `.accessory` soit explicitement active pour que les
                 // events clavier système soient routés vers le TextEditor.
-                .onChange(of: isFocused) { focused in
+                .onChange(of: isFocused) { _, focused in
                     if focused { activateForEditing() }
                 }
                 // Bloquer la propagation du tap au handler global de
