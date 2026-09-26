@@ -27,10 +27,7 @@ struct NotchContentView: View {
     private func tabContent(_ tab: NotchTab) -> some View {
         switch tab {
         case .home:
-            HStack(spacing: vm.spacing) {
-                ShareView(vm: vm, type: .airdrop)
-                TrayView(vm: vm)
-            }
+            HomeTabView(vm: vm)
         case .files:
             TrayView(vm: vm)
         case .timers:
@@ -41,7 +38,7 @@ struct NotchContentView: View {
         case .notes:
             NoteView(vm: vm)
         case .agenda:
-            CalendarWidgetView(vm: vm)
+            AgendaTabView()
         }
     }
 }

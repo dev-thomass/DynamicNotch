@@ -133,20 +133,7 @@ struct ShareView: View {
 
     private func handleTap() {
         trigger = .init()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            vm.notchClose()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            let picker = NSOpenPanel()
-            picker.allowsMultipleSelection = true
-            picker.canChooseDirectories = true
-            picker.canChooseFiles = true
-            picker.begin { response in
-                if response == .OK {
-                    type.service(picker.urls).begin()
-                }
-            }
-        }
+        Self.pickFilesAndSend(type, vm: vm)
     }
 
     func beginDrop(_ providers: [NSItemProvider]) {
@@ -154,6 +141,26 @@ struct ShareView: View {
         guard let urls = providers.interfaceConvert() else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             type.service(urls).begin()
+        }
+    }
+}
+
+extension ShareView {
+    /// Ferme l'encoche, puis ouvre le sélecteur de fichiers et envoie avec `type`.
+    static func pickFilesAndSend(_ type: ShareType, vm: NotchViewModel) {
+        vm.notchClose()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            MainActor.assumeIsolated {
+                let picker = NSOpenPanel()
+                picker.allowsMultipleSelection = true
+                picker.canChooseDirectories = true
+                picker.canChooseFiles = true
+                picker.begin { response in
+                    if response == .OK {
+                        type.service(picker.urls).begin()
+                    }
+                }
+            }
         }
     }
 }
