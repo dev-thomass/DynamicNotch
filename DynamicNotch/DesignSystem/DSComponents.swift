@@ -517,6 +517,7 @@ public struct DSNotchHeader: View {
 // MARK: - DSModule
 
 /// Module du panneau : carte gris sombre, rayon 16. Cliquable si `action`.
+/// Ne pas passer d'`action` si `content` contient lui-même des contrôles (boutons, champs) : le module entier devient un bouton.
 public struct DSModule<Content: View>: View {
     private let title: String?
     private let action: (() -> Void)?
