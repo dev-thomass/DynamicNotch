@@ -108,7 +108,7 @@ struct TrayView: View {
     /// (les noms sont uniques dans notre storage UUID/filename).
     private var trashDropZone: some View {
         Image(systemName: "trash")
-            .font(.system(size: 10, weight: .semibold))
+            .font(.system(size: 11, weight: .semibold))
             .foregroundStyle(trashTargeting ? .white : DS.Color.textTertiary)
             .frame(width: 26, height: 18)
             .background(
@@ -137,7 +137,7 @@ struct TrayView: View {
             confirmAndClearAll()
         } label: {
             Image(systemName: "xmark.bin")
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(DS.Color.textTertiary)
                 .frame(width: 26, height: 18)
                 .background(Capsule().fill(DS.Color.surfaceRaisedStrong))

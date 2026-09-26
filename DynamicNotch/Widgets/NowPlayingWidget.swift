@@ -115,7 +115,6 @@ struct NowPlayingWidgetView: View {
         .padding(DS.Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
         .onAppear { player.startObserving() }
     }
 

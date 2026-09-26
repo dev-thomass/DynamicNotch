@@ -207,7 +207,7 @@ struct NotchView: View {
                     .frame(width: WingsLayout.oneWingWidth, alignment: .trailing)
             }
             .frame(width: notchSize.width, height: notchSize.height)
-            .transition(.opacity.combined(with: .scale(scale: 0.85)))
+            .transition(.opacity)
         }
     }
 

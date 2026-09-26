@@ -69,8 +69,8 @@ public struct DSButton: View {
             .background(background)
             .overlay(borderOverlay)
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
-            .dsShadow(shadow)
-            .scaleEffect(isPressed ? 0.97 : (isHovering ? 1.02 : 1.0))
+            .brightness(isHovering ? 0.08 : 0)
+            .opacity(isPressed ? 0.75 : 1)
             .animation(DS.Motion.fast, value: isHovering)
             .animation(DS.Motion.fast, value: isPressed)
             .accessibilityAddTraits(.isButton)
@@ -132,15 +132,6 @@ public struct DSButton: View {
                 .strokeBorder(.white.opacity(0.15), lineWidth: 1)
         }
     }
-    private var shadow: DS.Effect.Shadow {
-        guard isHovering else { return DS.Effect.shadowSm }
-        switch role {
-        case .primary: return DS.Effect.glowBrand
-        case .destructive: return DS.Effect.glowDestructive
-        case .warning: return DS.Effect.glowWarning
-        default: return DS.Effect.shadowMd
-        }
-    }
 }
 
 // MARK: - DSIconTile
@@ -182,7 +173,6 @@ public struct DSIconTile: View {
                     iconBackground
                         .frame(width: 44, height: 44)
                         .clipShape(Circle())
-                        .dsShadow(isHovering ? glow : DS.Effect.shadowSm)
                     Image(systemName: systemImage)
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(iconForeground)
@@ -202,7 +192,7 @@ public struct DSIconTile: View {
                 RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                     .strokeBorder(DS.Color.borderSubtle, lineWidth: 1)
             )
-            .scaleEffect(isPressed ? 0.96 : (isHovering ? 1.03 : 1.0))
+            .opacity(isPressed ? 0.75 : 1)
             .animation(DS.Motion.fast, value: isHovering)
             .animation(DS.Motion.fast, value: isPressed)
         }
@@ -225,14 +215,6 @@ public struct DSIconTile: View {
         switch tone {
         case .neutral: DS.Color.textPrimary
         default: DS.Color.textOnAccent
-        }
-    }
-    private var glow: DS.Effect.Shadow {
-        switch tone {
-        case .brand:       DS.Effect.glowBrand
-        case .destructive: DS.Effect.glowDestructive
-        case .warning:     DS.Effect.glowWarning
-        case .neutral:     DS.Effect.shadowMd
         }
     }
 }
@@ -259,7 +241,6 @@ public struct DSCard<Content: View>: View {
         content()
             .padding(padding)
             .dsCard(radius: radius)
-            .dsRimLight(radius: radius)
     }
 }
 
@@ -330,7 +311,7 @@ public struct DSPill: View {
         HStack(spacing: DS.Spacing.xs) {
             if let systemImage {
                 Image(systemName: systemImage)
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
             }
             Text(label).font(DS.Typography.caption)
         }
@@ -407,7 +388,6 @@ public struct DSDropZone<Label: View>: View {
                             lineWidth: isTargeted ? 1.5 : 1
                         )
                 )
-                .dsShadow(isTargeted ? DS.Effect.glowBrand : DS.Effect.shadowSm)
                 .animation(DS.Motion.base, value: isTargeted)
                 .animation(DS.Motion.base, value: isLoading)
             label()
@@ -505,7 +485,7 @@ public struct DSNotchHeader: View {
     private func chevronButton(systemImage: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(DS.Color.textSecondary)
                 .frame(width: 22, height: 22)   // hit area généreuse
                 .contentShape(Rectangle())

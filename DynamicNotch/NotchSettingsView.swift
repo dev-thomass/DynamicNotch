@@ -50,7 +50,7 @@ struct NotchSettingsView: View {
             }
             .padding(DS.Spacing.md)
         }
-        .transition(.scale(scale: 0.85).combined(with: .opacity))
+        .transition(.opacity)
     }
 
     // MARK: widgets
@@ -122,7 +122,7 @@ struct NotchSettingsView: View {
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: widget.icon)
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                 Text(widget.label)
                     .font(DS.Typography.captionSmall)
             }

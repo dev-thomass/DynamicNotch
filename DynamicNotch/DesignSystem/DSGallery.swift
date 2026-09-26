@@ -128,7 +128,7 @@ struct DSGallery: View {
                 Text("body — 13").font(DS.Typography.body)
                 Text("bodyEmphasis — 13 / semi").font(DS.Typography.bodyEmphasis)
                 Text("caption — 11").font(DS.Typography.caption)
-                Text("captionSmall — 10").font(DS.Typography.captionSmall)
+                Text("captionSmall — 11").font(DS.Typography.captionSmall)
                 Text("mono — 11 / mono").font(DS.Typography.mono)
             }
             .foregroundStyle(DS.Color.textPrimary)
@@ -166,9 +166,6 @@ struct DSGallery: View {
             effectChip("shadowSm", DS.Effect.shadowSm)
             effectChip("shadowMd", DS.Effect.shadowMd)
             effectChip("shadowLg", DS.Effect.shadowLg)
-            effectChip("glowBrand", DS.Effect.glowBrand)
-            effectChip("glowDestructive", DS.Effect.glowDestructive)
-            effectChip("glowWarning", DS.Effect.glowWarning)
         }
     }
 

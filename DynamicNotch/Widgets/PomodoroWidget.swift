@@ -184,13 +184,12 @@ struct PomodoroWidgetView: View {
         .padding(DS.Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
     }
 
     private var header: some View {
         HStack(spacing: DS.Spacing.xs) {
             Image(systemName: "brain.head.profile")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
             Text(model.phase.label)
                 .font(DS.Typography.captionSmall)
             Spacer()
@@ -213,7 +212,7 @@ struct PomodoroWidgetView: View {
                 .rotationEffect(.degrees(-90))
                 .animation(.linear(duration: 0.5), value: model.progress)
             Text(timeDisplayed)
-                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .font(.system(size: 17, weight: .semibold))
                 .monospacedDigit()
                 .foregroundStyle(DS.Color.textPrimary)
         }
@@ -284,7 +283,7 @@ struct PomodoroWidgetView: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .frame(width: 24, height: 24)
                 .background(tint)
                 .foregroundStyle(DS.Color.textOnAccent)

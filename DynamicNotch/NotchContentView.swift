@@ -29,13 +29,13 @@ struct NotchContentView: View {
             switch vm.contentType {
             case .normal:
                 normalContent
-                    .transition(.scale(scale: 0.85).combined(with: .opacity))
+                    .transition(.opacity)
             case .menu:
                 NotchMenuView(vm: vm)
-                    .transition(.scale(scale: 0.85).combined(with: .opacity))
+                    .transition(.opacity)
             case .settings:
                 NotchSettingsView(vm: vm)
-                    .transition(.scale(scale: 0.85).combined(with: .opacity))
+                    .transition(.opacity)
             }
         }
         .animation(vm.animation, value: vm.contentType)
@@ -72,7 +72,7 @@ struct NotchContentView: View {
             }
             .id(vm.currentPage) // forces a clean transition between pages
             .transition(.asymmetric(
-                insertion: .opacity.combined(with: .scale(scale: 0.95)),
+                insertion: .opacity,
                 removal: .opacity
             ))
             .animation(vm.animation, value: vm.currentPage)

@@ -85,8 +85,6 @@ struct ShareView: View {
         .background(background)
         .overlay(border)
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
-        .dsShadow(targeting ? DS.Effect.glowBrand : DS.Effect.shadowSm)
-        .scaleEffect(hover && !targeting ? 1.02 : 1)
         .animation(DS.Motion.fast, value: hover)
         .animation(DS.Motion.base, value: targeting)
         .onHover { hover = $0 }
@@ -119,7 +117,7 @@ struct ShareView: View {
     @ViewBuilder
     private var background: some View {
         RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-            .fill(targeting ? DS.Color.brand.opacity(0.18) : DS.Color.surfaceRaised)
+            .fill(targeting ? DS.Color.brand.opacity(0.18) : (hover ? DS.Color.surfaceRaisedStrong : DS.Color.surfaceRaised))
     }
 
     @ViewBuilder

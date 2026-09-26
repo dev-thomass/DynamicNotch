@@ -65,6 +65,8 @@ public extension DS {
         public static let borderDefault = SwiftUI.Color.white.opacity(0.12)
         public static let borderStrong  = SwiftUI.Color.white.opacity(0.22)
         public static let borderFocus   = brand
+        /// Trait fin unique des cartes (0,5 pt).
+        public static let hairline = SwiftUI.Color.white.opacity(0.10)
 
         // ─── Drop zone (specific to file drag affordances) ────────────────────
         public static let dropZoneIdle      = SwiftUI.Color.white.opacity(0.08)
@@ -106,17 +108,24 @@ public extension DS {
 public extension DS {
     /// Type scale. Avoid the name `Type` — it collides with Swift's metatype keyword.
     enum Typography {
-        // SF Pro Rounded scale — matches Apple's system text styles
-        // but tightened for the cramped notch real estate.
-        public static let displayLarge  = Font.system(size: 28, weight: .bold,     design: .rounded)
-        public static let displayMedium = Font.system(size: 22, weight: .bold,     design: .rounded)
-        public static let title         = Font.system(size: 17, weight: .semibold, design: .rounded)
-        public static let headline      = Font.system(size: 15, weight: .semibold, design: .rounded)
-        public static let body          = Font.system(size: 13, weight: .regular,  design: .rounded)
-        public static let bodyEmphasis  = Font.system(size: 13, weight: .semibold, design: .rounded)
-        public static let caption       = Font.system(size: 11, weight: .medium,   design: .rounded)
-        public static let captionSmall  = Font.system(size: 10, weight: .medium,   design: .rounded)
-        public static let mono          = Font.system(size: 11, weight: .medium,   design: .monospaced)
+        // SF Pro standard, comme les HUD et la barre de menus du système.
+        // Rien sous 11 pt : en dessous, le texte bave sur fond noir.
+        public static let displayLarge  = Font.system(size: 28, weight: .bold)
+        public static let displayMedium = Font.system(size: 22, weight: .bold)
+        public static let title         = Font.system(size: 17, weight: .semibold)
+        public static let headline      = Font.system(size: 15, weight: .semibold)
+        public static let body          = Font.system(size: 13, weight: .regular)
+        public static let bodyEmphasis  = Font.system(size: 13, weight: .semibold)
+        public static let caption       = Font.system(size: 11, weight: .medium)
+        public static let captionSmall  = Font.system(size: 11, weight: .regular)
+        public static let mono          = Font.system(size: 11, weight: .medium, design: .monospaced)
+
+        // ─── Coque et activités ───────────────────────────────────────────
+        /// Ailes de l'encoche : même corps que la barre de menus.
+        public static let wing             = Font.system(size: 13, weight: .semibold).monospacedDigit()
+        public static let activityTitle    = Font.system(size: 15, weight: .semibold)
+        public static let activitySubtitle = Font.system(size: 12, weight: .regular)
+        public static let activityValue    = Font.system(size: 26, weight: .semibold).monospacedDigit()
     }
 }
 
@@ -124,21 +133,28 @@ public extension DS {
 
 public extension DS {
     enum Motion {
-        /// 120 ms — micro-feedback (hover, press).
+        /// Micro-retour (survol, pression) des composants.
         public static let fast = Animation.spring(response: 0.18, dampingFraction: 0.85)
-
-        /// 280 ms — default UI transitions (state changes, view swaps).
+        /// Transitions d'état des composants.
         public static let base = Animation.spring(response: 0.32, dampingFraction: 0.78)
 
-        /// 500 ms — the notch open/close. Matches the existing signature spring.
-        public static let expressive = Animation.interactiveSpring(
-            duration: 0.5,
-            extraBounce: 0.25,
-            blendDuration: 0.125
-        )
+        // ─── Coque : seuls ressorts autorisés ─────────────────────────────
+        /// Ouverture, expansion : léger rebond.
+        public static let expand = Animation.spring(response: 0.42, dampingFraction: 0.78)
+        /// Fermeture, repli : pas de rebond (Apple ne rebondit pas en rentrant).
+        public static let collapse = Animation.spring(response: 0.32, dampingFraction: 0.95)
+        /// Aperçu au survol.
+        public static let micro = Animation.spring(response: 0.25, dampingFraction: 0.8)
 
-        /// Linear ease for crossfades.
-        public static let crossfade = Animation.easeInOut(duration: 0.18)
+        public enum Kind: Equatable { case expand, collapse, micro }
+
+        public static func animation(_ kind: Kind) -> Animation {
+            switch kind {
+            case .expand: expand
+            case .collapse: collapse
+            case .micro: micro
+            }
+        }
     }
 }
 
@@ -150,11 +166,6 @@ public extension DS {
         public static let shadowSm = Shadow(color: .black.opacity(0.30), radius: 6,  x: 0, y: 2)
         public static let shadowMd = Shadow(color: .black.opacity(0.35), radius: 14, x: 0, y: 6)
         public static let shadowLg = Shadow(color: .black.opacity(0.45), radius: 28, x: 0, y: 12)
-
-        // Glows (use as outer halo on hovered/active elements)
-        public static let glowBrand       = Shadow(color: DS.Color.brand.opacity(0.55),       radius: 22, x: 0, y: 0)
-        public static let glowDestructive = Shadow(color: DS.Color.destructive.opacity(0.55), radius: 18, x: 0, y: 0)
-        public static let glowWarning     = Shadow(color: DS.Color.warning.opacity(0.55),     radius: 18, x: 0, y: 0)
 
         public struct Shadow {
             public let color: SwiftUI.Color
@@ -189,22 +200,7 @@ public extension View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .strokeBorder(DS.Color.borderSubtle, lineWidth: 1)
+                    .strokeBorder(DS.Color.hairline, lineWidth: 0.5)
             )
-    }
-
-    /// Apply a soft inner rim light (top edge), useful on dark surfaces.
-    func dsRimLight(radius: CGFloat = DS.Radius.lg) -> some View {
-        self.overlay(
-            RoundedRectangle(cornerRadius: radius, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [.white.opacity(0.18), .white.opacity(0.0)],
-                        startPoint: .top,
-                        endPoint: .center
-                    ),
-                    lineWidth: 1
-                )
-        )
     }
 }

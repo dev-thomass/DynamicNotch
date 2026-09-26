@@ -61,7 +61,7 @@ struct StopwatchWidgetView: View {
         VStack(spacing: DS.Spacing.xs) {
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: "stopwatch")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                 Text("Chrono")
                     .font(DS.Typography.captionSmall)
                 Spacer()
@@ -69,7 +69,7 @@ struct StopwatchWidgetView: View {
             .foregroundStyle(DS.Color.textTertiary)
 
             Text(model.formatted)
-                .font(.system(size: 24, weight: .semibold, design: .rounded))
+                .font(.system(size: 24, weight: .semibold))
                 .monospacedDigit()
                 .foregroundStyle(DS.Color.textPrimary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -90,7 +90,6 @@ struct StopwatchWidgetView: View {
         .padding(DS.Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
     }
 
     @ViewBuilder

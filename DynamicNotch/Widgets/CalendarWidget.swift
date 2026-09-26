@@ -85,7 +85,7 @@ struct CalendarWidgetView: View {
         VStack(alignment: .leading, spacing: DS.Spacing.xs) {
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: "calendar")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                 Text("Prochain événement")
                     .font(DS.Typography.captionSmall)
                 Spacer()
@@ -98,7 +98,6 @@ struct CalendarWidgetView: View {
         .padding(DS.Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
         .onAppear { store.startObserving() }
     }
 

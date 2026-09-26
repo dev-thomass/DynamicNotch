@@ -23,7 +23,7 @@ struct NoteView: View {
             // ─── header (label + clear) ─────────────────────────────────────
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: "note.text")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                 Text("Note rapide")
                     .font(DS.Typography.captionSmall)
                 Spacer()
@@ -37,7 +37,7 @@ struct NoteView: View {
 
             // ─── editor ──────────────────────────────────────────────────────
             TextEditor(text: $content)
-                .font(.system(size: 11, design: .rounded))
+                .font(.system(size: 11))
                 .foregroundStyle(DS.Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .focused($isFocused)
@@ -62,7 +62,6 @@ struct NoteView: View {
         // whole panel shrink on pages that contain a note.
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
         .onAppear { handleAppear() }
         .onDisappear { handleDisappear() }
         .accessibilityLabel(Text("Note rapide"))
@@ -112,7 +111,7 @@ struct NoteView: View {
             saveNote("")
         } label: {
             Image(systemName: "trash")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .frame(width: 18, height: 18)
                 .contentShape(Rectangle())
         }

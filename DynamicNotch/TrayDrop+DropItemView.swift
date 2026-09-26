@@ -34,7 +34,7 @@ struct DropItemView: View {
                 .accessibilityHidden(true)
             Text(item.fileName)
                 .multilineTextAlignment(.center)
-                .font(.system(.footnote, design: .rounded))
+                .font(.system(.footnote))
                 .frame(maxWidth: 64)
                 .accessibilityHidden(true)
         }
@@ -44,12 +44,15 @@ struct DropItemView: View {
         .accessibilityHint(Text("Double-cliquez pour ouvrir. Maintenez Option et cliquez sur le X pour supprimer."))
         .accessibilityAddTraits(.isButton)
         .transition(.asymmetric(
-            insertion: .opacity.combined(with: .scale),
+            insertion: .opacity,
             removal: .movingParts.poof
         ))
         .contentShape(Rectangle())
         .onHover { hover = $0 }
-        .scaleEffect(hover ? 1.05 : 1.0)
+        .background(
+            RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                .fill(hover ? DS.Color.surfaceRaisedStrong : Color.clear)
+        )
         .animation(vm.animation, value: hover)
         .draggable(item)
         .onTapGesture {
