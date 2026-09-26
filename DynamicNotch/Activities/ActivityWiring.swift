@@ -116,6 +116,9 @@ final class ActivityWiring {
         }
         RunLoop.main.add(newTimer, forMode: .common)
         timer = newTimer
+        // Suivi du calendrier dès le lancement (sans invite) : l'aile
+        // « prochain événement » n'attend pas l'ouverture de l'Accueil.
+        CalendarStore.shared.refreshAccess()
         reevaluate()
     }
 

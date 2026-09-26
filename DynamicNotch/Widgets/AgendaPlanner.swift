@@ -15,6 +15,12 @@ struct AgendaEntry: Equatable, Identifiable {
     let end: Date
     let isAllDay: Bool
     let color: NSColor?
+
+    /// Identifiant stable d'une occurrence : les occurrences d'un événement
+    /// récurrent partagent `eventIdentifier`, on y ajoute donc le début.
+    static func makeID(eventIdentifier: String?, title: String?, start: Date) -> String {
+        "\(eventIdentifier ?? title ?? "event")-\(start.timeIntervalSince1970)"
+    }
 }
 
 enum AgendaPlanner {

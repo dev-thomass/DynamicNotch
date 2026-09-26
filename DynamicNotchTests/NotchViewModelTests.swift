@@ -206,4 +206,16 @@ final class NotchViewModelTests: XCTestCase {
         XCTAssertEqual(vm.presentation, .opened(.tab(.notes)))
         vm.destroy()
     }
+
+    func test_closeSettings_resetsSlideEdgeToTrailing() {
+        let vm = makeViewModel()
+        vm.notchOpen(.boot)
+        vm.selectTab(.agenda)
+        vm.selectTab(.home)
+        XCTAssertEqual(vm.tabSlideEdge, .leading)
+        vm.showSettings()
+        vm.closeSettings()
+        XCTAssertEqual(vm.tabSlideEdge, .trailing)
+        vm.destroy()
+    }
 }

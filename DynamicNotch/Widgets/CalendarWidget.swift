@@ -105,7 +105,7 @@ final class CalendarStore: ObservableObject {
         let dayPredicate = store.predicateForEvents(withStart: startOfToday, end: endOfTomorrow, calendars: nil)
         let entries = store.events(matching: dayPredicate).map { event in
             AgendaEntry(
-                id: event.eventIdentifier ?? UUID().uuidString,
+                id: AgendaEntry.makeID(eventIdentifier: event.eventIdentifier, title: event.title, start: event.startDate),
                 title: event.title ?? "Sans titre",
                 start: event.startDate,
                 end: event.endDate,

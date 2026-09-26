@@ -92,16 +92,10 @@ final class NotchViewModel: NSObject, ObservableObject {
 
     // MARK: états
 
-    /// Contenu du panneau ouvert. L'écrire hors de l'état ouvert est sans effet.
+    /// Contenu du panneau ouvert (le dernier onglet hors de l'état ouvert).
     var contentType: ContentType {
-        get {
-            if case let .opened(content) = presentation { return content }
-            return .tab(lastTab)
-        }
-        set {
-            guard presentation.isOpened else { return }
-            transition(to: .opened(newValue))
-        }
+        if case let .opened(content) = presentation { return content }
+        return .tab(lastTab)
     }
 
     /// Onglet affiché, `nil` hors onglets (fermé, réglages…).
@@ -123,6 +117,8 @@ final class NotchViewModel: NSObject, ObservableObject {
     /// Quitte les réglages pour le dernier onglet.
     func closeSettings() {
         guard presentation == .opened(.settings) else { return }
+        // Le dernier onglet arrive par la droite, comme à l'ouverture.
+        tabSlideEdge = .trailing
         transition(to: .opened(.tab(lastTab)))
     }
 

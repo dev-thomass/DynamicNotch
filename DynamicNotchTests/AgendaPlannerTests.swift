@@ -53,4 +53,20 @@ final class AgendaPlannerTests: XCTestCase {
         XCTAssertEqual(CalendarStore.access(for: .restricted), .denied)
         XCTAssertEqual(CalendarStore.access(for: .writeOnly), .denied)
     }
+
+    func test_makeID_distinguishesOccurrences_andIsStable() {
+        let first = Date(timeIntervalSince1970: 1_000)
+        let second = Date(timeIntervalSince1970: 87_400)
+        let a = AgendaEntry.makeID(eventIdentifier: "evt", title: "Réunion", start: first)
+        let b = AgendaEntry.makeID(eventIdentifier: "evt", title: "Réunion", start: second)
+        XCTAssertNotEqual(a, b)
+        XCTAssertEqual(a, AgendaEntry.makeID(eventIdentifier: "evt", title: "Réunion", start: first))
+        XCTAssertEqual(a, "evt-1000.0")
+    }
+
+    func test_makeID_fallsBackToTitle_thenPlaceholder() {
+        let start = Date(timeIntervalSince1970: 42)
+        XCTAssertEqual(AgendaEntry.makeID(eventIdentifier: nil, title: "Sport", start: start), "Sport-42.0")
+        XCTAssertEqual(AgendaEntry.makeID(eventIdentifier: nil, title: nil, start: start), "event-42.0")
+    }
 }
