@@ -22,7 +22,9 @@ final class NotchViewModelTests: XCTestCase {
     }
 
     private func makeViewModel() -> NotchViewModel {
-        NotchViewModel(geometry: .preview, activities: center)
+        let vm = NotchViewModel(geometry: .preview, activities: center)
+        vm.lastTab = .home
+        return vm
     }
 
     // MARK: état initial
@@ -78,7 +80,7 @@ final class NotchViewModelTests: XCTestCase {
         var states: [NotchPresentation] = []
         let observation = vm.$presentation.dropFirst().sink { states.append($0) }
         vm.notchOpen(.boot)
-        XCTAssertEqual(states, [.opened(.normal)])
+        XCTAssertEqual(states, [.opened(.tab(.home))])
         observation.cancel()
         vm.destroy()
     }
@@ -112,7 +114,7 @@ final class NotchViewModelTests: XCTestCase {
         let vm = makeViewModel()
         vm.notchOpen(.boot)
         center.setPersistent(.stopwatch, active: true)
-        XCTAssertEqual(vm.presentation, .opened(.normal))
+        XCTAssertEqual(vm.presentation, .opened(.tab(.home)))
         vm.notchClose()
         XCTAssertEqual(vm.presentation, .compact(.stopwatch))
         vm.destroy()
@@ -139,6 +141,57 @@ final class NotchViewModelTests: XCTestCase {
         vm.handleMouseMove(to: inside)
         XCTAssertEqual(haptics, 2)
         observation.cancel()
+        vm.destroy()
+    }
+
+    // MARK: onglets
+
+    func test_open_usesLastTab() {
+        let vm = makeViewModel()
+        vm.lastTab = .agenda
+        vm.notchOpen(.boot)
+        XCTAssertEqual(vm.presentation, .opened(.tab(.agenda)))
+        vm.destroy()
+    }
+
+    func test_openByDrag_showsFiles_withoutChangingLastTab() {
+        let vm = makeViewModel()
+        vm.lastTab = .notes
+        vm.notchOpen(.drag)
+        XCTAssertEqual(vm.presentation, .opened(.tab(.files)))
+        XCTAssertEqual(vm.lastTab, .notes)
+        vm.destroy()
+    }
+
+    func test_selectTab_switches_andPersists() {
+        let vm = makeViewModel()
+        vm.notchOpen(.boot)
+        vm.selectTab(.timers)
+        XCTAssertEqual(vm.presentation, .opened(.tab(.timers)))
+        XCTAssertEqual(vm.lastTab, .timers)
+        XCTAssertEqual(vm.currentTab, .timers)
+        XCTAssertEqual(vm.tabSlideEdge, .trailing)
+        vm.selectTab(.home)
+        XCTAssertEqual(vm.tabSlideEdge, .leading)
+        vm.destroy()
+    }
+
+    func test_selectTab_whenClosed_isIgnored() {
+        let vm = makeViewModel()
+        vm.selectTab(.agenda)
+        XCTAssertEqual(vm.presentation, .closed)
+        XCTAssertEqual(vm.lastTab, .home)
+        vm.destroy()
+    }
+
+    func test_closeSettings_returnsToLastTab() {
+        let vm = makeViewModel()
+        vm.notchOpen(.boot)
+        vm.selectTab(.notes)
+        vm.showSettings()
+        XCTAssertNil(vm.currentTab)
+        vm.closeSettings()
+        XCTAssertEqual(vm.presentation, .opened(.tab(.notes)))
         vm.destroy()
     }
 }

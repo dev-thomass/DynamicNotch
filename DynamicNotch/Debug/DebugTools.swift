@@ -62,7 +62,7 @@
             try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
             var states: [(String, NotchPresentation)] = [
-                ("closed", .closed), ("peek", .peek), ("opened", .opened(.normal)),
+                ("closed", .closed), ("peek", .peek), ("opened", .opened(.tab(.home))),
             ]
             for id in ActivityID.samples {
                 states.append(("compact-\(id.debugName)", .compact(id)))

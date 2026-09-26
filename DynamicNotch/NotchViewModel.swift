@@ -39,9 +39,8 @@ final class NotchViewModel: NSObject, ObservableObject {
         case unknown
     }
 
-    enum ContentType: Int, Codable, Hashable, Equatable {
-        case normal
-        case menu
+    enum ContentType: Hashable {
+        case tab(NotchTab)
         case settings
     }
 
@@ -82,76 +81,12 @@ final class NotchViewModel: NSObject, ObservableObject {
     @PublishedPersist(key: "hapticFeedback", defaultValue: true)
     var hapticFeedback: Bool
 
-    // ─── Widget pages ─────────────────────────────────────────────────────────
-    //
-    // The opened panel (in `.normal` content type) is divided into pages.
-    // Each page hosts up to `maxWidgetsPerPage` widgets shown side-by-side.
-    // The user picks which widgets land on which page from Settings.
-    // Pages are navigated by swiping horizontally inside the panel.
+    /// Dernier onglet choisi, rouvert à chaque ouverture (sauf dépôt de fichier).
+    @PublishedPersist(key: "lastTab", defaultValue: .home)
+    var lastTab: NotchTab
 
-    /// Hard limit per page so a 4-tile row stays readable on a notch panel.
-    static let maxWidgetsPerPage = 4
-    /// Hard limit on number of pages — the dot indicator goes from cramped
-    /// to silly past this.
-    static let maxPages = 5
-
-    @PublishedPersist(key: "widgetPages", defaultValue: [[.airdrop, .files]])
-    var widgetPages: [[Widget]]
-
-    @Published var currentPage: Int = 0
-
-    /// Convenience accessor — slot of widgets shown on the active page.
-    /// Returns an empty array if `currentPage` ever drifts out of range
-    /// (defensive — shouldn't happen with the bounds checks below).
-    var currentWidgets: [Widget] {
-        guard currentPage >= 0, currentPage < widgetPages.count else { return [] }
-        return widgetPages[currentPage]
-    }
-
-    /// Toggle a widget on a given page: present → remove (and drop the page
-    /// if it becomes empty and we have more than one); absent → append
-    /// (capped at `maxWidgetsPerPage`).
-    func toggleWidget(_ widget: Widget, onPage page: Int) {
-        guard page >= 0, page < widgetPages.count else { return }
-        if let idx = widgetPages[page].firstIndex(of: widget) {
-            widgetPages[page].remove(at: idx)
-            if widgetPages[page].isEmpty, widgetPages.count > 1 {
-                widgetPages.remove(at: page)
-                if currentPage >= widgetPages.count {
-                    currentPage = max(0, widgetPages.count - 1)
-                }
-            }
-        } else if widgetPages[page].count < Self.maxWidgetsPerPage {
-            widgetPages[page].append(widget)
-        }
-    }
-
-    /// Append an empty new page (no-op if already at `maxPages`).
-    func addPage() {
-        guard widgetPages.count < Self.maxPages else { return }
-        widgetPages.append([])
-        currentPage = widgetPages.count - 1
-    }
-
-    /// Remove a page by index. Refuses to delete the last page.
-    func removePage(_ index: Int) {
-        guard widgetPages.count > 1, index < widgetPages.count else { return }
-        widgetPages.remove(at: index)
-        if currentPage >= widgetPages.count {
-            currentPage = max(0, widgetPages.count - 1)
-        }
-    }
-
-    /// Page navigation — wraps around for symmetry with the dot indicator.
-    func nextPage() {
-        guard !widgetPages.isEmpty else { return }
-        currentPage = (currentPage + 1) % widgetPages.count
-    }
-
-    func previousPage() {
-        guard !widgetPages.isEmpty else { return }
-        currentPage = (currentPage - 1 + widgetPages.count) % widgetPages.count
-    }
+    /// Bord par lequel arrive le contenu au prochain changement d'onglet.
+    @Published private(set) var tabSlideEdge: Edge = .trailing
 
     let hapticSender = PassthroughSubject<Void, Never>()
 
@@ -161,12 +96,32 @@ final class NotchViewModel: NSObject, ObservableObject {
     var contentType: ContentType {
         get {
             if case let .opened(content) = presentation { return content }
-            return .normal
+            return .tab(lastTab)
         }
         set {
             guard presentation.isOpened else { return }
             transition(to: .opened(newValue))
         }
+    }
+
+    /// Onglet affiché, `nil` hors onglets (fermé, réglages…).
+    var currentTab: NotchTab? {
+        if case let .opened(.tab(tab)) = presentation { return tab }
+        return nil
+    }
+
+    /// Change d'onglet (panneau ouvert seulement) et le mémorise.
+    func selectTab(_ tab: NotchTab) {
+        guard presentation.isOpened else { return }
+        tabSlideEdge = NotchTab.slideEdge(from: currentTab ?? lastTab, to: tab)
+        lastTab = tab
+        transition(to: .opened(.tab(tab)))
+    }
+
+    /// Quitte les réglages pour le dernier onglet.
+    func closeSettings() {
+        guard presentation == .opened(.settings) else { return }
+        transition(to: .opened(.tab(lastTab)))
     }
 
     /// État de repos : l'activité en cours, sinon l'encoche nue.
@@ -188,7 +143,9 @@ final class NotchViewModel: NSObject, ObservableObject {
         openReason = reason
         // D'abord l'état ouvert : le rappel de la suspension (fin de la
         // ponctuelle) tombe alors sur la garde `isOpened` d'`activityDidChange`.
-        transition(to: .opened(.normal))
+        // Un dépôt de fichier montre l'étagère ; sinon le dernier onglet.
+        let tab: NotchTab = reason == .drag ? .files : lastTab
+        transition(to: .opened(.tab(tab)))
         if !isSuspendingActivities {
             isSuspendingActivities = true
             activities.beginSuspension()

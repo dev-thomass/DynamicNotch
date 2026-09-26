@@ -26,15 +26,17 @@ enum NotchPresentation: Equatable {
         let largeEar: CGFloat = hasHardwareNotch ? 10 : 0
         switch self {
         case .closed:
+            // Pas d'oreilles au repos : la coque épouse l'encoche physique.
             return ShellMetrics(
-                bodyWidth: notch.width, bodyHeight: notch.height, topRadius: ear,
+                bodyWidth: notch.width, bodyHeight: notch.height, topRadius: 0,
                 bottomRadius: hasHardwareNotch ? 10 : notch.height / 2, hasShadow: false
             )
         case .peek:
-            let height = notch.height + 4
+            // Survol : on allonge de 3 pt vers le bas, sans élargir.
+            let height = notch.height + 3
             return ShellMetrics(
-                bodyWidth: notch.width + 12, bodyHeight: height, topRadius: ear,
-                bottomRadius: hasHardwareNotch ? 12 : height / 2, hasShadow: false
+                bodyWidth: notch.width, bodyHeight: height, topRadius: 0,
+                bottomRadius: hasHardwareNotch ? 10 : height / 2, hasShadow: false
             )
         case let .compact(id):
             return ShellMetrics(
@@ -60,13 +62,19 @@ enum NotchPresentation: Equatable {
         case .peek: 10
         case .compact: 20
         case .expanded: 30
-        case let .opened(content): 40 + content.rawValue
+        case .opened: 40
         }
     }
 
-    /// Ressort d'une transition : grandir rebondit, rétrécir non.
+    /// Ressort d'une transition : grandir rebondit, rétrécir non. Entre deux
+    /// contenus ouverts, on compare la surface du panneau.
     static func motion(from: NotchPresentation, to: NotchPresentation) -> DS.Motion.Kind {
         if (from == .closed && to == .peek) || (from == .peek && to == .closed) { return .micro }
+        if case let .opened(a) = from, case let .opened(b) = to {
+            let areaA = a.panelSize.width * a.panelSize.height
+            let areaB = b.panelSize.width * b.panelSize.height
+            return areaB >= areaA ? .expand : .collapse
+        }
         return to.magnitude >= from.magnitude ? .expand : .collapse
     }
 }
@@ -83,8 +91,7 @@ extension NotchViewModel.ContentType {
     /// Taille du panneau ouvert selon le contenu.
     var panelSize: CGSize {
         switch self {
-        case .normal: CGSize(width: 600, height: 180)
-        case .menu: CGSize(width: 600, height: 200)
+        case let .tab(tab): CGSize(width: 640, height: tab.panelHeight)
         case .settings: CGSize(width: 880, height: 560)
         }
     }

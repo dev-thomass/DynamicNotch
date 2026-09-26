@@ -34,14 +34,15 @@ class NotchWindowController: NSWindowController {
         guard openAfterCreate else { return }
         Task { @MainActor [weak vm] in
             vm?.notchOpen(.boot)
-            // Argument Debug pour les captures : `--initial-view settings|menu|normal`.
+            // Argument Debug pour les captures : `--initial-view settings|home|files|timers|notes|agenda`.
             if let index = CommandLine.arguments.firstIndex(of: "--initial-view"),
                index + 1 < CommandLine.arguments.count
             {
-                switch CommandLine.arguments[index + 1] {
-                case "settings": vm?.contentType = .settings
-                case "menu": vm?.contentType = .menu
-                default: break
+                let name = CommandLine.arguments[index + 1]
+                if name == "settings" {
+                    vm?.showSettings()
+                } else if let tab = NotchTab.allCases.first(where: { "\($0)" == name }) {
+                    vm?.selectTab(tab)
                 }
             }
         }

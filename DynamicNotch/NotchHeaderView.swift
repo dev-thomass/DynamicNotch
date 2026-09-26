@@ -11,36 +11,21 @@
 import SwiftUI
 
 struct NotchHeaderView: View {
-    @StateObject var vm: NotchViewModel
+    @ObservedObject var vm: NotchViewModel
 
     var body: some View {
         DSNotchHeader(
             title: title,
-            showsBack: vm.contentType != .normal,
-            onBack: { vm.contentType = .normal },
-            pageNav: pageNavConfig,
+            showsBack: vm.contentType == .settings,
+            onBack: { vm.closeSettings() },
+            pageNav: nil,
             onAction: handle(action:)
-        )
-        .animation(vm.animation, value: vm.contentType)
-    }
-
-    /// Affiche la navigation de pages dans le header uniquement quand on est
-    /// en mode `.normal` (vue widgets) ET qu'il y a plus d'une page.
-    /// L'animation `vm.animation` est appliquée pour un changement fluide.
-    private var pageNavConfig: DSNotchHeader.PageNavigation? {
-        guard vm.contentType == .normal, vm.widgetPages.count > 1 else { return nil }
-        return .init(
-            currentPage: vm.currentPage,
-            totalPages: vm.widgetPages.count,
-            onPrev: { withAnimation(vm.animation) { vm.previousPage() } },
-            onNext: { withAnimation(vm.animation) { vm.nextPage() } }
         )
     }
 
     private var title: LocalizedStringKey {
         switch vm.contentType {
-        case .normal:   "DynamicNotch"
-        case .menu:     "Menu"
+        case let .tab(tab): LocalizedStringKey(tab.title)
         case .settings: "Réglages"
         }
     }
@@ -48,7 +33,9 @@ struct NotchHeaderView: View {
     private func handle(action: DSNotchHeader.Action) {
         switch action {
         case .menu:
-            vm.contentType = (vm.contentType == .menu) ? .normal : .menu
+            // Provisoire : onglet suivant (la barre d'onglets arrive en tâche 3).
+            let next = NotchTab(rawValue: ((vm.currentTab ?? vm.lastTab).rawValue + 1) % NotchTab.allCases.count) ?? .home
+            vm.selectTab(next)
         case .settings:
             vm.showSettings()
         case .close:

@@ -18,14 +18,11 @@ struct NotchSettingsView: View {
     @StateObject var settings: AppSettings = .shared
 
     var body: some View {
-        // Layout 3 colonnes : la section Widgets prend toute la largeur en
-        // haut (concerne le contenu principal), puis 3 colonnes pour les
-        // groupes thématiques. Le ScrollView garantit que tout reste
-        // accessible si l'utilisateur réduit la taille de la fenêtre.
+        // Layout 3 colonnes pour les groupes thématiques. Le ScrollView
+        // garantit que tout reste accessible si l'utilisateur réduit la
+        // taille de la fenêtre.
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
-                widgetsSection
-
                 HStack(alignment: .top, spacing: DS.Spacing.md) {
                     VStack(alignment: .leading, spacing: DS.Spacing.md) {
                         behaviorSection
@@ -50,103 +47,6 @@ struct NotchSettingsView: View {
             .padding(DS.Spacing.md)
         }
         .transition(.opacity)
-    }
-
-    // MARK: widgets
-
-    private var widgetsSection: some View {
-        sectionCard(title: "Widgets", systemImage: "rectangle.3.group") {
-            VStack(alignment: .leading, spacing: DS.Spacing.sm) {
-                ForEach(0 ..< vm.widgetPages.count, id: \.self) { pageIndex in
-                    widgetPageRow(pageIndex)
-                }
-                if vm.widgetPages.count < NotchViewModel.maxPages {
-                    Button {
-                        withAnimation(vm.animation) { vm.addPage() }
-                    } label: {
-                        Label("Ajouter une page", systemImage: "plus.circle")
-                            .font(DS.Typography.caption)
-                            .foregroundStyle(DS.Color.brand)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func widgetPageRow(_ pageIndex: Int) -> some View {
-        HStack(spacing: DS.Spacing.sm) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Page \(pageIndex + 1)")
-                    .font(DS.Typography.captionSmall)
-                    .foregroundStyle(DS.Color.textSecondary)
-                if vm.widgetPages.count > 1 {
-                    Button {
-                        withAnimation(vm.animation) { vm.removePage(pageIndex) }
-                    } label: {
-                        Text("Supprimer")
-                            .font(DS.Typography.captionSmall)
-                            .foregroundStyle(DS.Color.destructive)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .frame(width: 64, alignment: .leading)
-
-            // Widget chips: tap to toggle. Active widgets are filled with
-            // their tone, inactive widgets are outlined. Horizontal scroll
-            // lets us keep all options visible regardless of locale length.
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DS.Spacing.xs) {
-                    ForEach(NotchViewModel.Widget.allCases) { widget in
-                        widgetChip(widget, pageIndex: pageIndex)
-                    }
-                }
-                .padding(.vertical, 2)
-            }
-        }
-        .padding(.vertical, 2)
-    }
-
-    @ViewBuilder
-    private func widgetChip(_ widget: NotchViewModel.Widget, pageIndex: Int) -> some View {
-        let isActive = vm.widgetPages[pageIndex].contains(widget)
-        let canAdd = isActive || vm.widgetPages[pageIndex].count < NotchViewModel.maxWidgetsPerPage
-
-        Button {
-            withAnimation(vm.animation) {
-                vm.toggleWidget(widget, onPage: pageIndex)
-            }
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: widget.icon)
-                    .font(.system(size: 11, weight: .semibold))
-                Text(widget.label)
-                    .font(DS.Typography.captionSmall)
-            }
-            .padding(.horizontal, DS.Spacing.sm)
-            .padding(.vertical, 3)
-            .background(
-                Capsule(style: .continuous).fill(
-                    isActive ? DS.Color.brand.opacity(0.85) : DS.Color.surfaceRaised
-                )
-            )
-            .overlay(
-                Capsule(style: .continuous).strokeBorder(
-                    isActive ? DS.Color.brand : DS.Color.borderDefault,
-                    lineWidth: 1
-                )
-            )
-            .foregroundStyle(isActive ? DS.Color.textOnAccent : DS.Color.textSecondary)
-            .opacity(canAdd ? 1.0 : 0.4)
-        }
-        .buttonStyle(.plain)
-        .disabled(!canAdd)
-        .help(canAdd
-              ? Text(isActive ? "Retirer de la page" : "Ajouter à la page")
-              : Text("Page pleine (max \(NotchViewModel.maxWidgetsPerPage) widgets)")
-        )
     }
 
     // MARK: behaviour

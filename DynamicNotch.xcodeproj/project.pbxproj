@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0400A1DFBEFE93A0B6C36AE2 /* NotchGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22DCF6B4AFAE9DE74C78F09 /* NotchGeometry.swift */; };
 		0810ACE9E511B32EEC8292E2 /* DataMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5615EECF941D6FDB2D216236 /* DataMigrationTests.swift */; };
+		0A2852818EA13D47213C6CCE /* NotchTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3565F7630AD533FBEFED069B /* NotchTab.swift */; };
 		14131CA1EE7EEF435E1B3976 /* StopwatchModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C22AE43DD3E7D647DD70C5 /* StopwatchModelTests.swift */; };
 		148901532DC9149900F2E06C /* Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901512DC9149900F2E06C /* Share.swift */; };
 		148901542DC9149900F2E06C /* Share+View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901522DC9149900F2E06C /* Share+View.swift */; };
@@ -66,6 +67,7 @@
 		AF276C285A87604AB1737EF5 /* BatteryGlyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = C838795216BE09B207860823 /* BatteryGlyph.swift */; };
 		B5A34EDEA2B0DDD6262E0404 /* ActivityScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D45AC6AE54D0C8F6AB26A2 /* ActivityScheduler.swift */; };
 		BF650DBD55E7D902C190A629 /* ActivityWiring.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C80C685144D9A51F715F7DD /* ActivityWiring.swift */; };
+		C16B4FE945E82F9F4BD9E558 /* NotchTabTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22E6D5D1C6719F493D05E13B /* NotchTabTests.swift */; };
 		C5D098F502549CD5F3F16A15 /* NotchViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59BB0950F9E4C65E8BF9B2B2 /* NotchViewModelTests.swift */; };
 		CC722F36D46408F8CA691FC4 /* PowerEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E0A9B9EDFE3DC0CD55762B /* PowerEventsTests.swift */; };
 		CFB42B466E3B0134D087D9E2 /* NotchShellShapeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020E4162E49FB914CEC36C65 /* NotchShellShapeTests.swift */; };
@@ -79,7 +81,6 @@
 		F3X100020000000000000001 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3X100010000000000000001 /* AppSettings.swift */; };
 		F3X100020000000000000002 /* DisplayPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3X100010000000000000002 /* DisplayPreference.swift */; };
 		F705F14F77D16A476CBD822B /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB23AA22D21361C000488F50 /* Activity.swift */; };
-		W1D100020000000000000001 /* Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000001 /* Widget.swift */; };
 		W1D100020000000000000002 /* NoteWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000002 /* NoteWidget.swift */; };
 		W1D100020000000000000003 /* StopwatchWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000003 /* StopwatchWidget.swift */; };
 		W1D100020000000000000004 /* PomodoroWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1D100010000000000000004 /* PomodoroWidget.swift */; };
@@ -105,7 +106,9 @@
 		148901512DC9149900F2E06C /* Share.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Share.swift; sourceTree = "<group>"; };
 		148901522DC9149900F2E06C /* Share+View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Share+View.swift"; sourceTree = "<group>"; };
 		16E8BA7466CAFC9B7AE2A908 /* NotchPresentation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchPresentation.swift; sourceTree = "<group>"; };
+		22E6D5D1C6719F493D05E13B /* NotchTabTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchTabTests.swift; sourceTree = "<group>"; };
 		2700D8ED2C3CFD37005ACDDF /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		3565F7630AD533FBEFED069B /* NotchTab.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchTab.swift; sourceTree = "<group>"; };
 		501F0E8B2C59E6BD00F0113C /* Language.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Language.swift; sourceTree = "<group>"; };
 		502E41D52C3CEC990060660E /* Ext+NSAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ext+NSAlert.swift"; sourceTree = "<group>"; };
 		503D8EB92C3F838200E173FF /* NotchMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchMenuView.swift; sourceTree = "<group>"; };
@@ -167,7 +170,6 @@
 		F3X100010000000000000001 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		F3X100010000000000000002 /* DisplayPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayPreference.swift; sourceTree = "<group>"; };
 		F6B8959B44F9BDF8A50AA925 /* ActivityCenter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivityCenter.swift; sourceTree = "<group>"; };
-		W1D100010000000000000001 /* Widget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widget.swift; sourceTree = "<group>"; };
 		W1D100010000000000000002 /* NoteWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteWidget.swift; sourceTree = "<group>"; };
 		W1D100010000000000000003 /* StopwatchWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopwatchWidget.swift; sourceTree = "<group>"; };
 		W1D100010000000000000004 /* PomodoroWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroWidget.swift; sourceTree = "<group>"; };
@@ -218,6 +220,7 @@
 				8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */,
 				A52148C73ECB0CE203AF01E2 /* ActivityWiringTests.swift */,
 				59BB0950F9E4C65E8BF9B2B2 /* NotchViewModelTests.swift */,
+				22E6D5D1C6719F493D05E13B /* NotchTabTests.swift */,
 			);
 			name = DynamicNotchTests;
 			path = DynamicNotchTests;
@@ -291,7 +294,6 @@
 				F3X100010000000000000001 /* AppSettings.swift */,
 				F3X100010000000000000002 /* DisplayPreference.swift */,
 				WG1100010000000000000001 /* BatteryMonitor.swift */,
-				W1D100010000000000000001 /* Widget.swift */,
 				W1D100040000000000000000 /* Widgets */,
 				DEC100030000000000000000 /* DesignSystem */,
 				E01F8D6B671F66BA46A29DEA /* DataMigration.swift */,
@@ -333,6 +335,7 @@
 				16E8BA7466CAFC9B7AE2A908 /* NotchPresentation.swift */,
 				C838795216BE09B207860823 /* BatteryGlyph.swift */,
 				7825F77143AA60AB7DEF7608 /* ActivityViews.swift */,
+				3565F7630AD533FBEFED069B /* NotchTab.swift */,
 			);
 			name = Shell;
 			path = Shell;
@@ -490,6 +493,7 @@
 				A29881747A6D9C96002A3807 /* PomodoroModelTests.swift in Sources */,
 				3F6ECF323D2FA0B1C6F4F657 /* ActivityWiringTests.swift in Sources */,
 				C5D098F502549CD5F3F16A15 /* NotchViewModelTests.swift in Sources */,
+				C16B4FE945E82F9F4BD9E558 /* NotchTabTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -532,7 +536,6 @@
 				F1X100020000000000000003 /* SingleInstance.swift in Sources */,
 				F3X100020000000000000001 /* AppSettings.swift in Sources */,
 				F3X100020000000000000002 /* DisplayPreference.swift in Sources */,
-				W1D100020000000000000001 /* Widget.swift in Sources */,
 				W1D100020000000000000002 /* NoteWidget.swift in Sources */,
 				W1D100020000000000000003 /* StopwatchWidget.swift in Sources */,
 				W1D100020000000000000004 /* PomodoroWidget.swift in Sources */,
@@ -552,6 +555,7 @@
 				4CC82DC7C606D56085F25BED /* ActivityViews.swift in Sources */,
 				BF650DBD55E7D902C190A629 /* ActivityWiring.swift in Sources */,
 				53F65E3EB81554F5512BFBC5 /* DebugTools.swift in Sources */,
+				0A2852818EA13D47213C6CCE /* NotchTab.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
