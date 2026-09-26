@@ -53,6 +53,7 @@
 		50E26E272C3AF5E9007CF247 /* TrayDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E26E262C3AF5E9007CF247 /* TrayDrop.swift */; };
 		50E26E292C3AF67B007CF247 /* TrayDrop+DropItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E26E282C3AF67B007CF247 /* TrayDrop+DropItem.swift */; };
 		50EFDB522C3BF7B4002D3E0F /* Ext+NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50EFDB512C3BF7B4002D3E0F /* Ext+NSImage.swift */; };
+		53F65E3EB81554F5512BFBC5 /* DebugTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63ECCE76D68562305F5E3C4D /* DebugTools.swift */; };
 		60AD62872C579F4400299297 /* NotchSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD62862C579F4400299297 /* NotchSettingsView.swift */; };
 		60B56CC912638C7452EE2813 /* NotchShellShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EAD3D3FF51AA7861ADF10A /* NotchShellShape.swift */; };
 		662A76DBC0B555F8A72F5297 /* WingLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F2EEDEB87473191497A4C4 /* WingLayout.swift */; };
@@ -135,6 +136,7 @@
 		50EFDB512C3BF7B4002D3E0F /* Ext+NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ext+NSImage.swift"; sourceTree = "<group>"; };
 		5615EECF941D6FDB2D216236 /* DataMigrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataMigrationTests.swift; sourceTree = "<group>"; };
 		60AD62862C579F4400299297 /* NotchSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchSettingsView.swift; sourceTree = "<group>"; };
+		63ECCE76D68562305F5E3C4D /* DebugTools.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugTools.swift; sourceTree = "<group>"; };
 		6D81B9560D6243B36771BC27 /* NotchPresentationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchPresentationTests.swift; sourceTree = "<group>"; };
 		7762F5627C1BACEF1F6FF502 /* NotchGeometryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchGeometryTests.swift; sourceTree = "<group>"; };
 		7825F77143AA60AB7DEF7608 /* ActivityViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivityViews.swift; sourceTree = "<group>"; };
@@ -293,6 +295,7 @@
 				4686FD7FADA6F766590BB65F /* Geometry */,
 				8198D6F219F953EAEEFE99FE /* Shell */,
 				5B742318C782B253B7900DF3 /* Activities */,
+				7003710C960D72ACC006D555 /* Debug */,
 			);
 			path = DynamicNotch;
 			sourceTree = "<group>";
@@ -308,6 +311,15 @@
 			);
 			name = Activities;
 			path = Activities;
+			sourceTree = "<group>";
+		};
+		7003710C960D72ACC006D555 /* Debug */ = {
+			isa = PBXGroup;
+			children = (
+				63ECCE76D68562305F5E3C4D /* DebugTools.swift */,
+			);
+			name = Debug;
+			path = Debug;
 			sourceTree = "<group>";
 		};
 		8198D6F219F953EAEEFE99FE /* Shell */ = {
@@ -535,6 +547,7 @@
 				AF276C285A87604AB1737EF5 /* BatteryGlyph.swift in Sources */,
 				4CC82DC7C606D56085F25BED /* ActivityViews.swift in Sources */,
 				BF650DBD55E7D902C190A629 /* ActivityWiring.swift in Sources */,
+				53F65E3EB81554F5512BFBC5 /* DebugTools.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

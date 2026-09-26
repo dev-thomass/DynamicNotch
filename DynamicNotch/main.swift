@@ -35,6 +35,19 @@ if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
     _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
 }
 
+#if DEBUG
+    // Rendu des états en PNG, sans fenêtre ni verrou d'instance unique.
+    if let index = CommandLine.arguments.firstIndex(of: "--render-states"),
+       index + 1 < CommandLine.arguments.count
+    {
+        _ = NSApplication.shared
+        MainActor.assumeIsolated {
+            StateRenderer.renderAll(to: URL(fileURLWithPath: CommandLine.arguments[index + 1]))
+        }
+        exit(0)
+    }
+#endif
+
 // Single-instance enforcement: claim a kernel-level flock(2) and bail out
 // (after waking the existing instance) if another copy is already running.
 // See SingleInstance.swift.

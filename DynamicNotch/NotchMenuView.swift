@@ -23,6 +23,15 @@ struct NotchMenuView: View {
             settingsTile
             clearTile
             quitTile
+            #if DEBUG
+                DebugActivityTile { name in
+                    vm.notchClose()
+                    // Laisser le panneau se fermer : ouvert, il suspend les activités.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        MainActor.assumeIsolated { ActivitySimulator.run(name) }
+                    }
+                }
+            #endif
         }
     }
 

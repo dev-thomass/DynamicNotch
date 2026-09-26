@@ -75,6 +75,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         .store(in: &settingsObservers)
 
         rebuildApplicationWindows(force: true)
+
+        #if DEBUG
+            ActivitySimulator.handleLaunchArguments()
+        #endif
     }
 
     func applicationWillTerminate(_: Notification) {
