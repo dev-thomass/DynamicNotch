@@ -11,8 +11,8 @@ and more — all behind a clean, customisable design system.
 
 ## Highlights
 
-- **Multi-page widget panel** — group widgets by use case, navigate with
-  chevrons in the header (`‹  2/3  ›`).
+- **Tabbed panel** — five tabs live around the notch (Home, Files, Timers,
+  Notes, Agenda); the panel morphs out of the notch like the Dynamic Island.
 - **Built-in widgets**
   - **AirDrop** + generic file share
   - **Files** (drag-and-drop tray with auto-expiry)
@@ -20,7 +20,7 @@ and more — all behind a clean, customisable design system.
   - **Stopwatch** (mm:ss.cc)
   - **Pomodoro** (configurable focus / break / long break durations)
   - **Now Playing** (MediaRemote-backed, play / pause / next / prev)
-  - **Calendar** (next event in the next 24 h via EventKit)
+  - **Agenda** (today's events, next ones on Home, via EventKit)
 - **Design system** — `DSTokens` (colors, spacing, radius, typography,
   motion) + `DSComponents` (buttons, cards, badges, pills, drop zones,
   notch header) used everywhere.

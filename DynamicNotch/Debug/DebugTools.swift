@@ -61,9 +61,10 @@
             let geometry = NSScreen.main.map { NotchGeometry(screen: ScreenDescriptor($0)) } ?? .preview
             try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
-            var states: [(String, NotchPresentation)] = [
-                ("closed", .closed), ("peek", .peek), ("opened", .opened(.tab(.home))),
-            ]
+            var states: [(String, NotchPresentation)] = [("closed", .closed), ("peek", .peek), ("opened-settings", .opened(.settings))]
+            for tab in NotchTab.allCases {
+                states.append(("opened-\(tab)", .opened(.tab(tab))))
+            }
             for id in ActivityID.samples {
                 states.append(("compact-\(id.debugName)", .compact(id)))
                 states.append(("expanded-\(id.debugName)", .expanded(id)))
