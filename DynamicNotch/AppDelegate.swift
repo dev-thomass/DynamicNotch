@@ -56,8 +56,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         installEditMenu()
 
         _ = EventMonitors.shared
-        // Singletons des managers utilisés par les wings.
-        _ = BatteryMonitor.shared
+        // Sources d'activités (batterie, Pomodoro, chrono, plateau, AirDrop…).
+        ActivityWiring.shared.install()
 
         // Rebuild the windows when the user picks a different display
         // OU bascule "afficher sur tous les écrans".
