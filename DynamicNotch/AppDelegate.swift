@@ -24,6 +24,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private struct WindowLayout: Equatable {
         let screens: [ScreenDescriptor]
         let forcePill: Bool
+
+        init(screens: [ScreenDescriptor], forcePill: Bool) {
+            // La hauteur de barre des menus ne sert qu'aux écrans sans encoche
+            // (hauteur de la pilule) : sous une encoche, elle varie avec le
+            // plein écran sans changer la géométrie, on l'ignore.
+            self.screens = screens.map { screen in
+                guard screen.safeAreaTop > 0 else { return screen }
+                var normalized = screen
+                normalized.menuBarHeight = 0
+                return normalized
+            }
+            self.forcePill = forcePill
+        }
     }
 
     /// Re-read each time we need it (was cached at launch and never refreshed).

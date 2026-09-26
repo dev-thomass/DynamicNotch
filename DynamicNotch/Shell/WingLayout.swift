@@ -13,7 +13,8 @@ import AppKit
 enum WingLayout {
     /// Marge entre le bord extérieur de l'aile et son contenu.
     static let padding: CGFloat = 12
-    static let iconWidth: CGFloat = 24
+    /// Le glyphe de batterie fait environ 25 pt.
+    static let iconWidth: CGFloat = 26
     static let minimumWing: CGFloat = 36
     /// Même police que `DS.Typography.wing`.
     static let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
@@ -22,7 +23,9 @@ enum WingLayout {
     static func template(for id: ActivityID) -> String? {
         switch id {
         case .charging, .unplugged, .lowBattery: "100 %"
-        case .stopwatch, .pomodoroPhase: "00:00"
+        // Le chrono dépasse 99 min ; le Pomodoro jamais.
+        case .stopwatch: "000:00"
+        case .pomodoroPhase: "00:00"
         case .calendarSoon: "60 min"
         case .nowPlaying, .filesAdded, .airDropSent: nil
         }

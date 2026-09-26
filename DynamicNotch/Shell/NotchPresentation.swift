@@ -43,7 +43,10 @@ enum NotchPresentation: Equatable {
                 bottomRadius: hasHardwareNotch ? 12 : notch.height / 2, hasShadow: false
             )
         case .expanded:
-            return ShellMetrics(bodyWidth: 340, bodyHeight: 80, topRadius: largeEar, bottomRadius: 24, hasShadow: true)
+            // 80 pt pour l'encoche de 32 pt et la pilule de 24 pt ; plus haut
+            // si l'encoche l'est, pour garder 48 pt de contenu sous elle.
+            let height = max(80, notch.height + 48)
+            return ShellMetrics(bodyWidth: 340, bodyHeight: height, topRadius: largeEar, bottomRadius: 24, hasShadow: true)
         case let .opened(content):
             let size = content.panelSize
             return ShellMetrics(bodyWidth: size.width, bodyHeight: size.height, topRadius: largeEar, bottomRadius: 28, hasShadow: true)

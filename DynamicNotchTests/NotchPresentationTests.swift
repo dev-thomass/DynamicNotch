@@ -75,4 +75,18 @@ final class NotchPresentationTests: XCTestCase {
         let total = WingLayout.wingsWidth(for: .charging, scale: 2)
         XCTAssertEqual(total * 2, (total * 2).rounded())
     }
+
+    /// Encoche plus haute que 32 pt : l'état étendu garde 48 pt sous elle.
+    func test_expanded_growsWithTallNotch() {
+        let tall = NotchPresentation.expanded(.charging).metrics(notch: CGSize(width: 200, height: 38), hasHardwareNotch: true, scale: 2)
+        XCTAssertEqual(tall.bodyHeight, 86)
+    }
+
+    /// Le chrono dépasse 99 min (« 100:00 ») ; l'icône de batterie tient dans l'aile.
+    func test_stopwatchWing_fitsThreeDigitMinutes_andBatteryGlyph() {
+        let text = WingLayout.textWidth("100:00")
+        XCTAssertGreaterThanOrEqual(WingLayout.wingWidth(for: .stopwatch), text + 2 * WingLayout.padding)
+        XCTAssertGreaterThanOrEqual(WingLayout.iconWidth, 25)
+    }
 }
+

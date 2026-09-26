@@ -79,11 +79,18 @@ final class ActivityWiring {
             if naturalEnd { NSSound(named: "Glass")?.play() }
             self?.center.post(.pomodoroPhase)
         }
+        // Ces deux rappels sont documentés « sur la file principale », mais un
+        // délégué système pourrait les appeler ailleurs : on repasse toujours
+        // par la file principale plutôt que de l'affirmer (plantage sinon).
         TrayDrop.shared.onItemsAdded = { [weak self] count in
-            MainActor.assumeIsolated { self?.center.post(.filesAdded(count: count)) }
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { self?.center.post(.filesAdded(count: count)) }
+            }
         }
         Share.onAirDropSent = { [weak self] in
-            MainActor.assumeIsolated { self?.center.post(.airDropSent) }
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { self?.center.post(.airDropSent) }
+            }
         }
 
         let settings = AppSettings.shared
@@ -96,7 +103,6 @@ final class ActivityWiring {
             PomodoroModel.shared.$phase.map { _ in () }.eraseToAnyPublisher(),
             StopwatchModel.shared.$running.map { _ in () }.eraseToAnyPublisher(),
             StopwatchModel.shared.$accumulated.map { _ in () }.eraseToAnyPublisher(),
-            NowPlayingManager.shared.$isPlaying.map { _ in () }.eraseToAnyPublisher(),
             CalendarStore.shared.$nextEvent.map { _ in () }.eraseToAnyPublisher(),
         ]
         // receive(on:) : @Published émet avant l'écriture, on relit après.
@@ -124,7 +130,7 @@ final class ActivityWiring {
             battery: BatteryMonitor.shared.snapshot,
             stopwatchHasTime: StopwatchModel.shared.hasTime,
             pomodoroActive: PomodoroModel.shared.phase != .idle,
-            musicPlaying: NowPlayingManager.shared.isPlaying,
+            musicPlaying: false, // activé par la tâche 12 (MediaRemote)
             nextEventStart: CalendarStore.shared.nextEvent?.startDate,
             now: Date()
         )

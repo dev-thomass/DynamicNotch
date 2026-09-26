@@ -65,16 +65,18 @@ final class BatteryMonitor: ObservableObject {
     }
 
     func refresh() {
-        let next = Self.readSnapshot()
+        // Lecture impossible : on garde l'état précédent plutôt que de
+        // simuler une machine sans batterie (faux événements).
+        guard let next = Self.readSnapshot() else { return }
         let events = detector.process(next)
         snapshot = next
         onChange?(next, events)
     }
 
-    private static func readSnapshot() -> PowerSnapshot {
+    private static func readSnapshot() -> PowerSnapshot? {
         guard let info = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
               let sources = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef]
-        else { return PowerSnapshot.parse([]) }
+        else { return nil }
         let descriptions = sources.compactMap {
             IOPSGetPowerSourceDescription(info, $0)?.takeUnretainedValue() as? [String: Any]
         }
