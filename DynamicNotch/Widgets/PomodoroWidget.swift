@@ -32,6 +32,16 @@ final class PomodoroModel: ObservableObject {
             case .longBreak:  DS.Color.brand
             }
         }
+
+        /// Titre de l'activité affichée à l'entrée dans la phase.
+        var activityTitle: String {
+            switch self {
+            case .idle:       "Prêt"
+            case .work:       "Au travail"
+            case .shortBreak: "Pause"
+            case .longBreak:  "Pause longue"
+            }
+        }
     }
 
     // Durées lues depuis AppSettings — `var` plutôt que `let` static pour
@@ -54,7 +64,11 @@ final class PomodoroModel: ObservableObject {
     private var timer: Timer?
     private var phaseEndDate: Date?
 
-    private init() {}
+    /// Appelé à chaque changement de phase ; `naturalEnd` vaut `false` quand
+    /// l'utilisateur a passé la phase.
+    var onPhaseChange: ((_ phase: Phase, _ naturalEnd: Bool) -> Void)?
+
+    init() {}
 
     var formatted: String {
         let total = max(0, Int(remaining.rounded()))
@@ -73,6 +87,18 @@ final class PomodoroModel: ObservableObject {
     var progress: Double {
         guard phaseTotal > 0, phase != .idle else { return 0 }
         return 1 - (remaining / phaseTotal)
+    }
+
+    /// Progression de la phase à `date`, continue entre deux ticks.
+    func progress(at date: Date) -> Double {
+        guard phaseTotal > 0, phase != .idle else { return 0 }
+        let left: TimeInterval
+        if isRunning, let end = phaseEndDate {
+            left = max(0, end.timeIntervalSince(date))
+        } else {
+            left = remaining
+        }
+        return min(1, max(0, 1 - left / phaseTotal))
     }
 
     /// Etat ergonomique du bouton principal — utilisé par la vue pour choisir
@@ -106,7 +132,7 @@ final class PomodoroModel: ObservableObject {
     }
 
     func skip() {
-        advancePhase()
+        advancePhase(naturalEnd: false)
     }
 
     // MARK: internal
@@ -148,32 +174,34 @@ final class PomodoroModel: ObservableObject {
         guard let end = phaseEndDate else { return }
         remaining = end.timeIntervalSinceNow
         if remaining <= 0 {
-            advancePhase()
+            advancePhase(naturalEnd: true)
         }
     }
 
-    private func advancePhase() {
+    private func advancePhase(naturalEnd: Bool) {
         timer?.invalidate()
         timer = nil
         isRunning = false
         switch phase {
         case .work:
             sessionsCompleted += 1
-            let next: Phase = (sessionsCompleted % cyclesBeforeLongBreak == 0) ? .longBreak : .shortBreak
+            // max(1, …) : un réglage à 0 faisait planter le modulo.
+            let next: Phase = (sessionsCompleted % max(1, cyclesBeforeLongBreak) == 0) ? .longBreak : .shortBreak
             transition(to: next)
         case .shortBreak, .longBreak:
             transition(to: .work)
         case .idle:
-            break
+            return
         }
+        onPhaseChange?(phase, naturalEnd)
     }
 }
 
 // MARK: - View
 
 struct PomodoroWidgetView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject private var model = PomodoroModel.shared
+    @ObservedObject var vm: NotchViewModel
+    @ObservedObject private var model = PomodoroModel.shared
 
     var body: some View {
         VStack(spacing: DS.Spacing.xs) {
@@ -184,13 +212,12 @@ struct PomodoroWidgetView: View {
         .padding(DS.Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
     }
 
     private var header: some View {
         HStack(spacing: DS.Spacing.xs) {
             Image(systemName: "brain.head.profile")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
             Text(model.phase.label)
                 .font(DS.Typography.captionSmall)
             Spacer()
@@ -207,14 +234,17 @@ struct PomodoroWidgetView: View {
         ZStack {
             Circle()
                 .stroke(DS.Color.borderSubtle, lineWidth: 3)
-            Circle()
-                .trim(from: 0, to: model.progress)
-                .stroke(model.phase.tint, style: .init(lineWidth: 3, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 0.5), value: model.progress)
+            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !model.isRunning)) { context in
+                Circle()
+                    .trim(from: 0, to: model.progress(at: context.date))
+                    .stroke(model.phase.tint, style: .init(lineWidth: 3, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            }
             Text(timeDisplayed)
-                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .font(DS.Typography.title)
                 .monospacedDigit()
+                .contentTransition(.numericText(countsDown: true))
+                .animation(DS.Motion.micro, value: timeDisplayed)
                 .foregroundStyle(DS.Color.textPrimary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -242,6 +272,7 @@ struct PomodoroWidgetView: View {
             circleBtn(systemImage: primaryIcon,
                       label: primaryLabel,
                       tint: primaryTint) {
+                if !model.isRunning { vm.hapticSender.send() }
                 model.performPrimary()
             }
 
@@ -284,7 +315,8 @@ struct PomodoroWidgetView: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 10, weight: .semibold))
+                .contentTransition(.symbolEffect(.replace))
+                .font(.system(size: 11, weight: .semibold))
                 .frame(width: 24, height: 24)
                 .background(tint)
                 .foregroundStyle(DS.Color.textOnAccent)

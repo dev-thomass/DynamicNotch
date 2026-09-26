@@ -4,55 +4,33 @@ import Foundation
 import LaunchAtLogin
 import SwiftUI
 
-class NotchViewModel: NSObject, ObservableObject {
+@MainActor
+final class NotchViewModel: NSObject, ObservableObject {
     var cancellables: Set<AnyCancellable> = []
-    let inset: CGFloat
+    /// Abonnement à `ActivityCenter`, posé par `setupCancellables()`.
+    var activityObservation: ActivityObservation?
+    let activities: ActivityCenter
+    private var isSuspendingActivities = false
+    /// Pointeur dans la coque au dernier mouvement : le retour haptique du
+    /// survol des ailes ne part qu'à l'entrée.
+    var isPointerInsideShell = false
 
-    init(inset: CGFloat = -4) {
-        self.inset = inset
+    /// `activities` à `nil` → `ActivityCenter.shared`. (Une valeur par défaut
+    /// `.shared` serait évaluée hors du MainActor en Swift 5 : avertissement.)
+    init(geometry: NotchGeometry = .preview, activities: ActivityCenter? = nil) {
+        self.geometry = geometry
+        self.activities = activities ?? .shared
         super.init()
         setupCancellables()
+        // Une activité peut déjà être en cours (connexion, reconstruction des
+        // fenêtres) : on la reprend d'emblée, sans animation.
+        presentation = restingPresentation
     }
 
-    deinit {
-        destroy()
-    }
-
-    let animation: Animation = .interactiveSpring(
-        duration: 0.5,
-        extraBounce: 0.25,
-        blendDuration: 0.125
-    )
-
-    /// Logical size of the opened panel — varies per content type so dense
-    /// views (Settings) can breathe without leaving the AirDrop+Tray layout
-    /// uselessly large.
-    ///
-    /// Driven off `contentType` (a `@Published` property) so SwiftUI
-    /// re-renders and animates the resize via the standard `vm.animation`
-    /// spring already applied at the call sites.
-    var notchOpenedSize: CGSize {
-        switch contentType {
-        // 180pt (au lieu de 160) donne 94pt par tuile widget après chrome.
-        // C'est confortable pour TOUS les widgets : Pomodoro a un intrinsic
-        // d'~82pt (ring + 3 boutons + texte), donc 94pt lui laisse de l'air,
-        // et les widgets simples (Notes, Calendar) utilisent l'espace
-        // sans avoir l'air vide.
-        case .normal:   .init(width: 600, height: 180)
-        case .menu:     .init(width: 600, height: 200)
-        // Settings : 3 colonnes (Apparence/Comportement | Affichage/Stockage |
-        // Pomodoro/Avancé) + section Widgets full-width en haut.
-        case .settings: .init(width: 880, height: 560)
-        }
-    }
+    /// Ressort des animations internes aux widgets.
+    let animation: Animation = DS.Motion.expand
 
     let dropDetectorRange: CGFloat = 32
-
-    enum Status: String, Codable, Hashable, Equatable {
-        case closed
-        case opened
-        case popping
-    }
 
     enum OpenReason: String, Codable, Hashable, Equatable {
         case click
@@ -61,40 +39,41 @@ class NotchViewModel: NSObject, ObservableObject {
         case unknown
     }
 
-    enum ContentType: Int, Codable, Hashable, Equatable {
-        case normal
-        case menu
+    enum ContentType: Hashable {
+        case tab(NotchTab)
         case settings
     }
 
-    var notchOpenedRect: CGRect {
-        .init(
-            x: screenRect.origin.x + (screenRect.width - notchOpenedSize.width) / 2,
-            y: screenRect.origin.y + screenRect.height - notchOpenedSize.height,
-            width: notchOpenedSize.width,
-            height: notchOpenedSize.height
-        )
-    }
-
-    var headlineOpenedRect: CGRect {
-        .init(
-            x: screenRect.origin.x + (screenRect.width - notchOpenedSize.width) / 2,
-            y: screenRect.origin.y + screenRect.height - deviceNotchRect.height,
-            width: notchOpenedSize.width,
-            height: deviceNotchRect.height
-        )
-    }
-
-    @Published private(set) var status: Status = .closed
+    @Published private(set) var presentation: NotchPresentation = .closed
+    @Published var geometry: NotchGeometry
     @Published var openReason: OpenReason = .unknown
-    @Published var contentType: ContentType = .normal
-
     @Published var spacing: CGFloat = 16
-    @Published var cornerRadius: CGFloat = 16
-    @Published var deviceNotchRect: CGRect = .zero
-    @Published var screenRect: CGRect = .zero
     @Published var optionKeyPressed: Bool = false
-    @Published var notchVisible: Bool = true
+
+    // MARK: géométrie (coordonnées écran AppKit)
+
+    var deviceNotchRect: CGRect { geometry.notchRect }
+    var screenRect: CGRect { geometry.screen.frame }
+    var hasHardwareNotch: Bool { geometry.hasHardwareNotch }
+    /// Marge de survol et de clic : élargie de 4 pt autour d'une vraie encoche.
+    var inset: CGFloat { hasHardwareNotch ? -4 : 0 }
+
+    var metrics: ShellMetrics {
+        presentation.metrics(notch: deviceNotchRect.size, hasHardwareNotch: hasHardwareNotch, scale: geometry.screen.scale)
+    }
+
+    var notchOpenedSize: CGSize { contentType.panelSize }
+
+    var notchOpenedRect: CGRect {
+        let size = notchOpenedSize
+        return CGRect(x: deviceNotchRect.midX - size.width / 2, y: screenRect.maxY - size.height, width: size.width, height: size.height)
+    }
+
+    /// Rectangle de la coque dans son état courant.
+    var currentShellRect: CGRect {
+        let m = metrics
+        return CGRect(x: deviceNotchRect.midX - m.bodyWidth / 2, y: screenRect.maxY - m.bodyHeight, width: m.bodyWidth, height: m.bodyHeight)
+    }
 
     @PublishedPersist(key: "selectedLanguage", defaultValue: .system)
     var selectedLanguage: Language
@@ -102,88 +81,75 @@ class NotchViewModel: NSObject, ObservableObject {
     @PublishedPersist(key: "hapticFeedback", defaultValue: true)
     var hapticFeedback: Bool
 
-    // ─── Widget pages ─────────────────────────────────────────────────────────
-    //
-    // The opened panel (in `.normal` content type) is divided into pages.
-    // Each page hosts up to `maxWidgetsPerPage` widgets shown side-by-side.
-    // The user picks which widgets land on which page from Settings.
-    // Pages are navigated by swiping horizontally inside the panel.
+    /// Dernier onglet choisi, rouvert à chaque ouverture (sauf dépôt de fichier).
+    @PublishedPersist(key: "lastTab", defaultValue: .home)
+    var lastTab: NotchTab
 
-    /// Hard limit per page so a 4-tile row stays readable on a notch panel.
-    static let maxWidgetsPerPage = 4
-    /// Hard limit on number of pages — the dot indicator goes from cramped
-    /// to silly past this.
-    static let maxPages = 5
-
-    @PublishedPersist(key: "widgetPages", defaultValue: [[.airdrop, .files]])
-    var widgetPages: [[Widget]]
-
-    @Published var currentPage: Int = 0
-
-    /// Convenience accessor — slot of widgets shown on the active page.
-    /// Returns an empty array if `currentPage` ever drifts out of range
-    /// (defensive — shouldn't happen with the bounds checks below).
-    var currentWidgets: [Widget] {
-        guard currentPage >= 0, currentPage < widgetPages.count else { return [] }
-        return widgetPages[currentPage]
-    }
-
-    /// Toggle a widget on a given page: present → remove (and drop the page
-    /// if it becomes empty and we have more than one); absent → append
-    /// (capped at `maxWidgetsPerPage`).
-    func toggleWidget(_ widget: Widget, onPage page: Int) {
-        guard page >= 0, page < widgetPages.count else { return }
-        if let idx = widgetPages[page].firstIndex(of: widget) {
-            widgetPages[page].remove(at: idx)
-            if widgetPages[page].isEmpty, widgetPages.count > 1 {
-                widgetPages.remove(at: page)
-                if currentPage >= widgetPages.count {
-                    currentPage = max(0, widgetPages.count - 1)
-                }
-            }
-        } else if widgetPages[page].count < Self.maxWidgetsPerPage {
-            widgetPages[page].append(widget)
-        }
-    }
-
-    /// Append an empty new page (no-op if already at `maxPages`).
-    func addPage() {
-        guard widgetPages.count < Self.maxPages else { return }
-        widgetPages.append([])
-        currentPage = widgetPages.count - 1
-    }
-
-    /// Remove a page by index. Refuses to delete the last page.
-    func removePage(_ index: Int) {
-        guard widgetPages.count > 1, index < widgetPages.count else { return }
-        widgetPages.remove(at: index)
-        if currentPage >= widgetPages.count {
-            currentPage = max(0, widgetPages.count - 1)
-        }
-    }
-
-    /// Page navigation — wraps around for symmetry with the dot indicator.
-    func nextPage() {
-        guard !widgetPages.isEmpty else { return }
-        currentPage = (currentPage + 1) % widgetPages.count
-    }
-
-    func previousPage() {
-        guard !widgetPages.isEmpty else { return }
-        currentPage = (currentPage - 1 + widgetPages.count) % widgetPages.count
-    }
+    /// Bord par lequel arrive le contenu au prochain changement d'onglet.
+    @Published private(set) var tabSlideEdge: Edge = .trailing
 
     let hapticSender = PassthroughSubject<Void, Never>()
 
+    // MARK: états
+
+    /// Contenu du panneau ouvert (le dernier onglet hors de l'état ouvert).
+    var contentType: ContentType {
+        if case let .opened(content) = presentation { return content }
+        return .tab(lastTab)
+    }
+
+    /// Onglet affiché, `nil` hors onglets (fermé, réglages…).
+    var currentTab: NotchTab? {
+        if case let .opened(.tab(tab)) = presentation { return tab }
+        return nil
+    }
+
+    /// Change d'onglet (panneau ouvert seulement) et le mémorise.
+    func selectTab(_ tab: NotchTab) {
+        guard presentation.isOpened else { return }
+        let from = currentTab ?? lastTab
+        tabSlideEdge = NotchTab.slideEdge(from: from, to: tab)
+        lastTab = tab
+        if from != tab || currentTab == nil { hapticSender.send() }
+        transition(to: .opened(.tab(tab)))
+    }
+
+    /// Quitte les réglages pour le dernier onglet.
+    func closeSettings() {
+        guard presentation == .opened(.settings) else { return }
+        // Le dernier onglet arrive par la droite, comme à l'ouverture.
+        tabSlideEdge = .trailing
+        transition(to: .opened(.tab(lastTab)))
+    }
+
+    /// État de repos : l'activité en cours, sinon l'encoche nue.
+    var restingPresentation: NotchPresentation {
+        guard let display = activities.current else { return .closed }
+        return display.mode == .expanded ? .expanded(display.id) : .compact(display.id)
+    }
+
+    /// Seul point d'entrée des changements d'état : choisit le ressort.
+    func transition(to next: NotchPresentation) {
+        guard next != presentation else { return }
+        let kind = NotchPresentation.motion(from: presentation, to: next)
+        withAnimation(DS.Motion.animation(kind)) {
+            presentation = next
+        }
+    }
+
     func notchOpen(_ reason: OpenReason) {
         openReason = reason
-        status = .opened
-        contentType = .normal
-        // Only steal focus when the user explicitly clicked the notch.
-        // - On `.drag`, the user is interacting with another app (Finder, etc.) —
-        //   activating ourselves would tear that drag down and is the worst
-        //   possible UX for a menubar utility.
-        // - On `.boot`, we'd grab focus on every launch / screen change — noisy.
+        // D'abord l'état ouvert : le rappel de la suspension (fin de la
+        // ponctuelle) tombe alors sur la garde `isOpened` d'`activityDidChange`.
+        // Un dépôt de fichier montre l'étagère ; sinon le dernier onglet.
+        let tab: NotchTab = reason == .drag ? .files : lastTab
+        transition(to: .opened(.tab(tab)))
+        if !isSuspendingActivities {
+            isSuspendingActivities = true
+            activities.beginSuspension()
+        }
+        // Ne voler le focus que sur un clic explicite (pas pendant un
+        // glisser-déposer depuis une autre app, ni au lancement).
         if reason == .click {
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -191,16 +157,45 @@ class NotchViewModel: NSObject, ObservableObject {
 
     func notchClose() {
         openReason = .unknown
-        status = .closed
-        contentType = .normal
-    }
-
-    func showSettings() {
-        contentType = .settings
+        if isSuspendingActivities {
+            isSuspendingActivities = false
+            activities.endSuspension()
+        }
+        transition(to: restingPresentation)
     }
 
     func notchPop() {
-        openReason = .unknown
-        status = .popping
+        guard presentation == .closed else { return }
+        transition(to: .peek)
     }
+
+    func showSettings() {
+        // Hors de l'état ouvert : on passe par l'ouverture (suspension des activités).
+        if !presentation.isOpened { notchOpen(.click) }
+        transition(to: .opened(.settings))
+    }
+
+    /// Appelé par `ActivityCenter` : le panneau ouvert et l'aperçu ne sont pas interrompus.
+    func activityDidChange() {
+        guard !presentation.isOpened, presentation != .peek else { return }
+        transition(to: restingPresentation)
+    }
+
+    func destroy() {
+        cancellables.forEach { $0.cancel() }
+        cancellables.removeAll()
+        activityObservation?.cancel()
+        activityObservation = nil
+        if isSuspendingActivities {
+            isSuspendingActivities = false
+            activities.endSuspension()
+        }
+    }
+
+    #if DEBUG
+        /// Rendu PNG des états (DebugTools) : pose un état sans animation.
+        func setPresentationForRendering(_ state: NotchPresentation) {
+            presentation = state
+        }
+    #endif
 }

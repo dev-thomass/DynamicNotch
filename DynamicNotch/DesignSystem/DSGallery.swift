@@ -25,10 +25,8 @@ struct DSGallery: View {
                 section("Spacing & Radius") { spacingRadiusSection }
                 section("Effects (Shadows & Glows)") { effectsSection }
                 section("Buttons") { buttonsSection }
-                section("Icon Tiles") { iconTilesSection }
-                section("Badges & Pills") { badgesPillsSection }
-                section("Cards & Drop Zone") { cardsDropZoneSection }
-                section("Notch Header") { notchHeaderSection }
+                section("Badges") { badgesPillsSection }
+                section("Drop Zone") { cardsDropZoneSection }
             }
             .padding(DS.Spacing.xxl)
         }
@@ -128,7 +126,7 @@ struct DSGallery: View {
                 Text("body — 13").font(DS.Typography.body)
                 Text("bodyEmphasis — 13 / semi").font(DS.Typography.bodyEmphasis)
                 Text("caption — 11").font(DS.Typography.caption)
-                Text("captionSmall — 10").font(DS.Typography.captionSmall)
+                Text("captionSmall — 11").font(DS.Typography.captionSmall)
                 Text("mono — 11 / mono").font(DS.Typography.mono)
             }
             .foregroundStyle(DS.Color.textPrimary)
@@ -166,9 +164,6 @@ struct DSGallery: View {
             effectChip("shadowSm", DS.Effect.shadowSm)
             effectChip("shadowMd", DS.Effect.shadowMd)
             effectChip("shadowLg", DS.Effect.shadowLg)
-            effectChip("glowBrand", DS.Effect.glowBrand)
-            effectChip("glowDestructive", DS.Effect.glowDestructive)
-            effectChip("glowWarning", DS.Effect.glowWarning)
         }
     }
 
@@ -200,15 +195,6 @@ struct DSGallery: View {
         }
     }
 
-    var iconTilesSection: some View {
-        HStack(spacing: DS.Spacing.md) {
-            DSIconTile(systemImage: "gear",      title: "Settings",    tone: .brand) {}
-            DSIconTile(systemImage: "tray.full", title: "Inbox",       tone: .neutral) {}
-            DSIconTile(systemImage: "trash",     title: "Clear",       tone: .warning) {}
-            DSIconTile(systemImage: "power",     title: "Quit",        tone: .destructive) {}
-        }
-    }
-
     var badgesPillsSection: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.md) {
             HStack(spacing: DS.Spacing.sm) {
@@ -217,27 +203,11 @@ struct DSGallery: View {
                 DSBadge(count: 1234, tone: .warning)
                 DSBadge("NEW", tone: .neutral)
             }
-            HStack(spacing: DS.Spacing.sm) {
-                DSPill("Idle", systemImage: "moon", tone: .neutral)
-                DSPill("Connected", systemImage: "checkmark", tone: .success)
-                DSPill("Syncing", systemImage: "arrow.triangle.2.circlepath", tone: .brand)
-                DSPill("Quota low", systemImage: "exclamationmark", tone: .warning)
-                DSPill("Error", systemImage: "xmark", tone: .destructive)
-            }
         }
     }
 
     var cardsDropZoneSection: some View {
         HStack(spacing: DS.Spacing.lg) {
-            DSCard {
-                VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-                    Text("Card").font(DS.Typography.headline).foregroundStyle(DS.Color.textPrimary)
-                    Text("A standard surface for grouping content.")
-                        .font(DS.Typography.body).foregroundStyle(DS.Color.textSecondary)
-                }
-            }
-            .frame(width: 220)
-
             DSDropZone(isTargeted: false) {
                 VStack(spacing: DS.Spacing.xs) {
                     Image(systemName: "tray.and.arrow.down")
@@ -260,13 +230,6 @@ struct DSGallery: View {
         }
     }
 
-    var notchHeaderSection: some View {
-        DSNotchHeader(title: "DynamicNotch") { _ in }
-            .padding(DS.Spacing.md)
-            .frame(width: 480)
-            .background(DS.Color.surfaceRaised)
-            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
-    }
 }
 
 #Preview("Design System Gallery") {

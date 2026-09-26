@@ -104,8 +104,8 @@ final class NowPlayingManager: ObservableObject {
 // MARK: - View
 
 struct NowPlayingWidgetView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject private var player = NowPlayingManager.shared
+    @ObservedObject var vm: NotchViewModel
+    @ObservedObject private var player = NowPlayingManager.shared
 
     var body: some View {
         HStack(spacing: DS.Spacing.sm) {
@@ -115,7 +115,6 @@ struct NowPlayingWidgetView: View {
         .padding(DS.Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
         .onAppear { player.startObserving() }
     }
 

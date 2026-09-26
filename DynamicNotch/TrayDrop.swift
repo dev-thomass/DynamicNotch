@@ -2,6 +2,7 @@ import Cocoa
 import Combine
 import Foundation
 import OrderedCollections
+import SwiftUI
 
 class TrayDrop: ObservableObject {
     static let shared = TrayDrop()
@@ -57,6 +58,9 @@ class TrayDrop: ObservableObject {
 
     @Published var isLoading: Int = 0
 
+    /// Appelé sur la file principale après un dépôt réussi, avec le nombre de fichiers.
+    var onItemsAdded: ((Int) -> Void)?
+
     func load(_ providers: [NSItemProvider]) {
         // This call does blocking I/O (provider semaphores, file copies).
         // Calling it on the main thread would freeze the UI — enforce in release too.
@@ -69,8 +73,11 @@ class TrayDrop: ObservableObject {
         do {
             let items = try urls.map { try DropItem(url: $0) }
             DispatchQueue.main.async {
-                items.forEach { self.items.updateOrInsert($0, at: 0) }
+                withAnimation(DS.Motion.expand) {
+                    items.forEach { self.items.updateOrInsert($0, at: 0) }
+                }
                 self.isLoading -= 1
+                self.onItemsAdded?(items.count)
             }
         } catch {
             DispatchQueue.main.async {
@@ -103,7 +110,7 @@ class TrayDrop: ObservableObject {
         do {
             // loops up to the main directory
             url = url.deletingLastPathComponent()
-            while url.lastPathComponent != DropItem.mainDir, url != documentsDirectory {
+            while url.lastPathComponent != DropItem.mainDir, url != dataDirectory {
                 let contents = try FileManager.default.contentsOfDirectory(atPath: url.path)
                 guard contents.isEmpty else { break }
                 try FileManager.default.removeItem(at: url)

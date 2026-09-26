@@ -46,17 +46,21 @@ struct ShareView: View {
         }
     }
 
-    @StateObject var vm: NotchViewModel
+    @ObservedObject var vm: NotchViewModel
     let type: ShareType
 
     @State var trigger: UUID = .init()
     @State var targeting = false
     @State private var hover = false
+    /// Incrémenté à l'entrée d'un glisser seulement : le rebond ne joue pas à la sortie.
+    @State private var dropBounces = 0
+    @ObservedObject private var shareActivity = ShareActivity.shared
 
     var body: some View {
         content
             .onDrop(of: [.data], isTargeted: $targeting) { providers in
                 trigger = .init()
+                vm.hapticSender.send()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     vm.notchClose()
                 }
@@ -64,6 +68,9 @@ struct ShareView: View {
                 return true
             }
             .onTapGesture { handleTap() }
+            .onChange(of: targeting) { _, isTargeted in
+                if isTargeted { dropBounces += 1 }
+            }
     }
 
     // MARK: tile
@@ -85,8 +92,6 @@ struct ShareView: View {
         .background(background)
         .overlay(border)
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
-        .dsShadow(targeting ? DS.Effect.glowBrand : DS.Effect.shadowSm)
-        .scaleEffect(hover && !targeting ? 1.02 : 1)
         .animation(DS.Motion.fast, value: hover)
         .animation(DS.Motion.base, value: targeting)
         .onHover { hover = $0 }
@@ -113,13 +118,15 @@ struct ShareView: View {
             Image(systemName: type.imageName)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(targeting ? DS.Color.textOnAccent : DS.Color.brand)
+                .symbolEffect(.variableColor.iterative, isActive: shareActivity.isSending)
+                .symbolEffect(.bounce, value: dropBounces)
         }
     }
 
     @ViewBuilder
     private var background: some View {
         RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-            .fill(targeting ? DS.Color.brand.opacity(0.18) : DS.Color.surfaceRaised)
+            .fill(targeting ? DS.Color.brand.opacity(0.18) : (hover ? DS.Color.surfaceRaisedStrong : DS.Color.surfaceRaised))
     }
 
     @ViewBuilder
@@ -135,27 +142,58 @@ struct ShareView: View {
 
     private func handleTap() {
         trigger = .init()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        // Fermeture différée : laisser la gerbe Pow jouer.
+        Self.pickFilesAndSend(type, vm: vm, closeAfter: 0.2)
+    }
+
+    func beginDrop(_ providers: [NSItemProvider]) {
+        precondition(!Thread.isMainThread)
+        Self.convertAndSend(providers, type: type, after: 0.4)
+    }
+}
+
+extension ShareView {
+    /// Ferme l'encoche (après `closeAfter` secondes), puis ouvre le sélecteur
+    /// de fichiers 0,25 s plus tard et envoie avec `type`.
+    static func pickFilesAndSend(_ type: ShareType, vm: NotchViewModel, closeAfter: TimeInterval = 0) {
+        if closeAfter > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + closeAfter) {
+                MainActor.assumeIsolated { vm.notchClose() }
+            }
+        } else {
             vm.notchClose()
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            let picker = NSOpenPanel()
-            picker.allowsMultipleSelection = true
-            picker.canChooseDirectories = true
-            picker.canChooseFiles = true
-            picker.begin { response in
-                if response == .OK {
-                    type.service(picker.urls).begin()
+        DispatchQueue.main.asyncAfter(deadline: .now() + closeAfter + 0.25) {
+            MainActor.assumeIsolated {
+                let picker = NSOpenPanel()
+                picker.allowsMultipleSelection = true
+                picker.canChooseDirectories = true
+                picker.canChooseFiles = true
+                picker.begin { response in
+                    if response == .OK {
+                        type.service(picker.urls).begin()
+                    }
                 }
             }
         }
     }
 
-    func beginDrop(_ providers: [NSItemProvider]) {
+    /// Ferme l'encoche, puis envoie les fichiers déposés avec `type`.
+    static func sendDropped(_ providers: [NSItemProvider], type: ShareType, vm: NotchViewModel) {
+        vm.notchClose()
+        DispatchQueue.global().async {
+            convertAndSend(providers, type: type, after: 0.25)
+        }
+    }
+
+    /// Conversion (hors thread principal) puis envoi (thread principal, après `delay`).
+    private static func convertAndSend(_ providers: [NSItemProvider], type: ShareType, after delay: TimeInterval) {
         precondition(!Thread.isMainThread)
         guard let urls = providers.interfaceConvert() else { return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            type.service(urls).begin()
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            MainActor.assumeIsolated {
+                type.service(urls).begin()
+            }
         }
     }
 }

@@ -13,90 +13,104 @@ import SwiftUI
 final class StopwatchModel: ObservableObject {
     static let shared = StopwatchModel()
 
+    // Plus de minuterie : le temps écoulé est calculé à la demande à partir
+    // de dates. Les vues qui l'affichent se rafraîchissent via TimelineView,
+    // et seulement tant qu'elles sont à l'écran.
     @Published private(set) var running = false
-    @Published private(set) var elapsed: TimeInterval = 0
+    @Published private(set) var accumulated: TimeInterval = 0
+    @Published private(set) var startedAt: Date?
 
-    private var timer: Timer?
+    init() {}
 
-    private init() {}
-
-    var formatted: String {
-        let total = max(0, elapsed)
-        let m = Int(total) / 60
-        let s = Int(total) % 60
-        let cs = Int((total - floor(total)) * 100)
-        return String(format: "%02d:%02d.%02d", m, s, cs)
+    func elapsed(at date: Date = Date()) -> TimeInterval {
+        accumulated + (startedAt.map { max(0, date.timeIntervalSince($0)) } ?? 0)
     }
 
-    func toggle() {
-        if running {
+    var elapsed: TimeInterval { elapsed() }
+
+    /// Vrai dès qu'il y a quelque chose à afficher (en cours ou en pause).
+    var hasTime: Bool { running || accumulated > 0 }
+
+    /// mm:ss.cc, pour le widget.
+    func formatted(at date: Date = Date()) -> String {
+        let total = max(0, elapsed(at: date))
+        let cs = Int((total - floor(total)) * 100)
+        return String(format: "%02d:%02d.%02d", Int(total) / 60, Int(total) % 60, cs)
+    }
+
+    /// mm:ss, pour l'aile.
+    static func minutesSeconds(_ interval: TimeInterval) -> String {
+        let total = max(0, Int(interval))
+        return String(format: "%02d:%02d", total / 60, total % 60)
+    }
+
+    func toggle(at date: Date = Date()) {
+        if let startedAt {
+            accumulated += max(0, date.timeIntervalSince(startedAt))
+            self.startedAt = nil
             running = false
-            timer?.invalidate()
-            timer = nil
         } else {
+            startedAt = date
             running = true
-            let base = elapsed
-            let start = Date()
-            timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { _ in
-                Task { @MainActor [weak self] in
-                    self?.elapsed = base + Date().timeIntervalSince(start)
-                }
-            }
         }
     }
 
     func reset() {
         running = false
-        elapsed = 0
-        timer?.invalidate()
-        timer = nil
+        startedAt = nil
+        accumulated = 0
     }
 }
 
 struct StopwatchWidgetView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject private var model = StopwatchModel.shared
+    @ObservedObject var vm: NotchViewModel
+    @ObservedObject private var model = StopwatchModel.shared
 
     var body: some View {
         VStack(spacing: DS.Spacing.xs) {
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: "stopwatch")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                 Text("Chrono")
                     .font(DS.Typography.captionSmall)
                 Spacer()
             }
             .foregroundStyle(DS.Color.textTertiary)
 
-            Text(model.formatted)
-                .font(.system(size: 24, weight: .semibold, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(DS.Color.textPrimary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            TimelineView(.periodic(from: .now, by: model.running ? 1.0 / 30 : 3600)) { context in
+                Text(model.formatted(at: context.date))
+                    .font(DS.Typography.displayLarge)
+                    .monospacedDigit()
+                    .foregroundStyle(DS.Color.textPrimary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
 
             HStack(spacing: DS.Spacing.sm) {
                 circleBtn(systemImage: "arrow.counterclockwise", role: .secondary) {
                     model.reset()
                 }
-                .disabled(model.elapsed == 0 && !model.running)
-                .opacity(model.elapsed == 0 && !model.running ? 0.4 : 1)
+                .disabled(!model.hasTime)
+                .opacity(!model.hasTime ? 0.4 : 1)
 
                 circleBtn(
                     systemImage: model.running ? "pause.fill" : "play.fill",
                     role: model.running ? .warning : .primary
-                ) { model.toggle() }
+                ) {
+                    if !model.running { vm.hapticSender.send() }
+                    model.toggle()
+                }
             }
         }
         .padding(DS.Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
     }
 
     @ViewBuilder
     private func circleBtn(systemImage: String, role: ButtonRole, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
+                .contentTransition(.symbolEffect(.replace))
                 .font(.system(size: 11, weight: .semibold))
                 .frame(width: 24, height: 24)
                 .background(role.background)

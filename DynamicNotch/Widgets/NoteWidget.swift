@@ -3,17 +3,17 @@
 //  DynamicNotch
 //
 //  Quick-note widget. Plain UTF-8 file persisted under
-//  ~/Documents/DynamicNotch/Config/quickNote.txt with a 0.5 s debounce so
+//  <dataDirectory>/Config/quickNote.txt with a 0.5 s debounce so
 //  every keystroke doesn't hit the disk.
 //
 
 import Combine
 import SwiftUI
 
-private let noteFileURL = documentsDirectory.appendingPathComponent("Config/quickNote.txt")
+private let noteFileURL = dataDirectory.appendingPathComponent("Config/quickNote.txt")
 
 struct NoteView: View {
-    @StateObject var vm: NotchViewModel
+    @ObservedObject var vm: NotchViewModel
     @State private var content: String = ""
     @FocusState private var isFocused: Bool
     @State private var saveTask: DispatchWorkItem?
@@ -23,7 +23,7 @@ struct NoteView: View {
             // ─── header (label + clear) ─────────────────────────────────────
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: "note.text")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                 Text("Note rapide")
                     .font(DS.Typography.captionSmall)
                 Spacer()
@@ -37,12 +37,12 @@ struct NoteView: View {
 
             // ─── editor ──────────────────────────────────────────────────────
             TextEditor(text: $content)
-                .font(.system(size: 11, design: .rounded))
+                .font(DS.Typography.body)
                 .foregroundStyle(DS.Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .focused($isFocused)
                 .padding(.horizontal, DS.Spacing.xs)
-                .onChange(of: content) { newValue in
+                .onChange(of: content) { _, newValue in
                     debounceSave(newValue)
                 }
                 // Quand le focus est demandé / repris, on (ré)active l'app
@@ -50,7 +50,7 @@ struct NoteView: View {
                 // d'édition) ne fonctionnent pas : SwiftUI a besoin que
                 // l'app `.accessory` soit explicitement active pour que les
                 // events clavier système soient routés vers le TextEditor.
-                .onChange(of: isFocused) { focused in
+                .onChange(of: isFocused) { _, focused in
                     if focused { activateForEditing() }
                 }
                 // Bloquer la propagation du tap au handler global de
@@ -62,7 +62,6 @@ struct NoteView: View {
         // whole panel shrink on pages that contain a note.
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
         .onAppear { handleAppear() }
         .onDisappear { handleDisappear() }
         .accessibilityLabel(Text("Note rapide"))
@@ -112,7 +111,7 @@ struct NoteView: View {
             saveNote("")
         } label: {
             Image(systemName: "trash")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .frame(width: 18, height: 18)
                 .contentShape(Rectangle())
         }

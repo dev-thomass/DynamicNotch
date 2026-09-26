@@ -91,7 +91,7 @@ extension TrayDrop.DropItem {
     static let previewFileName = ".preview.png"
 
     var storageURL: URL {
-        documentsDirectory
+        dataDirectory
             .appendingPathComponent(Self.mainDir)
             .appendingPathComponent(id.uuidString)
             .appendingPathComponent(fileName)

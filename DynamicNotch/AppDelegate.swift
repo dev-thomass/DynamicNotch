@@ -18,6 +18,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var windowControllers: [NotchWindowController] = []
     var mainWindowController: NotchWindowController? { windowControllers.first }
     private var settingsObservers: Set<AnyCancellable> = []
+    /// Configuration d'écrans des fenêtres actuelles : on ne reconstruit que si elle change.
+    private var lastLayout: WindowLayout?
+
+    private struct WindowLayout: Equatable {
+        let screens: [ScreenDescriptor]
+        let forcePill: Bool
+
+        init(screens: [ScreenDescriptor], forcePill: Bool) {
+            // La hauteur de barre des menus ne sert qu'aux écrans sans encoche
+            // (hauteur de la pilule) : sous une encoche, elle varie avec le
+            // plein écran sans changer la géométrie, on l'ignore.
+            self.screens = screens.map { screen in
+                guard screen.safeAreaTop > 0 else { return screen }
+                var normalized = screen
+                normalized.menuBarHeight = 0
+                return normalized
+            }
+            self.forcePill = forcePill
+        }
+    }
 
     /// Re-read each time we need it (was cached at launch and never refreshed).
     /// Cheap call, no need to memoize.
@@ -26,7 +46,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(rebuildApplicationWindows),
+            selector: #selector(screenParametersChanged),
             name: NSApplication.didChangeScreenParametersNotification,
             object: nil
         )
@@ -49,24 +69,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         installEditMenu()
 
         _ = EventMonitors.shared
-        // Singletons des managers utilisés par les wings.
-        _ = BatteryMonitor.shared
+        // Sources d'activités (batterie, Pomodoro, chrono, plateau, AirDrop…).
+        ActivityWiring.shared.install()
 
         // Rebuild the windows when the user picks a different display
         // OU bascule "afficher sur tous les écrans".
-        Publishers.CombineLatest(
+        Publishers.CombineLatest3(
             AppSettings.shared.$displayPreference.removeDuplicates(),
-            AppSettings.shared.$showOnAllScreens.removeDuplicates()
+            AppSettings.shared.$showOnAllScreens.removeDuplicates(),
+            AppSettings.shared.$forcePillMode.removeDuplicates()
         )
         .dropFirst()
         .receive(on: DispatchQueue.main)
-        .sink { [weak self] _, _ in
+        .sink { [weak self] _, _, _ in
             Log.app.info("display setting changed, rebuilding windows")
-            self?.rebuildApplicationWindows()
+            self?.rebuildApplicationWindows(force: true)
         }
         .store(in: &settingsObservers)
 
-        rebuildApplicationWindows()
+        rebuildApplicationWindows(force: true)
+
+        #if DEBUG
+            ActivitySimulator.handleLaunchArguments()
+        #endif
     }
 
     func applicationWillTerminate(_: Notification) {
@@ -80,15 +105,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppSettings.shared.displayPreference.resolve()
     }
 
-    @objc func rebuildApplicationWindows() {
-        defer { isFirstOpen = false }
-        // Détruit toutes les windows existantes proprement.
-        windowControllers.forEach { $0.destroy() }
-        windowControllers.removeAll()
+    @objc func screenParametersChanged() {
+        rebuildApplicationWindows(force: false)
+    }
 
-        // Liste des écrans à équiper :
-        //  - si `showOnAllScreens` : tous les NSScreen connectés
-        //  - sinon : juste celui désigné par `displayPreference`
+    /// Reconstruit les fenêtres si la configuration d'écrans a changé (ou si `force`).
+    /// `didChangeScreenParametersNotification` arrive souvent sans changement réel :
+    /// reconstruire à chaque fois provoquait un flash et perdait l'état.
+    func rebuildApplicationWindows(force: Bool) {
         let screens: [NSScreen]
         if AppSettings.shared.showOnAllScreens {
             screens = NSScreen.screens
@@ -97,16 +121,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             screens = []
         }
+        let forcePill = AppSettings.shared.forcePillMode
+        let layout = WindowLayout(screens: screens.map { ScreenDescriptor($0) }, forcePill: forcePill)
+        guard force || layout != lastLayout else { return }
+        lastLayout = layout
+        defer { isFirstOpen = false }
+
+        windowControllers.forEach { $0.destroy() }
+        windowControllers.removeAll()
 
         let shouldOpen = isFirstOpen && !isLaunchedAtLogin
         for (index, screen) in screens.enumerated() {
-            // openAfterCreate uniquement sur le 1er écran (pour ne pas
-            // ouvrir l'encoche partout au boot).
-            let controller = NotchWindowController(
+            // Ouverture au lancement sur le premier écran seulement.
+            let geometry = NotchGeometry(screen: ScreenDescriptor(screen), forcePill: forcePill)
+            windowControllers.append(NotchWindowController(
                 screen: screen,
+                geometry: geometry,
                 openAfterCreate: shouldOpen && index == 0
-            )
-            windowControllers.append(controller)
+            ))
         }
         Log.app.info("rebuilt \(self.windowControllers.count) notch window(s)")
     }
@@ -159,5 +191,3 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 }
-
-import Combine
