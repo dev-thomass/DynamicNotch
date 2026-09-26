@@ -158,6 +158,12 @@ public extension DS {
             case .micro: micro
             }
         }
+
+        // ─── Contenu ──────────────────────────────────────────────────────
+        /// Entrée du contenu qui émerge de l'encoche.
+        public static let emergeIn = Animation.spring(response: 0.38, dampingFraction: 0.82).delay(0.03)
+        /// Sortie : rétraction rapide vers l'encoche.
+        public static let emergeOut = Animation.easeIn(duration: 0.18)
     }
 }
 

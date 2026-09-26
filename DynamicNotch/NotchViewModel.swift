@@ -113,8 +113,10 @@ final class NotchViewModel: NSObject, ObservableObject {
     /// Change d'onglet (panneau ouvert seulement) et le mémorise.
     func selectTab(_ tab: NotchTab) {
         guard presentation.isOpened else { return }
-        tabSlideEdge = NotchTab.slideEdge(from: currentTab ?? lastTab, to: tab)
+        let from = currentTab ?? lastTab
+        tabSlideEdge = NotchTab.slideEdge(from: from, to: tab)
         lastTab = tab
+        if from != tab || currentTab == nil { hapticSender.send() }
         transition(to: .opened(.tab(tab)))
     }
 

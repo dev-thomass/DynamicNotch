@@ -176,6 +176,18 @@ final class NotchViewModelTests: XCTestCase {
         vm.destroy()
     }
 
+    func test_selectTab_sendsHaptic_onlyWhenTabChanges() {
+        let vm = makeViewModel()
+        vm.notchOpen(.boot)
+        var haptics = 0
+        let observation = vm.hapticSender.sink { haptics += 1 }
+        vm.selectTab(.agenda)
+        vm.selectTab(.agenda)
+        XCTAssertEqual(haptics, 1)
+        observation.cancel()
+        vm.destroy()
+    }
+
     func test_selectTab_whenClosed_isIgnored() {
         let vm = makeViewModel()
         vm.selectTab(.agenda)

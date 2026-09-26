@@ -14,8 +14,12 @@ struct NotchContentView: View {
         switch vm.contentType {
         case let .tab(tab):
             tabContent(tab)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .id(tab)
+                .transition(.tabSlide(from: vm.tabSlideEdge))
         case .settings:
             NotchSettingsView(vm: vm)
+                .transition(.emerge)
         }
     }
 

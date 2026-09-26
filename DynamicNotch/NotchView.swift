@@ -16,12 +16,6 @@ struct NotchView: View {
     @Namespace private var activityNamespace
     @State private var dropTargeting = false
 
-    /// Le contenu arrive après la coque et part avant elle.
-    private static let contentTransition: AnyTransition = .asymmetric(
-        insertion: .opacity.combined(with: .offset(y: -6)).animation(DS.Motion.expand.delay(0.08)),
-        removal: .opacity.animation(.easeOut(duration: 0.12))
-    )
-
     private var centerX: CGFloat { vm.geometry.notchCenterXInWindow }
 
     private func shape(_ m: ShellMetrics) -> NotchShellShape {
@@ -61,14 +55,14 @@ struct NotchView: View {
             CompactActivityView(id: id, notchWidth: vm.deviceNotchRect.width, namespace: activityNamespace)
                 .frame(height: vm.deviceNotchRect.height)
                 .id(id)
-                .transition(Self.contentTransition)
+                .transition(.emerge)
         case let .expanded(id):
             ExpandedActivityView(id: id, notchHeight: vm.deviceNotchRect.height, namespace: activityNamespace)
                 .id(id)
-                .transition(Self.contentTransition)
+                .transition(.emerge)
         case .opened:
             openedPanel
-                .transition(Self.contentTransition)
+                .transition(.emerge)
         }
     }
 
