@@ -73,14 +73,14 @@ struct NotchView: View {
     }
 
     private var openedPanel: some View {
-        VStack(spacing: vm.spacing) {
-            NotchHeaderView(vm: vm)
+        VStack(spacing: 0) {
+            NotchTopRow(vm: vm)
             NotchContentView(vm: vm)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, vm.spacing)
+                .padding(.top, 8)
+                .padding(.bottom, vm.spacing)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        // Le header reste collé en haut quel que soit le contenu de la page.
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(vm.spacing)
     }
 
     /// Pastille du nombre de fichiers en attente, à droite de la coque au

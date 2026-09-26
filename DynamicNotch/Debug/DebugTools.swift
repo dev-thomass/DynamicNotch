@@ -6,7 +6,7 @@
 //   - `--simulate <activité>` : déclenche une activité 1 s après le lancement ;
 //   - `--render-states <dossier>` : rend chaque état de la coque en PNG
 //     (ImageRenderer) puis quitte, sans autorisation d'enregistrement d'écran ;
-//   - une tuile « Simuler » dans le menu de l'encoche.
+//   - une simulation d'activité dans le menu « … » de la rangée de l'encoche.
 //
 
 #if DEBUG
@@ -88,22 +88,6 @@
                 vm.destroy()
             }
             print("rendu : \(states.count) états dans \(directory.path)")
-        }
-    }
-
-    struct DebugActivityTile: View {
-        let onPick: (String) -> Void
-
-        var body: some View {
-            Menu {
-                ForEach(ActivityID.samples.map(\.debugName), id: \.self) { name in
-                    Button(name) { onPick(name) }
-                }
-            } label: {
-                Label("Simuler", systemImage: "wand.and.stars")
-            }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
         }
     }
 #endif
