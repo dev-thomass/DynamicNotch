@@ -1,6 +1,6 @@
 # Privacy Policy — DynamicNotch
 
-_Last updated: 2026-05-09_
+_Last updated: 2026-09-26_
 
 DynamicNotch is a local-first macOS utility. This document explains what the app
 does and does not do with your data, in plain language.
