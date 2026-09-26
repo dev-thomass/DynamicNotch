@@ -4,55 +4,27 @@ import Foundation
 import LaunchAtLogin
 import SwiftUI
 
-class NotchViewModel: NSObject, ObservableObject {
+@MainActor
+final class NotchViewModel: NSObject, ObservableObject {
     var cancellables: Set<AnyCancellable> = []
-    let inset: CGFloat
+    /// Abonnement à `ActivityCenter`, posé par `setupCancellables()`.
+    var activityObservation: ActivityObservation?
+    let activities: ActivityCenter
+    private var isSuspendingActivities = false
 
-    init(inset: CGFloat = -4) {
-        self.inset = inset
+    /// `activities` à `nil` → `ActivityCenter.shared`. (Une valeur par défaut
+    /// `.shared` serait évaluée hors du MainActor en Swift 5 : avertissement.)
+    init(geometry: NotchGeometry = .preview, activities: ActivityCenter? = nil) {
+        self.geometry = geometry
+        self.activities = activities ?? .shared
         super.init()
         setupCancellables()
     }
 
-    deinit {
-        destroy()
-    }
-
-    let animation: Animation = .interactiveSpring(
-        duration: 0.5,
-        extraBounce: 0.25,
-        blendDuration: 0.125
-    )
-
-    /// Logical size of the opened panel — varies per content type so dense
-    /// views (Settings) can breathe without leaving the AirDrop+Tray layout
-    /// uselessly large.
-    ///
-    /// Driven off `contentType` (a `@Published` property) so SwiftUI
-    /// re-renders and animates the resize via the standard `vm.animation`
-    /// spring already applied at the call sites.
-    var notchOpenedSize: CGSize {
-        switch contentType {
-        // 180pt (au lieu de 160) donne 94pt par tuile widget après chrome.
-        // C'est confortable pour TOUS les widgets : Pomodoro a un intrinsic
-        // d'~82pt (ring + 3 boutons + texte), donc 94pt lui laisse de l'air,
-        // et les widgets simples (Notes, Calendar) utilisent l'espace
-        // sans avoir l'air vide.
-        case .normal:   .init(width: 600, height: 180)
-        case .menu:     .init(width: 600, height: 200)
-        // Settings : 3 colonnes (Apparence/Comportement | Affichage/Stockage |
-        // Pomodoro/Avancé) + section Widgets full-width en haut.
-        case .settings: .init(width: 880, height: 560)
-        }
-    }
+    /// Ressort des animations internes aux widgets.
+    let animation: Animation = DS.Motion.expand
 
     let dropDetectorRange: CGFloat = 32
-
-    enum Status: String, Codable, Hashable, Equatable {
-        case closed
-        case opened
-        case popping
-    }
 
     enum OpenReason: String, Codable, Hashable, Equatable {
         case click
@@ -67,34 +39,36 @@ class NotchViewModel: NSObject, ObservableObject {
         case settings
     }
 
-    var notchOpenedRect: CGRect {
-        .init(
-            x: screenRect.origin.x + (screenRect.width - notchOpenedSize.width) / 2,
-            y: screenRect.origin.y + screenRect.height - notchOpenedSize.height,
-            width: notchOpenedSize.width,
-            height: notchOpenedSize.height
-        )
-    }
-
-    var headlineOpenedRect: CGRect {
-        .init(
-            x: screenRect.origin.x + (screenRect.width - notchOpenedSize.width) / 2,
-            y: screenRect.origin.y + screenRect.height - deviceNotchRect.height,
-            width: notchOpenedSize.width,
-            height: deviceNotchRect.height
-        )
-    }
-
-    @Published private(set) var status: Status = .closed
+    @Published private(set) var presentation: NotchPresentation = .closed
+    @Published var geometry: NotchGeometry
     @Published var openReason: OpenReason = .unknown
-    @Published var contentType: ContentType = .normal
-
     @Published var spacing: CGFloat = 16
-    @Published var cornerRadius: CGFloat = 16
-    @Published var deviceNotchRect: CGRect = .zero
-    @Published var screenRect: CGRect = .zero
     @Published var optionKeyPressed: Bool = false
-    @Published var notchVisible: Bool = true
+
+    // MARK: géométrie (coordonnées écran AppKit)
+
+    var deviceNotchRect: CGRect { geometry.notchRect }
+    var screenRect: CGRect { geometry.screen.frame }
+    var hasHardwareNotch: Bool { geometry.hasHardwareNotch }
+    /// Marge de survol et de clic : élargie de 4 pt autour d'une vraie encoche.
+    var inset: CGFloat { hasHardwareNotch ? -4 : 0 }
+
+    var metrics: ShellMetrics {
+        presentation.metrics(notch: deviceNotchRect.size, hasHardwareNotch: hasHardwareNotch, scale: geometry.screen.scale)
+    }
+
+    var notchOpenedSize: CGSize { contentType.panelSize }
+
+    var notchOpenedRect: CGRect {
+        let size = notchOpenedSize
+        return CGRect(x: deviceNotchRect.midX - size.width / 2, y: screenRect.maxY - size.height, width: size.width, height: size.height)
+    }
+
+    /// Rectangle de la coque dans son état courant.
+    var currentShellRect: CGRect {
+        let m = metrics
+        return CGRect(x: deviceNotchRect.midX - m.bodyWidth / 2, y: screenRect.maxY - m.bodyHeight, width: m.bodyWidth, height: m.bodyHeight)
+    }
 
     @PublishedPersist(key: "selectedLanguage", defaultValue: .system)
     var selectedLanguage: Language
@@ -175,15 +149,44 @@ class NotchViewModel: NSObject, ObservableObject {
 
     let hapticSender = PassthroughSubject<Void, Never>()
 
+    // MARK: états
+
+    /// Contenu du panneau ouvert. L'écrire hors de l'état ouvert est sans effet.
+    var contentType: ContentType {
+        get {
+            if case let .opened(content) = presentation { return content }
+            return .normal
+        }
+        set {
+            guard presentation.isOpened else { return }
+            transition(to: .opened(newValue))
+        }
+    }
+
+    /// État de repos : l'activité en cours, sinon l'encoche nue.
+    var restingPresentation: NotchPresentation {
+        guard let display = activities.current else { return .closed }
+        return display.mode == .expanded ? .expanded(display.id) : .compact(display.id)
+    }
+
+    /// Seul point d'entrée des changements d'état : choisit le ressort.
+    func transition(to next: NotchPresentation) {
+        guard next != presentation else { return }
+        let kind = NotchPresentation.motion(from: presentation, to: next)
+        withAnimation(DS.Motion.animation(kind)) {
+            presentation = next
+        }
+    }
+
     func notchOpen(_ reason: OpenReason) {
         openReason = reason
-        status = .opened
-        contentType = .normal
-        // Only steal focus when the user explicitly clicked the notch.
-        // - On `.drag`, the user is interacting with another app (Finder, etc.) —
-        //   activating ourselves would tear that drag down and is the worst
-        //   possible UX for a menubar utility.
-        // - On `.boot`, we'd grab focus on every launch / screen change — noisy.
+        if !isSuspendingActivities {
+            isSuspendingActivities = true
+            activities.beginSuspension()
+        }
+        transition(to: .opened(.normal))
+        // Ne voler le focus que sur un clic explicite (pas pendant un
+        // glisser-déposer depuis une autre app, ni au lancement).
         if reason == .click {
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -191,16 +194,43 @@ class NotchViewModel: NSObject, ObservableObject {
 
     func notchClose() {
         openReason = .unknown
-        status = .closed
-        contentType = .normal
-    }
-
-    func showSettings() {
-        contentType = .settings
+        if isSuspendingActivities {
+            isSuspendingActivities = false
+            activities.endSuspension()
+        }
+        transition(to: restingPresentation)
     }
 
     func notchPop() {
-        openReason = .unknown
-        status = .popping
+        guard presentation == .closed else { return }
+        transition(to: .peek)
     }
+
+    func showSettings() {
+        transition(to: .opened(.settings))
+    }
+
+    /// Appelé par `ActivityCenter` : le panneau ouvert et l'aperçu ne sont pas interrompus.
+    func activityDidChange() {
+        guard !presentation.isOpened, presentation != .peek else { return }
+        transition(to: restingPresentation)
+    }
+
+    func destroy() {
+        cancellables.forEach { $0.cancel() }
+        cancellables.removeAll()
+        activityObservation?.cancel()
+        activityObservation = nil
+        if isSuspendingActivities {
+            isSuspendingActivities = false
+            activities.endSuspension()
+        }
+    }
+
+    #if DEBUG
+        /// Rendu PNG des états (DebugTools) : pose un état sans animation.
+        func setPresentationForRendering(_ state: NotchPresentation) {
+            presentation = state
+        }
+    #endif
 }

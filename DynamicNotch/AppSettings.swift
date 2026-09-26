@@ -34,16 +34,9 @@ final class AppSettings: ObservableObject {
     @PublishedPersist(key: "showOnAllScreens", defaultValue: false)
     var showOnAllScreens: Bool
 
-    // MARK: appearance
-
-    /// Multiplicateur d'opacité du shell quand l'encoche est au repos.
-    /// 1.0 = totalement opaque (défaut), 0.4 = fantôme (pratique sur fond clair).
-    @PublishedPersist(key: "notchOpacity", defaultValue: 1.0)
-    var notchOpacity: Double
-
     // MARK: behaviour
 
-    /// Quand `false`, le survol n'enclenche plus l'animation `.popping`.
+    /// Quand `false`, le survol n'enclenche plus l'aperçu (`.peek`).
     /// Certains trouvent l'effet visuellement bruyant.
     @PublishedPersist(key: "popOnHoverEnabled", defaultValue: true)
     var popOnHoverEnabled: Bool

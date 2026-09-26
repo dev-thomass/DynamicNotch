@@ -28,7 +28,6 @@ struct NotchSettingsView: View {
 
                 HStack(alignment: .top, spacing: DS.Spacing.md) {
                     VStack(alignment: .leading, spacing: DS.Spacing.md) {
-                        appearanceSection
                         behaviorSection
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -148,22 +147,6 @@ struct NotchSettingsView: View {
               ? Text(isActive ? "Retirer de la page" : "Ajouter à la page")
               : Text("Page pleine (max \(NotchViewModel.maxWidgetsPerPage) widgets)")
         )
-    }
-
-    // MARK: appearance
-
-    private var appearanceSection: some View {
-        sectionCard(title: "Apparence", systemImage: "paintbrush") {
-            HStack {
-                Text("Opacité de l'encoche").font(DS.Typography.caption)
-                Slider(value: $settings.notchOpacity, in: 0.4 ... 1.0, step: 0.05)
-                Text(String(format: "%.0f %%", settings.notchOpacity * 100))
-                    .font(DS.Typography.caption)
-                    .foregroundStyle(DS.Color.textSecondary)
-                    .monospacedDigit()
-                    .frame(width: 50, alignment: .trailing)
-            }
-        }
     }
 
     // MARK: behaviour
@@ -413,7 +396,6 @@ struct NotchSettingsView: View {
         let title = "Réinitialiser tous les réglages ?"
         let message = "Les préférences vont être restaurées aux valeurs par défaut. Vos fichiers déposés ne seront pas affectés."
         guard NSAlert.popConfirm(title: title, message: message, confirm: "Réinitialiser", destructive: true) else { return }
-        settings.notchOpacity = 1.0
         settings.popOnHoverEnabled = true
         settings.alwaysVisibleWhenClosed = false
         settings.escClosesNotch = true

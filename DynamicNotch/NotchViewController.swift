@@ -10,6 +10,8 @@ import SwiftUI
 class NotchViewController: NSHostingController<NotchView> {
     init(_ vm: NotchViewModel) {
         super.init(rootView: .init(vm: vm))
+        // La fenêtre a une taille fixe : SwiftUI ne doit pas la redimensionner.
+        sizingOptions = []
     }
 
     @available(*, unavailable)
