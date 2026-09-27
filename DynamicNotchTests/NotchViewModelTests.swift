@@ -223,6 +223,14 @@ final class NotchViewModelTests: XCTestCase {
 
     // MARK: HUD
 
+    func test_hudViews_observeInjectedController_notShared() {
+        let vm = makeViewModel()
+        XCTAssertTrue(HUDCardView(notchHeight: 32, hud: vm.hud).hud === hud)
+        XCTAssertTrue(NotchTopRow(vm: vm, hud: vm.hud).hud === hud)
+        XCTAssertFalse(hud === HUDController.shared)
+        vm.destroy()
+    }
+
     func test_hud_takesPrecedence_overActivity_thenRestsOnActivity() {
         center.setPersistent(.charging, active: true)
         let vm = makeViewModel()

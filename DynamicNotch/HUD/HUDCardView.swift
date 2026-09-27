@@ -10,7 +10,8 @@ import SwiftUI
 
 struct HUDCardView: View {
     let notchHeight: CGFloat
-    @ObservedObject private var hud = HUDController.shared
+    /// Canal du HUD de l'encoche (`NotchViewModel.hud`).
+    @ObservedObject var hud: HUDController
 
     var body: some View {
         let state = hud.current ?? hud.lastShown ?? HUDState(kind: .volume, level: 0)

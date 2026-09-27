@@ -61,7 +61,7 @@ struct NotchView: View {
                 .id(id)
                 .transition(.emerge)
         case .hud:
-            HUDCardView(notchHeight: vm.deviceNotchRect.height)
+            HUDCardView(notchHeight: vm.deviceNotchRect.height, hud: vm.hud)
                 .id("hud")
                 .transition(.emerge)
         case .opened:
@@ -72,7 +72,7 @@ struct NotchView: View {
 
     private var openedPanel: some View {
         VStack(spacing: 0) {
-            NotchTopRow(vm: vm)
+            NotchTopRow(vm: vm, hud: vm.hud)
             NotchContentView(vm: vm)
                 .padding(.horizontal, vm.spacing)
                 .padding(.top, 8)

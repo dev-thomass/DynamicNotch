@@ -11,7 +11,8 @@ import SwiftUI
 struct NotchTopRow: View {
     @ObservedObject var vm: NotchViewModel
     @ObservedObject private var battery = BatteryMonitor.shared
-    @ObservedObject private var hud = HUDController.shared
+    /// Canal du HUD de l'encoche (`NotchViewModel.hud`).
+    @ObservedObject var hud: HUDController
 
     var body: some View {
         HStack(spacing: 0) {
