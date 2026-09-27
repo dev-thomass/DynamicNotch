@@ -22,13 +22,6 @@ enum MediaKey: Equatable {
         default: return nil
         }
     }
-
-    var isVolume: Bool {
-        switch self {
-        case .volumeUp, .volumeDown, .mute: true
-        case .brightnessUp, .brightnessDown: false
-        }
-    }
 }
 
 struct MediaKeyEvent: Equatable {
