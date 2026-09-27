@@ -47,6 +47,8 @@ final class DisplayServicesBrightnessControl: BrightnessControl {
         guard CGGetOnlineDisplayList(0, nil, &count) == .success, count > 0 else { return nil }
         var displays = [CGDirectDisplayID](repeating: 0, count: Int(count))
         guard CGGetOnlineDisplayList(count, &displays, &count) == .success else { return nil }
-        return displays.first { CGDisplayIsBuiltin($0) != 0 }
+        return displays.first {
+            CGDisplayIsBuiltin($0) != 0 && CGDisplayIsActive($0) != 0 && CGDisplayIsAsleep($0) == 0
+        }
     }
 }
