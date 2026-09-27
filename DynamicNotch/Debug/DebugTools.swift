@@ -39,6 +39,10 @@
                 center.post(.nowPlaying)
             case "calendarSoon":
                 center.setPersistent(.calendarSoon, active: true)
+            case "hudVolume":
+                HUDController.shared.show(HUDState(kind: .volume, level: 0.62))
+            case "hudBrightness":
+                HUDController.shared.show(HUDState(kind: .brightness, level: 0.4))
             default:
                 Log.app.error("activité simulée inconnue : \(name, privacy: .public)")
             }
@@ -69,8 +73,13 @@
                 states.append(("compact-\(id.debugName)", .compact(id)))
                 states.append(("expanded-\(id.debugName)", .expanded(id)))
             }
+            states.append(("hud-volume", .hud(.volume)))
+            states.append(("hud-brightness", .hud(.brightness)))
 
             for (name, state) in states {
+                if case let .hud(kind) = state {
+                    HUDController.shared.show(HUDState(kind: kind, level: kind == .volume ? 0.62 : 0.4))
+                }
                 let vm = NotchViewModel(geometry: geometry)
                 vm.setPresentationForRendering(state)
                 // Haut de fenêtre seulement, sauf pour le panneau ouvert.

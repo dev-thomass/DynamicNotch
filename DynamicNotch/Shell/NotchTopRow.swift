@@ -105,7 +105,7 @@ enum NotchMoreMenu {
     #if DEBUG
         private static func simulationItem(for vm: NotchViewModel) -> NSMenuItem {
             let submenu = NSMenu()
-            for name in ActivityID.samples.map(\.debugName) {
+            for name in ActivityID.samples.map(\.debugName) + ["hudVolume", "hudBrightness"] {
                 submenu.addItem(MenuActionItem(name) {
                     vm.notchClose()
                     // Laisser le panneau se fermer : ouvert, il suspend les activités.

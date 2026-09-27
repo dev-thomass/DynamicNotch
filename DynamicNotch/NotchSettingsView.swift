@@ -16,6 +16,7 @@ struct NotchSettingsView: View {
     @ObservedObject var vm: NotchViewModel
     @ObservedObject var tvm: TrayDrop = .shared
     @ObservedObject var settings: AppSettings = .shared
+    @State private var hudTrusted = MediaKeyTap.shared.isTrusted
 
     var body: some View {
         // Layout 3 colonnes pour les groupes thématiques. Le ScrollView
@@ -26,6 +27,7 @@ struct NotchSettingsView: View {
                 HStack(alignment: .top, spacing: DS.Spacing.md) {
                     VStack(alignment: .leading, spacing: DS.Spacing.md) {
                         behaviorSection
+                        hudSection
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
@@ -103,6 +105,45 @@ struct NotchSettingsView: View {
                 .disabled(!settings.wingsEnabled)
                 .opacity(settings.wingsEnabled ? 1 : 0.5)
             }
+        }
+    }
+
+    // MARK: HUD
+
+    private var hudSection: some View {
+        sectionCard(title: "HUD volume et luminosité", systemImage: "speaker.wave.2") {
+            VStack(alignment: .leading, spacing: DS.Spacing.sm) {
+                Toggle(isOn: $settings.replaceSystemHUD) {
+                    settingLabel("Remplacer le HUD de macOS",
+                                 subtitle: "Les touches volume et luminosité s'affichent dans l'encoche")
+                }
+                HStack(spacing: DS.Spacing.sm) {
+                    Image(systemName: hudTrusted ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+                        .foregroundStyle(hudTrusted ? DS.Color.success : DS.Color.warning)
+                    Text(hudTrusted ? "Accessibilité autorisée" : "Accessibilité non autorisée")
+                        .font(DS.Typography.caption)
+                        .foregroundStyle(DS.Color.textSecondary)
+                    Spacer()
+                    if !hudTrusted {
+                        DSButton("Ouvrir Réglages Système", role: .secondary, size: .small) {
+                            MediaKeyTap.shared.requestTrust()
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
+                }
+                Toggle(isOn: Binding(
+                    get: { settings.volumeFeedback ?? VolumeFeedback.systemPreference },
+                    set: { settings.volumeFeedback = $0 }
+                )) {
+                    settingLabel("Son lors du changement de volume", subtitle: nil)
+                }
+            }
+        }
+        .onAppear { hudTrusted = MediaKeyTap.shared.isTrusted }
+        .onReceive(Timer.publish(every: 2, on: .main, in: .common).autoconnect()) { _ in
+            hudTrusted = MediaKeyTap.shared.isTrusted
         }
     }
 
@@ -311,6 +352,8 @@ struct NotchSettingsView: View {
         settings.wingStopwatch = true
         settings.wingPomodoro = true
         settings.wingCalendar = true
+        settings.replaceSystemHUD = true
+        settings.volumeFeedback = nil
         vm.hapticFeedback = true
     }
 
