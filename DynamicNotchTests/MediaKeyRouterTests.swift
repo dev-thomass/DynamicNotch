@@ -9,6 +9,7 @@ import XCTest
 @MainActor
 private final class FakeVolume: VolumeControl {
     var isSettable = true
+    var isMuteSettable = true
     var level = 0.5
     var isMuted = false
     var onVolumeChange: (() -> Void)?
@@ -94,7 +95,10 @@ final class MediaKeyRouterTests: XCTestCase {
 
         volume.isSettable = false
         router.refreshPolicy()
-        XCTAssertFalse(router.policy.shouldConsume(.mute))
+        XCTAssertFalse(router.policy.shouldConsume(.volumeUp))
+        XCTAssertFalse(router.policy.shouldConsume(.volumeDown))
+        // Le muet suit `isMuteSettable`, pas `isSettable`.
+        XCTAssertTrue(router.policy.shouldConsume(.mute))
         XCTAssertTrue(router.policy.shouldConsume(.brightnessDown))
 
         brightness.isAvailable = false
@@ -110,6 +114,18 @@ final class MediaKeyRouterTests: XCTestCase {
         router.replaceEnabled = false
         router.refreshPolicy()
         XCTAssertFalse(router.policy.shouldConsume(.volumeUp))
+    }
+
+    func test_policy_releasesMute_whenMuteNotSettable() {
+        volume.isMuteSettable = false
+        router.refreshPolicy()
+        XCTAssertFalse(router.policy.shouldConsume(.mute))
+        XCTAssertTrue(router.policy.shouldConsume(.volumeUp))
+        XCTAssertTrue(router.policy.shouldConsume(.volumeDown))
+    }
+
+    func test_policy_consumesMute_whenVolumeAndMuteSettable() {
+        XCTAssertTrue(router.policy.shouldConsume(.mute))
     }
 
     func test_externalVolumeChange_showsHUD() {

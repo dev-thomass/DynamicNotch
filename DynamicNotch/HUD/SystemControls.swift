@@ -12,6 +12,8 @@ import Foundation
 protocol VolumeControl: AnyObject {
     /// La sortie actuelle permet-elle de régler le volume principal ?
     var isSettable: Bool { get }
+    /// La sortie actuelle permet-elle de régler le muet ?
+    var isMuteSettable: Bool { get }
     /// 0…1
     var level: Double { get }
     var isMuted: Bool { get }

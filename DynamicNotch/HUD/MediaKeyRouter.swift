@@ -15,6 +15,7 @@ final class MediaKeyPolicy: @unchecked Sendable {
         var replaceEnabled = false
         var trusted = false
         var volumeSettable = false
+        var muteSettable = false
         var brightnessAvailable = false
     }
 
@@ -36,7 +37,14 @@ final class MediaKeyPolicy: @unchecked Sendable {
     func shouldConsume(_ key: MediaKey) -> Bool {
         let s = current
         guard s.replaceEnabled, s.trusted else { return false }
-        return key.isVolume ? s.volumeSettable : s.brightnessAvailable
+        switch key {
+        case .mute:
+            return s.muteSettable
+        case .volumeUp, .volumeDown:
+            return s.volumeSettable
+        case .brightnessUp, .brightnessDown:
+            return s.brightnessAvailable
+        }
     }
 }
 
@@ -73,6 +81,7 @@ final class MediaKeyRouter {
             replaceEnabled: replaceEnabled,
             trusted: trusted,
             volumeSettable: volume.isSettable,
+            muteSettable: volume.isMuteSettable,
             brightnessAvailable: brightness.isAvailable
         ))
     }

@@ -15,6 +15,7 @@ final class SystemControlsSmokeTests: XCTestCase {
         XCTAssertTrue((0 ... 1).contains(volume.level))
         _ = volume.isMuted
         _ = volume.isSettable
+        _ = volume.isMuteSettable
     }
 
     func test_brightness_readsWithinRange_whenAvailable() {

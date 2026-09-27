@@ -118,6 +118,14 @@ final class CoreAudioVolumeControl: VolumeControl {
         return settable.boolValue
     }
 
+    var isMuteSettable: Bool {
+        var address = Self.muteAddress
+        guard device != kAudioObjectUnknown, AudioObjectHasProperty(device, &address) else { return false }
+        var settable: DarwinBoolean = false
+        guard AudioObjectIsPropertySettable(device, &address, &settable) == noErr else { return false }
+        return settable.boolValue
+    }
+
     var level: Double {
         var address = Self.volumeAddress
         var value: Float32 = 0
