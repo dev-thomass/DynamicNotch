@@ -15,14 +15,16 @@ import XCTest
 final class NotchViewModelTests: XCTestCase {
     private var scheduler: ManualScheduler!
     private var center: ActivityCenter!
+    private var hud: HUDController!
 
     override func setUp() async throws {
         scheduler = ManualScheduler()
         center = ActivityCenter(scheduler: scheduler)
+        hud = HUDController(scheduler: scheduler)
     }
 
     private func makeViewModel() -> NotchViewModel {
-        let vm = NotchViewModel(geometry: .preview, activities: center)
+        let vm = NotchViewModel(geometry: .preview, activities: center, hud: hud)
         vm.lastTab = .home
         return vm
     }
@@ -216,6 +218,41 @@ final class NotchViewModelTests: XCTestCase {
         vm.showSettings()
         vm.closeSettings()
         XCTAssertEqual(vm.tabSlideEdge, .trailing)
+        vm.destroy()
+    }
+
+    // MARK: HUD
+
+    func test_hud_takesPrecedence_overActivity_thenRestsOnActivity() {
+        center.setPersistent(.charging, active: true)
+        let vm = makeViewModel()
+        XCTAssertEqual(vm.presentation, .compact(.charging))
+        hud.show(HUDState(kind: .volume, level: 0.5))
+        XCTAssertEqual(vm.presentation, .hud(.volume))
+        hud.show(HUDState(kind: .brightness, level: 0.4))
+        XCTAssertEqual(vm.presentation, .hud(.brightness))
+        scheduler.advance(by: 1.5)
+        XCTAssertEqual(vm.presentation, .compact(.charging))
+        vm.destroy()
+    }
+
+    func test_hud_doesNotInterruptOpenedPanel() {
+        let vm = makeViewModel()
+        vm.notchOpen(.boot)
+        hud.show(HUDState(kind: .volume, level: 0.5))
+        XCTAssertEqual(vm.presentation, .opened(.tab(.home)))
+        vm.notchClose()
+        XCTAssertEqual(vm.presentation, .hud(.volume))
+        vm.destroy()
+    }
+
+    func test_hud_overridesPeek() {
+        AppSettings.shared.popOnHoverEnabled = true
+        let vm = makeViewModel()
+        vm.notchPop()
+        XCTAssertEqual(vm.presentation, .peek)
+        hud.show(HUDState(kind: .volume, level: 0.5))
+        XCTAssertEqual(vm.presentation, .hud(.volume))
         vm.destroy()
     }
 }

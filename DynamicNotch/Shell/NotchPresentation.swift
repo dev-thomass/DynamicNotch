@@ -14,6 +14,7 @@ enum NotchPresentation: Equatable {
     case peek
     case compact(ActivityID)
     case expanded(ActivityID)
+    case hud(HUDKind)
     case opened(NotchViewModel.ContentType)
 
     var isOpened: Bool {
@@ -44,7 +45,7 @@ enum NotchPresentation: Equatable {
                 bodyHeight: notch.height, topRadius: ear,
                 bottomRadius: hasHardwareNotch ? 12 : notch.height / 2, hasShadow: false
             )
-        case .expanded:
+        case .expanded, .hud:
             // 80 pt pour l'encoche de 32 pt et la pilule de 24 pt ; plus haut
             // si l'encoche l'est, pour garder 48 pt de contenu sous elle.
             let height = max(80, notch.height + 48)
@@ -61,7 +62,7 @@ enum NotchPresentation: Equatable {
         case .closed: 0
         case .peek: 10
         case .compact: 20
-        case .expanded: 30
+        case .expanded, .hud: 30
         case .opened: 40
         }
     }

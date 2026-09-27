@@ -93,4 +93,12 @@ final class NotchPresentationTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(WingLayout.wingWidth(for: .stopwatch), text + 2 * WingLayout.padding)
         XCTAssertGreaterThanOrEqual(WingLayout.iconWidth, 25)
     }
+
+    func test_hud_metrics_andMotion() {
+        XCTAssertEqual(metrics(.hud(.volume)), ShellMetrics(bodyWidth: 340, bodyHeight: 80, topRadius: 10, bottomRadius: 24, hasShadow: true))
+        XCTAssertEqual(metrics(.hud(.brightness), hardware: false).topRadius, 0)
+        XCTAssertEqual(NotchPresentation.motion(from: .closed, to: .hud(.volume)), .expand)
+        XCTAssertEqual(NotchPresentation.motion(from: .hud(.volume), to: .compact(.charging)), .collapse)
+        XCTAssertEqual(NotchPresentation.motion(from: .hud(.volume), to: .hud(.brightness)), .expand)
+    }
 }

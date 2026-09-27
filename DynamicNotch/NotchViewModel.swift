@@ -10,6 +10,9 @@ final class NotchViewModel: NSObject, ObservableObject {
     /// Abonnement à `ActivityCenter`, posé par `setupCancellables()`.
     var activityObservation: ActivityObservation?
     let activities: ActivityCenter
+    let hud: HUDController
+    /// Abonnement à `HUDController`, posé par `setupCancellables()`.
+    var hudObservation: ActivityObservation?
     private var isSuspendingActivities = false
     /// Pointeur dans la coque au dernier mouvement : le retour haptique du
     /// survol des ailes ne part qu'à l'entrée.
@@ -17,9 +20,10 @@ final class NotchViewModel: NSObject, ObservableObject {
 
     /// `activities` à `nil` → `ActivityCenter.shared`. (Une valeur par défaut
     /// `.shared` serait évaluée hors du MainActor en Swift 5 : avertissement.)
-    init(geometry: NotchGeometry = .preview, activities: ActivityCenter? = nil) {
+    init(geometry: NotchGeometry = .preview, activities: ActivityCenter? = nil, hud: HUDController? = nil) {
         self.geometry = geometry
         self.activities = activities ?? .shared
+        self.hud = hud ?? .shared
         super.init()
         setupCancellables()
         // Une activité peut déjà être en cours (connexion, reconstruction des
@@ -122,8 +126,9 @@ final class NotchViewModel: NSObject, ObservableObject {
         transition(to: .opened(.tab(lastTab)))
     }
 
-    /// État de repos : l'activité en cours, sinon l'encoche nue.
+    /// État de repos : le HUD, sinon l'activité en cours, sinon l'encoche nue.
     var restingPresentation: NotchPresentation {
+        if let state = hud.current { return .hud(state.kind) }
         guard let display = activities.current else { return .closed }
         return display.mode == .expanded ? .expanded(display.id) : .compact(display.id)
     }
@@ -175,9 +180,11 @@ final class NotchViewModel: NSObject, ObservableObject {
         transition(to: .opened(.settings))
     }
 
-    /// Appelé par `ActivityCenter` : le panneau ouvert et l'aperçu ne sont pas interrompus.
+    /// Appelé par `ActivityCenter` et `HUDController` : le panneau ouvert n'est
+    /// jamais interrompu ; l'aperçu (survol) ne l'est que par le HUD.
     func activityDidChange() {
-        guard !presentation.isOpened, presentation != .peek else { return }
+        guard !presentation.isOpened else { return }
+        if presentation == .peek, hud.current == nil { return }
         transition(to: restingPresentation)
     }
 
@@ -186,6 +193,8 @@ final class NotchViewModel: NSObject, ObservableObject {
         cancellables.removeAll()
         activityObservation?.cancel()
         activityObservation = nil
+        hudObservation?.cancel()
+        hudObservation = nil
         if isSuspendingActivities {
             isSuspendingActivities = false
             activities.endSuspension()

@@ -60,6 +60,10 @@ struct NotchView: View {
             ExpandedActivityView(id: id, notchHeight: vm.deviceNotchRect.height, namespace: activityNamespace)
                 .id(id)
                 .transition(.emerge)
+        case .hud:
+            HUDCardView(notchHeight: vm.deviceNotchRect.height)
+                .id("hud")
+                .transition(.emerge)
         case .opened:
             openedPanel
                 .transition(.emerge)
@@ -92,7 +96,7 @@ struct NotchView: View {
     private var showsBadge: Bool {
         switch vm.presentation {
         case .closed, .compact: true
-        case .peek, .expanded, .opened: false
+        case .peek, .expanded, .hud, .opened: false
         }
     }
 

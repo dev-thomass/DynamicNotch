@@ -68,6 +68,10 @@ extension NotchViewModel {
         activityObservation = activities.observe { [weak self] _ in
             self?.activityDidChange()
         }
+
+        hudObservation = hud.observe { [weak self] _ in
+            self?.activityDidChange()
+        }
     }
 
     func handleMouseDown(at point: NSPoint) {

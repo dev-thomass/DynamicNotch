@@ -11,6 +11,7 @@ import SwiftUI
 struct NotchTopRow: View {
     @ObservedObject var vm: NotchViewModel
     @ObservedObject private var battery = BatteryMonitor.shared
+    @ObservedObject private var hud = HUDController.shared
 
     var body: some View {
         HStack(spacing: 0) {
@@ -47,16 +48,29 @@ struct NotchTopRow: View {
 
     private var trailing: some View {
         HStack(spacing: 10) {
-            if battery.hasBattery {
+            if let state = hud.current {
+                HStack(spacing: 6) {
+                    Image(systemName: HUDIcon.systemImage(kind: state.kind, level: state.level, isMuted: state.isMuted))
+                        .font(.system(size: 13, weight: .semibold))
+                        .contentTransition(.symbolEffect(.replace))
+                    HUDLevelBar(level: state.level, dimmed: state.isMuted, height: 4)
+                        .frame(width: 60)
+                }
+                .foregroundStyle(DS.Color.textSecondary)
+                .animation(DS.Motion.micro, value: state)
+                .transition(.opacity)
+            } else if battery.hasBattery {
                 Text("\(battery.percent) %")
                     .font(DS.Typography.caption)
                     .monospacedDigit()
                     .foregroundStyle(DS.Color.textSecondary)
                     .contentTransition(.numericText(value: Double(battery.percent)))
                     .animation(DS.Motion.micro, value: battery.percent)
+                    .transition(.opacity)
             }
             moreMenu
         }
+        .animation(DS.Motion.micro, value: hud.current != nil)
     }
 
     /// Bouton « … » : ouvre le menu natif sous le pointeur.

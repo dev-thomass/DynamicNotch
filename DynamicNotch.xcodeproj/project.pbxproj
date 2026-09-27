@@ -67,6 +67,7 @@
 		60AD62872C579F4400299297 /* NotchSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD62862C579F4400299297 /* NotchSettingsView.swift */; };
 		60B56CC912638C7452EE2813 /* NotchShellShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EAD3D3FF51AA7861ADF10A /* NotchShellShape.swift */; };
 		662A76DBC0B555F8A72F5297 /* WingLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F2EEDEB87473191497A4C4 /* WingLayout.swift */; };
+		6ADCD56833393FE5C5BA53A5 /* HUDCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923E694C87B425025E8A7E31 /* HUDCardView.swift */; };
 		6CC56AA37FEE2E5C70269D7D /* FilesTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE219D5A78A224CBF58604A /* FilesTabView.swift */; };
 		73BD685AB2E6957B25E85F73 /* NotchGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7762F5627C1BACEF1F6FF502 /* NotchGeometryTests.swift */; };
 		771D4F5EB0FED7F350DB5230 /* DSTransitions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6567D370C2D4EE0A7EEA27C7 /* DSTransitions.swift */; };
@@ -180,6 +181,7 @@
 		78E1E8AE280B0D0C94CCFD71 /* PowerEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PowerEvents.swift; sourceTree = "<group>"; };
 		88F2EEDEB87473191497A4C4 /* WingLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WingLayout.swift; sourceTree = "<group>"; };
 		8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PomodoroModelTests.swift; sourceTree = "<group>"; };
+		923E694C87B425025E8A7E31 /* HUDCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HUDCardView.swift; sourceTree = "<group>"; };
 		930A520A3EB05EF7291A1385 /* VolumeFeedback.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VolumeFeedback.swift; sourceTree = "<group>"; };
 		97EAD3D3FF51AA7861ADF10A /* NotchShellShape.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchShellShape.swift; sourceTree = "<group>"; };
 		9A990D514073038A2109BCE6 /* PersistTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistTests.swift; sourceTree = "<group>"; };
@@ -429,6 +431,7 @@
 				01F7D4132CA156D56FBCC3A0 /* MediaKeyRouter.swift */,
 				F167C921BE79B098BDC910FF /* MediaKeyTap.swift */,
 				930A520A3EB05EF7291A1385 /* VolumeFeedback.swift */,
+				923E694C87B425025E8A7E31 /* HUDCardView.swift */,
 			);
 			name = HUD;
 			path = HUD;
@@ -662,6 +665,7 @@
 				9C7963BC19B31CED34723887 /* MediaKeyRouter.swift in Sources */,
 				370E2F3BFF48277FDC075167 /* MediaKeyTap.swift in Sources */,
 				A7A6973CBED206C5E2180E86 /* VolumeFeedback.swift in Sources */,
+				6ADCD56833393FE5C5BA53A5 /* HUDCardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
