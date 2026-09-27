@@ -65,6 +65,7 @@
 		6CC56AA37FEE2E5C70269D7D /* FilesTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE219D5A78A224CBF58604A /* FilesTabView.swift */; };
 		73BD685AB2E6957B25E85F73 /* NotchGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7762F5627C1BACEF1F6FF502 /* NotchGeometryTests.swift */; };
 		771D4F5EB0FED7F350DB5230 /* DSTransitions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6567D370C2D4EE0A7EEA27C7 /* DSTransitions.swift */; };
+		783D3B84E7DB308B3D4D414D /* HUDController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1CE3E09160E7AEB55EAE36 /* HUDController.swift */; };
 		7C2DA7EB72C0B19F6E5F01E2 /* PersistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A990D514073038A2109BCE6 /* PersistTests.swift */; };
 		7D17CF4F2A49DAC4F209F404 /* ActivityCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B8959B44F9BDF8A50AA925 /* ActivityCenter.swift */; };
 		86D524CA874567BEC119C0DD /* DisplayPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */; };
@@ -74,6 +75,7 @@
 		A381FE031A523FADEC24070F /* MediaKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73DD65666FE2727FDBFE58B9 /* MediaKeyTests.swift */; };
 		A5645F8AE368C1F708F386A5 /* PowerEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E1E8AE280B0D0C94CCFD71 /* PowerEvents.swift */; };
 		AF276C285A87604AB1737EF5 /* BatteryGlyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = C838795216BE09B207860823 /* BatteryGlyph.swift */; };
+		B49FF0BFE3C76A581B7BC57F /* HUDControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB92ACC3F361CECE93961427 /* HUDControllerTests.swift */; };
 		B5A34EDEA2B0DDD6262E0404 /* ActivityScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D45AC6AE54D0C8F6AB26A2 /* ActivityScheduler.swift */; };
 		BF650DBD55E7D902C190A629 /* ActivityWiring.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C80C685144D9A51F715F7DD /* ActivityWiring.swift */; };
 		C14221CFE5E6BA34F31AAF10 /* PomodoroProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3909F68F1D9893523D61514F /* PomodoroProgressTests.swift */; };
@@ -154,6 +156,7 @@
 		50EFDB512C3BF7B4002D3E0F /* Ext+NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ext+NSImage.swift"; sourceTree = "<group>"; };
 		5615EECF941D6FDB2D216236 /* DataMigrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataMigrationTests.swift; sourceTree = "<group>"; };
 		59BB0950F9E4C65E8BF9B2B2 /* NotchViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchViewModelTests.swift; sourceTree = "<group>"; };
+		5A1CE3E09160E7AEB55EAE36 /* HUDController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HUDController.swift; sourceTree = "<group>"; };
 		5B8E583019FCD45BA7390B3B /* AgendaTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgendaTabView.swift; sourceTree = "<group>"; };
 		60AD62862C579F4400299297 /* NotchSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchSettingsView.swift; sourceTree = "<group>"; };
 		63ECCE76D68562305F5E3C4D /* DebugTools.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugTools.swift; sourceTree = "<group>"; };
@@ -179,6 +182,7 @@
 		D8C22AE43DD3E7D647DD70C5 /* StopwatchModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StopwatchModelTests.swift; sourceTree = "<group>"; };
 		D8E4BA15F311855328EB2CFD /* DynamicNotchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DynamicNotchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB23AA22D21361C000488F50 /* Activity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
+		DB92ACC3F361CECE93961427 /* HUDControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HUDControllerTests.swift; sourceTree = "<group>"; };
 		DEC100010000000000000001 /* DSTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSTokens.swift; sourceTree = "<group>"; };
 		DEC100010000000000000002 /* DSComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSComponents.swift; sourceTree = "<group>"; };
 		DEC100010000000000000003 /* DSGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSGallery.swift; sourceTree = "<group>"; };
@@ -261,6 +265,7 @@
 				3909F68F1D9893523D61514F /* PomodoroProgressTests.swift */,
 				E9AE9B52B866E7819DA4B220 /* ShareActivityTests.swift */,
 				73DD65666FE2727FDBFE58B9 /* MediaKeyTests.swift */,
+				DB92ACC3F361CECE93961427 /* HUDControllerTests.swift */,
 			);
 			name = DynamicNotchTests;
 			path = DynamicNotchTests;
@@ -399,6 +404,7 @@
 			children = (
 				272EDE5C63A0F9D61BE0167A /* MediaKey.swift */,
 				D7FF0D0F6B7C090679AAF54A /* HUDState.swift */,
+				5A1CE3E09160E7AEB55EAE36 /* HUDController.swift */,
 			);
 			name = HUD;
 			path = HUD;
@@ -552,6 +558,7 @@
 				C14221CFE5E6BA34F31AAF10 /* PomodoroProgressTests.swift in Sources */,
 				57E7B49A4020DE18DB39D8BB /* ShareActivityTests.swift in Sources */,
 				A381FE031A523FADEC24070F /* MediaKeyTests.swift in Sources */,
+				B49FF0BFE3C76A581B7BC57F /* HUDControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -622,6 +629,7 @@
 				2751289E4F3EE260674350C3 /* TimersTabView.swift in Sources */,
 				D65DB5FD89EF66CECB52596C /* MediaKey.swift in Sources */,
 				96E5ECECADE25513BE0EE8B5 /* HUDState.swift in Sources */,
+				783D3B84E7DB308B3D4D414D /* HUDController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
