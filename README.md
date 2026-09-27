@@ -13,6 +13,9 @@ and more — all behind a clean, customisable design system.
 
 - **Tabbed panel** — five tabs live around the notch (Home, Files, Timers,
   Notes, Agenda); the panel morphs out of the notch like the Dynamic Island.
+- **Volume & brightness HUD** — replaces the macOS HUD with a card that slides out
+  of the notch (needs Accessibility permission; falls back to showing it alongside
+  the system HUD without it). Built-in display brightness only.
 - **Built-in widgets**
   - **AirDrop** + generic file share
   - **Files** (drag-and-drop tray with auto-expiry)
@@ -51,6 +54,10 @@ open ~/Applications/DynamicNotch.app
 ```
 
 For development, just open `DynamicNotch.xcodeproj` in Xcode and ⌘R.
+
+To keep the Accessibility permission between builds, sign with your free personal
+team: add your Apple ID in Xcode → Settings → Accounts, then `Tools/build.sh`
+picks the "Apple Development" certificate automatically (or set `DEVELOPMENT_TEAM`).
 
 ## Project layout
 
