@@ -133,6 +133,13 @@ struct NotchSettingsView: View {
                         }
                     }
                 }
+                if !hudTrusted {
+                    // Une autorisation accordée à un build précédent (non signé) ne vaut plus.
+                    Text("Si DynamicNotch est déjà coché dans Réglages Système, retirez-le puis ajoutez-le à nouveau (nécessaire après une recompilation non signée).")
+                        .font(DS.Typography.caption)
+                        .foregroundStyle(DS.Color.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 Toggle(isOn: Binding(
                     get: { settings.volumeFeedback ?? VolumeFeedback.systemPreference },
                     set: { settings.volumeFeedback = $0 }
