@@ -114,6 +114,9 @@ final class MediaKeyTap {
     func install(router: MediaKeyRouter) {
         guard self.router == nil else { return }
         self.router = router
+        // Le puits Combine plus bas livre la valeur de façon asynchrone : sans
+        // ceci, le premier `refresh()` utiliserait la valeur par défaut du routeur.
+        router.replaceEnabled = AppSettings.shared.replaceSystemHUD
         tapRunLoop = MediaKeyTapThread.start()
         context = MediaKeyTapContext(policy: router.policy) { event in
             DispatchQueue.main.async {
