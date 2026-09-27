@@ -90,4 +90,15 @@ final class AppSettings: ObservableObject {
     /// Affiche le countdown vers le prochain événement (si dans < 60 min).
     @PublishedPersist(key: "wingCalendar", defaultValue: true)
     var wingCalendar: Bool
+
+    // MARK: HUD
+
+    /// Remplace le HUD de macOS (touches interceptées) quand l'autorisation
+    /// Accessibilité est accordée ; sinon, cohabitation.
+    @PublishedPersist(key: "replaceSystemHUD", defaultValue: true)
+    var replaceSystemHUD: Bool
+
+    /// Son lors du changement de volume. `nil` : suit la préférence macOS.
+    @PublishedPersist(key: "volumeFeedback", defaultValue: nil)
+    var volumeFeedback: Bool?
 }

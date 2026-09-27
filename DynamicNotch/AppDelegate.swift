@@ -72,6 +72,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Sources d'activités (batterie, Pomodoro, chrono, plateau, AirDrop…).
         ActivityWiring.shared.install()
 
+        // HUD volume / luminosité : interception des touches si autorisée.
+        let mediaKeys = MediaKeyRouter(
+            volume: CoreAudioVolumeControl(),
+            brightness: DisplayServicesBrightnessControl(),
+            hud: .shared,
+            policy: MediaKeyPolicy(),
+            playFeedback: { VolumeFeedback.play() }
+        )
+        MediaKeyTap.shared.install(router: mediaKeys)
+
         // Rebuild the windows when the user picks a different display
         // OU bascule "afficher sur tous les écrans".
         Publishers.CombineLatest3(

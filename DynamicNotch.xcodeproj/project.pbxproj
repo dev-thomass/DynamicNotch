@@ -21,6 +21,7 @@
 		2751289E4F3EE260674350C3 /* TimersTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20825DAD251435AB8D6702A7 /* TimersTabView.swift */; };
 		30AA5A399C7626FC0DFB94F3 /* AgendaPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47915161D17B7AD399AC5406 /* AgendaPlanner.swift */; };
 		3468277C304EB2183346370E /* DisplayServicesBrightnessControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D16ADC0346AF424BF0A3481 /* DisplayServicesBrightnessControl.swift */; };
+		370E2F3BFF48277FDC075167 /* MediaKeyTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = F167C921BE79B098BDC910FF /* MediaKeyTap.swift */; };
 		3B5F6E7E84AB8ADD66CB3A76 /* NotchPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D81B9560D6243B36771BC27 /* NotchPresentationTests.swift */; };
 		3F08A0FB78480425B93713C3 /* SystemControlsSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F64FF98ED603CADAB2AD0AC5 /* SystemControlsSmokeTests.swift */; };
 		3F6ECF323D2FA0B1C6F4F657 /* ActivityWiringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52148C73ECB0CE203AF01E2 /* ActivityWiringTests.swift */; };
@@ -80,6 +81,7 @@
 		A29881747A6D9C96002A3807 /* PomodoroModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */; };
 		A381FE031A523FADEC24070F /* MediaKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73DD65666FE2727FDBFE58B9 /* MediaKeyTests.swift */; };
 		A5645F8AE368C1F708F386A5 /* PowerEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E1E8AE280B0D0C94CCFD71 /* PowerEvents.swift */; };
+		A7A6973CBED206C5E2180E86 /* VolumeFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930A520A3EB05EF7291A1385 /* VolumeFeedback.swift */; };
 		AF276C285A87604AB1737EF5 /* BatteryGlyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = C838795216BE09B207860823 /* BatteryGlyph.swift */; };
 		B49FF0BFE3C76A581B7BC57F /* HUDControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB92ACC3F361CECE93961427 /* HUDControllerTests.swift */; };
 		B5A34EDEA2B0DDD6262E0404 /* ActivityScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D45AC6AE54D0C8F6AB26A2 /* ActivityScheduler.swift */; };
@@ -178,6 +180,7 @@
 		78E1E8AE280B0D0C94CCFD71 /* PowerEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PowerEvents.swift; sourceTree = "<group>"; };
 		88F2EEDEB87473191497A4C4 /* WingLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WingLayout.swift; sourceTree = "<group>"; };
 		8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PomodoroModelTests.swift; sourceTree = "<group>"; };
+		930A520A3EB05EF7291A1385 /* VolumeFeedback.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VolumeFeedback.swift; sourceTree = "<group>"; };
 		97EAD3D3FF51AA7861ADF10A /* NotchShellShape.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchShellShape.swift; sourceTree = "<group>"; };
 		9A990D514073038A2109BCE6 /* PersistTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistTests.swift; sourceTree = "<group>"; };
 		9AE219D5A78A224CBF58604A /* FilesTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FilesTabView.swift; sourceTree = "<group>"; };
@@ -203,6 +206,7 @@
 		E9AE9B52B866E7819DA4B220 /* ShareActivityTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareActivityTests.swift; sourceTree = "<group>"; };
 		EA8ADBBF6195483C8C93BFB4 /* AgendaPlannerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgendaPlannerTests.swift; sourceTree = "<group>"; };
 		F0E0A9B9EDFE3DC0CD55762B /* PowerEventsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PowerEventsTests.swift; sourceTree = "<group>"; };
+		F167C921BE79B098BDC910FF /* MediaKeyTap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MediaKeyTap.swift; sourceTree = "<group>"; };
 		F1X100010000000000000001 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		F1X100010000000000000002 /* DynamicNotchError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicNotchError.swift; sourceTree = "<group>"; };
 		F1X100010000000000000003 /* SingleInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleInstance.swift; sourceTree = "<group>"; };
@@ -423,6 +427,8 @@
 				CDFA199B1D75244EF9476651 /* CoreAudioVolumeControl.swift */,
 				3D16ADC0346AF424BF0A3481 /* DisplayServicesBrightnessControl.swift */,
 				01F7D4132CA156D56FBCC3A0 /* MediaKeyRouter.swift */,
+				F167C921BE79B098BDC910FF /* MediaKeyTap.swift */,
+				930A520A3EB05EF7291A1385 /* VolumeFeedback.swift */,
 			);
 			name = HUD;
 			path = HUD;
@@ -654,6 +660,8 @@
 				87E51981BB9F7F7D8DA5893B /* CoreAudioVolumeControl.swift in Sources */,
 				3468277C304EB2183346370E /* DisplayServicesBrightnessControl.swift in Sources */,
 				9C7963BC19B31CED34723887 /* MediaKeyRouter.swift in Sources */,
+				370E2F3BFF48277FDC075167 /* MediaKeyTap.swift in Sources */,
+				A7A6973CBED206C5E2180E86 /* VolumeFeedback.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
