@@ -97,7 +97,34 @@ git commit -m "docs: résultat du spike HUD"
 
 #### Résultat du spike
 
-_(à compléter par l'exécutant : sorties brutes des étapes 1 et 2, décision sur les entitlements)_
+**Date :** 2026-09-27, 12:04 CEST — macOS 26.6.2 (build 25G83), Swift 6.3.3, machine locale (compte thomasromeo.bonnardel@gmail.com).
+
+**Étape 1 — binaire non signé (ad hoc, sans entitlements) :**
+
+```
+DisplayServices dlopen: true
+brightness: 0 0.6892723
+volume: 0 0.75 settable: true
+AXIsProcessTrusted: false
+tap listenOnly créé: true
+```
+
+**Étape 2 — même binaire signé `codesign -f -s - --options runtime --entitlements DynamicNotch/DynamicNotch.entitlements` (runtime renforcé + `com.apple.security.hardened-process*`) :**
+
+```
+spike: replacing existing signature
+DisplayServices dlopen: true
+brightness: 0 0.6892723
+volume: 0 0.75 settable: true
+AXIsProcessTrusted: false
+tap listenOnly créé: true
+```
+
+**Constat :** sortie strictement identique entre les deux étapes. Le `dlopen` du framework privé DisplayServices et la lecture de la luminosité de l'écran intégré réussissent aussi bien sans signature qu'avec le runtime renforcé et les quatre clés `com.apple.security.hardened-process*` de `DynamicNotch/DynamicNotch.entitlements` (`hardened-process`, `hardened-process.dyld-ro`, `hardened-process.enhanced-security-version`, `hardened-process.platform-restrictions`). Le volume principal virtuel se lit (0.75) et est bien signalé réglable (`settable: true`) dans les deux cas.
+
+Concernant (c) : `AXIsProcessTrusted` est faux dans les deux cas, comme attendu pour un processus lancé depuis le terminal. Le tap `CGEvent.tapCreate` en mode `.listenOnly` sur `.cgSessionEventTap`, lui, a été créé avec succès (non nil) dans les deux cas plutôt que nil — un tap en écoute seule ne semble pas exiger la confiance Accessibility sur cette machine/config. Ceci reste cohérent avec la note du brief : la vérification de l'interception réelle (tap actif, pas seulement sa création) se fera à la main en tâche 8 avec l'app signée et le trust Accessibility accordé.
+
+**Décision :** aucune clé à retirer de `DynamicNotch/DynamicNotch.entitlements`. Le runtime renforcé et les entitlements actuels de l'app n'empêchent pas la lecture DisplayServices ; la tâche 7 n'a donc pas besoin de retirer une clé `hardened-process*` pour ce point.
 
 ---
 
