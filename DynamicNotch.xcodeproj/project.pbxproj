@@ -15,6 +15,7 @@
 		148901532DC9149900F2E06C /* Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901512DC9149900F2E06C /* Share.swift */; };
 		148901542DC9149900F2E06C /* Share+View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901522DC9149900F2E06C /* Share+View.swift */; };
 		180C4879C089AF91B8847641 /* NotchPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E8BA7466CAFC9B7AE2A908 /* NotchPresentation.swift */; };
+		189DCA1DF574BEAB1FB9F271 /* MediaKeyRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704AD7A92C3570EC640D245A /* MediaKeyRouterTests.swift */; };
 		26DD788D17323348AFD58B31 /* TrayDropFileStorageTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E726E1E067BC9371BC7E829D /* TrayDropFileStorageTimeTests.swift */; };
 		2700D8EE2C3CFD37005ACDDF /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 2700D8ED2C3CFD37005ACDDF /* Localizable.xcstrings */; };
 		2751289E4F3EE260674350C3 /* TimersTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20825DAD251435AB8D6702A7 /* TimersTabView.swift */; };
@@ -74,6 +75,7 @@
 		86D524CA874567BEC119C0DD /* DisplayPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */; };
 		87E51981BB9F7F7D8DA5893B /* CoreAudioVolumeControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFA199B1D75244EF9476651 /* CoreAudioVolumeControl.swift */; };
 		96E5ECECADE25513BE0EE8B5 /* HUDState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FF0D0F6B7C090679AAF54A /* HUDState.swift */; };
+		9C7963BC19B31CED34723887 /* MediaKeyRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F7D4132CA156D56FBCC3A0 /* MediaKeyRouter.swift */; };
 		9CFC7B873A05E98E9428CB63 /* AgendaTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8E583019FCD45BA7390B3B /* AgendaTabView.swift */; };
 		A29881747A6D9C96002A3807 /* PomodoroModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */; };
 		A381FE031A523FADEC24070F /* MediaKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73DD65666FE2727FDBFE58B9 /* MediaKeyTests.swift */; };
@@ -118,6 +120,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		01F7D4132CA156D56FBCC3A0 /* MediaKeyRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MediaKeyRouter.swift; sourceTree = "<group>"; };
 		020E4162E49FB914CEC36C65 /* NotchShellShapeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchShellShapeTests.swift; sourceTree = "<group>"; };
 		0C80C685144D9A51F715F7DD /* ActivityWiring.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivityWiring.swift; sourceTree = "<group>"; };
 		10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DisplayPreferenceTests.swift; sourceTree = "<group>"; };
@@ -167,6 +170,7 @@
 		63ECCE76D68562305F5E3C4D /* DebugTools.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugTools.swift; sourceTree = "<group>"; };
 		6567D370C2D4EE0A7EEA27C7 /* DSTransitions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DSTransitions.swift; sourceTree = "<group>"; };
 		6D81B9560D6243B36771BC27 /* NotchPresentationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchPresentationTests.swift; sourceTree = "<group>"; };
+		704AD7A92C3570EC640D245A /* MediaKeyRouterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MediaKeyRouterTests.swift; sourceTree = "<group>"; };
 		73DD65666FE2727FDBFE58B9 /* MediaKeyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MediaKeyTests.swift; sourceTree = "<group>"; };
 		7762F5627C1BACEF1F6FF502 /* NotchGeometryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchGeometryTests.swift; sourceTree = "<group>"; };
 		77FCD5E39BEAE468ADFE14D2 /* NotchTopRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchTopRow.swift; sourceTree = "<group>"; };
@@ -275,6 +279,7 @@
 				73DD65666FE2727FDBFE58B9 /* MediaKeyTests.swift */,
 				DB92ACC3F361CECE93961427 /* HUDControllerTests.swift */,
 				F64FF98ED603CADAB2AD0AC5 /* SystemControlsSmokeTests.swift */,
+				704AD7A92C3570EC640D245A /* MediaKeyRouterTests.swift */,
 			);
 			name = DynamicNotchTests;
 			path = DynamicNotchTests;
@@ -417,6 +422,7 @@
 				CD38B003A4708555A400660E /* SystemControls.swift */,
 				CDFA199B1D75244EF9476651 /* CoreAudioVolumeControl.swift */,
 				3D16ADC0346AF424BF0A3481 /* DisplayServicesBrightnessControl.swift */,
+				01F7D4132CA156D56FBCC3A0 /* MediaKeyRouter.swift */,
 			);
 			name = HUD;
 			path = HUD;
@@ -572,6 +578,7 @@
 				A381FE031A523FADEC24070F /* MediaKeyTests.swift in Sources */,
 				B49FF0BFE3C76A581B7BC57F /* HUDControllerTests.swift in Sources */,
 				3F08A0FB78480425B93713C3 /* SystemControlsSmokeTests.swift in Sources */,
+				189DCA1DF574BEAB1FB9F271 /* MediaKeyRouterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -646,6 +653,7 @@
 				5A1098FCC8C07C75BAAE773C /* SystemControls.swift in Sources */,
 				87E51981BB9F7F7D8DA5893B /* CoreAudioVolumeControl.swift in Sources */,
 				3468277C304EB2183346370E /* DisplayServicesBrightnessControl.swift in Sources */,
+				9C7963BC19B31CED34723887 /* MediaKeyRouter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
