@@ -15,9 +15,25 @@
 //  un pointeur de fonction C top-level et le même pointeur de « client data »
 //  qu'à l'ajout, le retrait fonctionne bien.
 //
+//  « Client data » : une boîte retenue qui pointe faiblement vers le contrôle,
+//  pas le contrôle lui-même. Un rappel déjà posté sur le fil principal quand le
+//  contrôle disparaît trouve alors `owner == nil` au lieu d'un pointeur libéré.
+//
 
 import AudioToolbox
 import CoreAudio
+
+/// Retenue par le contrôle (`passRetained`) et libérée dans son `deinit`, après
+/// le retrait de tous les écouteurs. `owner` n'est lu que sur le fil principal.
+final class CoreAudioListenerBox: @unchecked Sendable {
+    weak var owner: CoreAudioVolumeControl?
+
+    /// Boîte désignée par le « client data » d'un écouteur (non retenue ici :
+    /// la référence Swift renvoyée la retient le temps du rappel).
+    static func from(_ clientData: UnsafeMutableRawPointer) -> CoreAudioListenerBox {
+        Unmanaged<CoreAudioListenerBox>.fromOpaque(clientData).takeUnretainedValue()
+    }
+}
 
 /// Rappelée par CoreAudio (thread arbitraire) quand la sortie par défaut change.
 private func coreAudioDefaultDeviceListenerProc(
@@ -27,10 +43,10 @@ private func coreAudioDefaultDeviceListenerProc(
     _ clientData: UnsafeMutableRawPointer?
 ) -> OSStatus {
     guard let clientData else { return noErr }
-    let control = Unmanaged<CoreAudioVolumeControl>.fromOpaque(clientData).takeUnretainedValue()
+    let box = CoreAudioListenerBox.from(clientData)
     DispatchQueue.main.async {
         MainActor.assumeIsolated {
-            control.handleDefaultDeviceChanged()
+            box.owner?.handleDefaultDeviceChanged()
         }
     }
     return noErr
@@ -45,10 +61,10 @@ private func coreAudioDeviceValueListenerProc(
     _ clientData: UnsafeMutableRawPointer?
 ) -> OSStatus {
     guard let clientData else { return noErr }
-    let control = Unmanaged<CoreAudioVolumeControl>.fromOpaque(clientData).takeUnretainedValue()
+    let box = CoreAudioListenerBox.from(clientData)
     DispatchQueue.main.async {
         MainActor.assumeIsolated {
-            control.onVolumeChange?()
+            box.owner?.onVolumeChange?()
         }
     }
     return noErr
@@ -85,10 +101,19 @@ final class CoreAudioVolumeControl: VolumeControl {
         mElement: kAudioObjectPropertyElementMain
     )
 
+    /// « Client data » de tous les écouteurs : la `CoreAudioListenerBox`
+    /// retenue (mêmes valeurs à l'ajout et au retrait, faute de quoi CoreAudio
+    /// ne reconnaît pas l'écouteur). `nonisolated(unsafe)` : constante lue
+    /// aussi depuis `deinit`.
+    nonisolated(unsafe) let listenerClientData: UnsafeMutableRawPointer
+
     init() {
+        let box = CoreAudioListenerBox()
+        listenerClientData = Unmanaged.passRetained(box).toOpaque()
+        box.owner = self
         var address = Self.defaultOutputAddress
         AudioObjectAddPropertyListener(
-            AudioObjectID(kAudioObjectSystemObject), &address, coreAudioDefaultDeviceListenerProc, selfPtr
+            AudioObjectID(kAudioObjectSystemObject), &address, coreAudioDefaultDeviceListenerProc, listenerClientData
         )
         attach(to: Self.readDefaultDevice())
     }
@@ -96,19 +121,19 @@ final class CoreAudioVolumeControl: VolumeControl {
     deinit {
         var systemAddress = Self.defaultOutputAddress
         AudioObjectRemovePropertyListener(
-            AudioObjectID(kAudioObjectSystemObject), &systemAddress, coreAudioDefaultDeviceListenerProc, selfPtr
+            AudioObjectID(kAudioObjectSystemObject), &systemAddress, coreAudioDefaultDeviceListenerProc,
+            listenerClientData
         )
-        guard device != kAudioObjectUnknown else { return }
-        var volumeAddr = Self.volumeAddress
-        AudioObjectRemovePropertyListener(device, &volumeAddr, coreAudioDeviceValueListenerProc, selfPtr)
-        var muteAddr = Self.muteAddress
-        AudioObjectRemovePropertyListener(device, &muteAddr, coreAudioDeviceValueListenerProc, selfPtr)
+        if device != kAudioObjectUnknown {
+            var volumeAddr = Self.volumeAddress
+            AudioObjectRemovePropertyListener(device, &volumeAddr, coreAudioDeviceValueListenerProc, listenerClientData)
+            var muteAddr = Self.muteAddress
+            AudioObjectRemovePropertyListener(device, &muteAddr, coreAudioDeviceValueListenerProc, listenerClientData)
+        }
+        // Plus aucun écouteur : la boîte peut partir (un rappel déjà posté la
+        // retient encore et y trouvera `owner == nil`).
+        Unmanaged<CoreAudioListenerBox>.fromOpaque(listenerClientData).release()
     }
-
-    /// Pointeur non retenu vers `self`, utilisé comme « client data » pour
-    /// s'identifier auprès des procs C ci-dessus (mêmes valeurs à l'ajout et
-    /// au retrait, faute de quoi CoreAudio ne reconnaît pas l'écouteur).
-    private nonisolated var selfPtr: UnsafeMutableRawPointer { Unmanaged.passUnretained(self).toOpaque() }
 
     var isSettable: Bool {
         var address = Self.volumeAddress
@@ -184,19 +209,19 @@ final class CoreAudioVolumeControl: VolumeControl {
     private func addDeviceListeners(to device: AudioDeviceID) {
         var volumeAddr = Self.volumeAddress
         if AudioObjectHasProperty(device, &volumeAddr) {
-            AudioObjectAddPropertyListener(device, &volumeAddr, coreAudioDeviceValueListenerProc, selfPtr)
+            AudioObjectAddPropertyListener(device, &volumeAddr, coreAudioDeviceValueListenerProc, listenerClientData)
         }
         var muteAddr = Self.muteAddress
         if AudioObjectHasProperty(device, &muteAddr) {
-            AudioObjectAddPropertyListener(device, &muteAddr, coreAudioDeviceValueListenerProc, selfPtr)
+            AudioObjectAddPropertyListener(device, &muteAddr, coreAudioDeviceValueListenerProc, listenerClientData)
         }
     }
 
     private func removeDeviceListeners(from device: AudioDeviceID) {
         var volumeAddr = Self.volumeAddress
-        AudioObjectRemovePropertyListener(device, &volumeAddr, coreAudioDeviceValueListenerProc, selfPtr)
+        AudioObjectRemovePropertyListener(device, &volumeAddr, coreAudioDeviceValueListenerProc, listenerClientData)
         var muteAddr = Self.muteAddress
-        AudioObjectRemovePropertyListener(device, &muteAddr, coreAudioDeviceValueListenerProc, selfPtr)
+        AudioObjectRemovePropertyListener(device, &muteAddr, coreAudioDeviceValueListenerProc, listenerClientData)
     }
 
     private static func readDefaultDevice() -> AudioDeviceID {

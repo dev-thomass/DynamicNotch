@@ -18,6 +18,18 @@ final class SystemControlsSmokeTests: XCTestCase {
         _ = volume.isMuteSettable
     }
 
+    /// Un rappel CoreAudio déjà posté sur le fil principal retient la boîte
+    /// d'écouteur : après la libération du contrôle, il y trouve `owner == nil`.
+    func test_volume_listenerBox_losesOwner_whenControlIsFreed() {
+        var volume: CoreAudioVolumeControl? = CoreAudioVolumeControl()
+        weak var weakVolume = volume
+        let box = CoreAudioListenerBox.from(volume!.listenerClientData)
+        XCTAssertTrue(box.owner === volume)
+        volume = nil
+        XCTAssertNil(weakVolume)
+        XCTAssertNil(box.owner)
+    }
+
     func test_brightness_readsWithinRange_whenAvailable() {
         let brightness = DisplayServicesBrightnessControl()
         if brightness.isAvailable {
