@@ -297,7 +297,7 @@ jobs:
             echo
             echo "Télécharge **$APP_NAME-$VERSION.dmg** ci-dessous, ouvre-le et glisse $APP_NAME dans Applications."
             if [[ "${NOTARIZED:-0}" != 1 ]]; then
-              echo "Au premier lancement, macOS demande une autorisation : suis le [guide d'installation]($REPO_URL/blob/main/docs/INSTALLATION.md)."
+              echo "Au premier lancement, macOS demande une autorisation : suis le [guide d'installation]($REPO_URL/blob/$TAG/docs/INSTALLATION.md)."
             fi
             echo
             echo "Déjà installé ? L'app se met à jour toute seule (ou Réglages → Mises à jour → Rechercher)."

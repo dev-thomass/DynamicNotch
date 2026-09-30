@@ -62,9 +62,10 @@ Règles :
 ## 3. Envoyer l'app à un ami
 
 Envoie-lui simplement ce lien :
-**<https://github.com/dev-thomass/DynamicNotch/blob/main/docs/INSTALLATION.md>**
+**<https://github.com/dev-thomass/DynamicNotch/releases/latest>**
 
-Il y trouve le téléchargement, l'installation et l'autorisation du premier
+Il y trouve le `.dmg` et le lien vers le guide d'installation
+([INSTALLATION.md](INSTALLATION.md)), qui explique l'autorisation du premier
 lancement. Ensuite, les mises à jour arrivent toutes seules.
 
 Installe toi aussi ta copie « de tous les jours » depuis la Release : une app
