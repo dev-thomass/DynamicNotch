@@ -1,14 +1,15 @@
 # Privacy Policy — DynamicNotch
 
-_Last updated: 2026-09-26_
+_Last updated: 2026-09-30_
 
 DynamicNotch is a local-first macOS utility. This document explains what the app
 does and does not do with your data, in plain language.
 
 ## TL;DR
 
-- **No telemetry.** DynamicNotch never connects to the internet.
-- **No analytics, no crash reporters, no third-party SDKs.**
+- **No telemetry.** The only network request is the update check (see below).
+- **No analytics, no crash reporters.** The only third-party SDK is
+  [Sparkle](https://sparkle-project.org), the standard open-source macOS updater.
 - **No account, no sign-up.**
 - Files you drop into DynamicNotch stay on your Mac.
 
@@ -48,13 +49,27 @@ backup tools and search indexers:
 You can also reduce the retention window in Settings → Storage (default: 1 day).
 After expiration, DynamicNotch deletes the cached copy automatically.
 
+## Update checks
+
+Builds published on GitHub Releases check for a new version once a day (and
+when you click "Rechercher les mises à jour"). DynamicNotch downloads
+`appcast.xml` from `github.com/dev-thomass/DynamicNotch/releases`, and the new
+version's archive if you accept the update. The request carries only what any
+download does (your IP address, reaching GitHub, and a User-Agent with the app
+name and version); no system profile or identifier is sent. Downloaded updates
+are rejected unless they carry a valid EdDSA signature.
+
+Turn it off in Settings → Mises à jour → "Vérifier automatiquement".
+Builds you compile yourself never check for updates.
+
 ## What DynamicNotch does NOT do
 
-- It does not phone home.
-- It does not embed analytics, crash reporting, or any third-party SDK.
+- It does not send any data about you or your files anywhere.
+- It does not embed analytics or crash reporting.
 - It does not read files outside the ones you explicitly drop on the notch.
-- It does not access your microphone, camera, contacts, calendar, location, or
-  network.
+- It does not access your microphone, camera, contacts or location. The
+  calendar is read only if you allow it, to show your events in the Agenda
+  tab; nothing leaves your Mac.
 - It does not modify or upload the original files — only copies them.
 
 ## Sharing & AirDrop
@@ -67,7 +82,7 @@ not by DynamicNotch.
 ## Open source
 
 DynamicNotch is open source under the MIT license. You can audit every line of
-code at <https://github.com/Lakr233/DynamicNotch> and verify the claims above.
+code at <https://github.com/dev-thomass/DynamicNotch> and verify the claims above.
 
 ## Questions
 

@@ -10,5 +10,14 @@
 	<!-- Pre-macOS-14 fallback name for the same permission. -->
 	<key>NSCalendarsUsageDescription</key>
 	<string>DynamicNotch shows your next event in the notch panel.</string>
+	<!-- Mises à jour (Sparkle). Le flux pointe toujours vers la dernière
+	     GitHub Release. La clé publique SUPublicEDKey n'est PAS ici : le
+	     workflow release.yml l'injecte au build (voir docs/DISTRIBUTION.md). -->
+	<key>SUFeedURL</key>
+	<string>https://github.com/dev-thomass/DynamicNotch/releases/latest/download/appcast.xml</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>

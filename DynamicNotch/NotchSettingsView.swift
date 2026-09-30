@@ -16,6 +16,7 @@ struct NotchSettingsView: View {
     @ObservedObject var vm: NotchViewModel
     @ObservedObject var tvm: TrayDrop = .shared
     @ObservedObject var settings: AppSettings = .shared
+    @ObservedObject var updater: Updater = .shared
 
     var body: some View {
         // Layout 3 colonnes pour les groupes thématiques. Le ScrollView
@@ -26,6 +27,7 @@ struct NotchSettingsView: View {
                 HStack(alignment: .top, spacing: DS.Spacing.md) {
                     VStack(alignment: .leading, spacing: DS.Spacing.md) {
                         behaviorSection
+                        updatesSection
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
@@ -273,6 +275,41 @@ struct NotchSettingsView: View {
                 }
             }
         }
+    }
+
+    // MARK: updates
+
+    private var updatesSection: some View {
+        sectionCard(title: "Mises à jour", systemImage: "arrow.triangle.2.circlepath") {
+            VStack(alignment: .leading, spacing: DS.Spacing.sm) {
+                if updater.isAvailable {
+                    Toggle(isOn: automaticUpdatesBinding) {
+                        settingLabel("Vérifier automatiquement", subtitle: "Une fois par jour, sur GitHub")
+                    }
+                    DSButton(
+                        "Rechercher les mises à jour",
+                        systemImage: "arrow.down.circle",
+                        role: .secondary,
+                        size: .small
+                    ) {
+                        updater.checkForUpdates()
+                    }
+                    .disabled(!updater.canCheckForUpdates)
+                } else {
+                    settingLabel(
+                        "Indisponibles sur cette build",
+                        subtitle: "Seules les versions publiées sur GitHub se mettent à jour"
+                    )
+                }
+            }
+        }
+    }
+
+    private var automaticUpdatesBinding: Binding<Bool> {
+        Binding(
+            get: { updater.automaticallyChecksForUpdates },
+            set: { updater.automaticallyChecksForUpdates = $0 }
+        )
     }
 
     // MARK: advanced

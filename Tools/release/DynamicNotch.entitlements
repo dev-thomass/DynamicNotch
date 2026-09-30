@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Entitlements des builds distribuées (hors App Store, non sandboxées).
+	     Sous runtime renforcé (Developer ID), l'accès à EventKit exige cette
+	     clé, sinon l'onglet Agenda reste vide sans aucune demande d'accès. -->
+	<key>com.apple.security.personal-information.calendars</key>
+	<true/>
+</dict>
+</plist>

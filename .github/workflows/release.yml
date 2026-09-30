@@ -1,0 +1,326 @@
+name: Release
+
+# Publier une version (voir docs/DISTRIBUTION.md) :
+#   - GitHub → Actions → Release → Run workflow, en saisissant la version ;
+#   - ou en poussant un tag : git tag v1.2.0 && git push origin v1.2.0
+#
+# Sur un simple push de branche, le workflow fait une répétition à blanc :
+# build + signature + DMG, téléchargeables dans les artefacts du run, sans
+# rien publier.
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Numéro de version, ex. 1.2.0"
+        required: true
+      notes:
+        description: "Notes de version (facultatif, sinon générées depuis les commits)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type == 'branch' && github.event_name == 'push' }}
+
+env:
+  APP_NAME: DynamicNotch
+  REPO_URL: https://github.com/${{ github.repository }}
+
+jobs:
+  release:
+    name: Build, sign & publish
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            VERSION="${INPUT_VERSION#v}"
+            PUBLISH=true
+          elif [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            PUBLISH=true
+          else
+            VERSION="$(sed -nE 's/.*MARKETING_VERSION = ([^;]+);.*/\1/p' DynamicNotch.xcodeproj/project.pbxproj | head -1)"
+            PUBLISH=false
+          fi
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "::error::Version invalide « $VERSION » (attendu : 1.2 ou 1.2.3)."
+            exit 1
+          fi
+          TAG="v$VERSION"
+          if [[ "$PUBLISH" == true ]] && gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::La release $TAG existe déjà. Choisis un nouveau numéro de version."
+            exit 1
+          fi
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] && git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "::error::Le tag $TAG existe déjà. Choisis un nouveau numéro de version."
+            exit 1
+          fi
+          # Numéro de build toujours croissant : c'est lui que Sparkle compare.
+          BUILD="$(date -u +%Y%m%d%H%M)"
+          {
+            echo "version=$VERSION"
+            echo "build=$BUILD"
+            echo "tag=$TAG"
+            echo "publish=$PUBLISH"
+          } >> "$GITHUB_OUTPUT"
+          echo "Version $VERSION (build $BUILD), publication : $PUBLISH"
+
+      - name: Update signing key
+        id: key
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          PUBLISH: ${{ steps.version.outputs.publish }}
+        run: |
+          set -euo pipefail
+          KEY_FILE="$RUNNER_TEMP/sparkle-private-key"
+          umask 077
+          if [[ "$PUBLISH" == true ]]; then
+            if [[ -z "$SPARKLE_PRIVATE_KEY" ]]; then
+              echo "::error::Secret SPARKLE_PRIVATE_KEY absent. Lance une fois ./Tools/setup-updates.sh sur ton Mac (docs/DISTRIBUTION.md)."
+              exit 1
+            fi
+            printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY_FILE"
+          else
+            # Répétition : clé jetable, jamais embarquée dans l'app.
+            swift Tools/release/sparkle-key.swift generate | sed -n 1p > "$KEY_FILE"
+          fi
+          PUBLIC_KEY="$(swift Tools/release/sparkle-key.swift public < "$KEY_FILE")"
+
+          # Continuité : les copies installées ne font confiance qu'à la clé
+          # embarquée dans la version précédente. Une autre clé = plus aucune
+          # mise à jour possible pour elles.
+          if [[ "$PUBLISH" == true ]]; then
+            PREVIOUS="$(gh release list --exclude-drafts --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName // ""')"
+            if [[ -n "$PREVIOUS" ]] && gh release download "$PREVIOUS" --pattern "$APP_NAME-*.zip" --dir "$RUNNER_TEMP/previous" 2>/dev/null; then
+              ditto -x -k "$RUNNER_TEMP"/previous/*.zip "$RUNNER_TEMP/previous/app"
+              PREVIOUS_KEY="$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$RUNNER_TEMP/previous/app/$APP_NAME.app/Contents/Info.plist" 2>/dev/null || true)"
+              if [[ -n "$PREVIOUS_KEY" && "$PREVIOUS_KEY" != "$PUBLIC_KEY" ]]; then
+                echo "::error::SPARKLE_PRIVATE_KEY ne correspond plus à la clé de $PREVIOUS. Remets l'ancienne clé (trousseau : « DynamicNotch — clé privée des mises à jour »)."
+                exit 1
+              fi
+              echo "Clé identique à celle de $PREVIOUS ✓"
+            fi
+          fi
+          echo "key_file=$KEY_FILE" >> "$GITHUB_OUTPUT"
+          echo "public_key=$PUBLIC_KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Build (Release, universal)
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project DynamicNotch.xcodeproj \
+            -scheme DynamicNotch \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -derivedDataPath build/DerivedData \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build | xcbeautify --renderer github-actions
+          APP="build/DerivedData/Build/Products/Release/$APP_NAME.app"
+          test -d "$APP/Contents/Frameworks/Sparkle.framework"
+          lipo -info "$APP/Contents/MacOS/$APP_NAME"
+          mkdir -p dist
+          ditto "$APP" "dist/$APP_NAME.app"
+
+      - name: Embed update key
+        if: steps.version.outputs.publish == 'true'
+        env:
+          PUBLIC_KEY: ${{ steps.key.outputs.public_key }}
+        run: |
+          set -euo pipefail
+          PLIST="dist/$APP_NAME.app/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Delete :SUPublicEDKey" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :SUPublicEDKey string $PUBLIC_KEY" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Print :SUFeedURL" "$PLIST"
+
+      - name: Import Developer ID certificate (optional)
+        id: identity
+        env:
+          P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$P12_BASE64" ]]; then
+            echo "Pas de certificat Developer ID : signature ad hoc."
+            exit 0
+          fi
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          printf '%s' "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          # shellcheck disable=SC2046
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN" | sed -nE 's/.*"(Developer ID Application[^"]*)".*/\1/p' | head -1)"
+          if [[ -z "$IDENTITY" ]]; then
+            echo "::error::Aucune identité « Developer ID Application » dans le certificat fourni."
+            exit 1
+          fi
+          echo "identity=$IDENTITY" >> "$GITHUB_OUTPUT"
+
+      - name: Sign app
+        env:
+          IDENTITY: ${{ steps.identity.outputs.identity }}
+        run: Tools/release/sign-app.sh "dist/$APP_NAME.app" "$IDENTITY"
+
+      - name: Notarize app (optional)
+        if: steps.identity.outputs.identity != ''
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$NOTARY_APPLE_ID" || -z "$NOTARY_TEAM_ID" || -z "$NOTARY_PASSWORD" ]]; then
+            echo "::warning::Secrets NOTARY_* absents : app signée Developer ID mais non notarisée."
+            exit 0
+          fi
+          ditto -c -k --keepParent "dist/$APP_NAME.app" "$RUNNER_TEMP/notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
+            --apple-id "$NOTARY_APPLE_ID" --team-id "$NOTARY_TEAM_ID" --password "$NOTARY_PASSWORD" \
+            --wait --timeout 30m
+          xcrun stapler staple "dist/$APP_NAME.app"
+          echo "NOTARIZED=1" >> "$GITHUB_ENV"
+
+      - name: Package (zip + dmg)
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          IDENTITY: ${{ steps.identity.outputs.identity }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          cd dist
+          ZIP="$APP_NAME-$VERSION.zip"
+          DMG="$APP_NAME-$VERSION.dmg"
+          # Archive des mises à jour Sparkle (format recommandé par Sparkle).
+          ditto -c -k --sequesterRsrc --keepParent "$APP_NAME.app" "$ZIP"
+
+          # Image disque pour la première installation : glisser l'app sur Applications.
+          STAGING="$RUNNER_TEMP/dmg"
+          mkdir -p "$STAGING"
+          ditto "$APP_NAME.app" "$STAGING/$APP_NAME.app"
+          ln -s /Applications "$STAGING/Applications"
+          hdiutil create -volname "$APP_NAME" -srcfolder "$STAGING" -fs HFS+ -format UDZO -ov "$DMG"
+          if [[ -n "$IDENTITY" ]]; then
+            codesign --force --sign "$IDENTITY" --timestamp "$DMG"
+            if [[ "${NOTARIZED:-0}" == 1 ]]; then
+              xcrun notarytool submit "$DMG" \
+                --apple-id "$NOTARY_APPLE_ID" --team-id "$NOTARY_TEAM_ID" --password "$NOTARY_PASSWORD" \
+                --wait --timeout 30m
+              xcrun stapler staple "$DMG"
+            fi
+          fi
+          hdiutil verify "$DMG"
+          ls -lh
+
+      - name: Sign update & write appcast
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+          TAG: ${{ steps.version.outputs.tag }}
+          KEY_FILE: ${{ steps.key.outputs.key_file }}
+          PUBLIC_KEY: ${{ steps.key.outputs.public_key }}
+          NOTES_INPUT: ${{ inputs.notes }}
+        run: |
+          set -euo pipefail
+          ZIP="dist/$APP_NAME-$VERSION.zip"
+          SIGN_UPDATE="$(find build/DerivedData/SourcePackages/artifacts -type f -path '*/bin/sign_update' | head -1)"
+          if [[ -z "$SIGN_UPDATE" ]]; then
+            echo "::error::sign_update introuvable dans les artefacts du paquet Sparkle."
+            exit 1
+          fi
+          SIGNATURE_LINE="$("$SIGN_UPDATE" --ed-key-file "$KEY_FILE" "$ZIP")"
+          SIGNATURE="$(sed -nE 's/.*sparkle:edSignature="([^"]+)".*/\1/p' <<<"$SIGNATURE_LINE")"
+          LENGTH="$(stat -f%z "$ZIP")"
+          # Contre-vérification indépendante de Sparkle (CryptoKit).
+          swift Tools/release/sparkle-key.swift verify "$ZIP" "$SIGNATURE" "$PUBLIC_KEY"
+
+          python3 Tools/release/release.py notes --tag "$TAG" --text "$NOTES_INPUT" > dist/notes.md
+          python3 Tools/release/release.py appcast \
+            --version "$VERSION" --build "$BUILD" \
+            --url "$REPO_URL/releases/download/$TAG/$APP_NAME-$VERSION.zip" \
+            --signature "$SIGNATURE" --length "$LENGTH" \
+            --notes-file dist/notes.md --output dist/appcast.xml
+          xmllint --noout dist/appcast.xml
+          cat dist/appcast.xml
+
+          {
+            cat dist/notes.md
+            echo
+            echo "---"
+            echo
+            echo "### Installation"
+            echo
+            echo "Télécharge **$APP_NAME-$VERSION.dmg** ci-dessous, ouvre-le et glisse $APP_NAME dans Applications."
+            if [[ "${NOTARIZED:-0}" != 1 ]]; then
+              echo "Au premier lancement, macOS demande une autorisation : suis le [guide d'installation]($REPO_URL/blob/main/docs/INSTALLATION.md)."
+            fi
+            echo
+            echo "Déjà installé ? L'app se met à jour toute seule (ou Réglages → Mises à jour → Rechercher)."
+          } > dist/release-notes.md
+          rm -f "$KEY_FILE"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-${{ steps.version.outputs.version }}-${{ steps.version.outputs.build }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/appcast.xml
+            dist/release-notes.md
+          retention-days: 14
+
+      - name: Publish GitHub Release
+        if: steps.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" \
+            "dist/$APP_NAME-$VERSION.dmg" \
+            "dist/$APP_NAME-$VERSION.zip" \
+            dist/appcast.xml \
+            --target "$GITHUB_SHA" \
+            --title "$APP_NAME $VERSION" \
+            --notes-file dist/release-notes.md \
+            --latest
+          echo "### 🎉 $APP_NAME $VERSION publiée" >> "$GITHUB_STEP_SUMMARY"
+          echo "$REPO_URL/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Cleanup keychain
+        if: always() && steps.identity.outputs.identity != ''
+        run: security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true

@@ -33,6 +33,15 @@ and more — all behind a clean, customisable design system.
 - **Native flock-based single instance**, focus-stealing avoidance, full
   EventMonitor throttling, accessibility labels everywhere.
 
+## Install
+
+Download the latest `.dmg` from
+[Releases](https://github.com/dev-thomass/DynamicNotch/releases/latest) —
+step-by-step guide (in French): [docs/INSTALLATION.md](docs/INSTALLATION.md).
+Installed copies update themselves (Sparkle).
+
+Publishing a new version: [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md).
+
 ## Build
 
 ```bash
@@ -51,6 +60,7 @@ open ~/Applications/DynamicNotch.app
 ```
 
 For development, just open `DynamicNotch.xcodeproj` in Xcode and ⌘R.
+Local builds don't embed the update key, so they never auto-update.
 
 ## Project layout
 
@@ -65,8 +75,10 @@ DynamicNotch/
 
 ## Privacy
 
-Everything stays on your Mac. No telemetry, no analytics, no network
-calls. See `Resources/Privacy.md` for the full breakdown.
+Everything stays on your Mac. No telemetry, no analytics. The only network
+request is the daily update check against this repository's GitHub Releases
+(can be turned off in Settings). See `Resources/Privacy.md` for the full
+breakdown.
 
 ## License
 

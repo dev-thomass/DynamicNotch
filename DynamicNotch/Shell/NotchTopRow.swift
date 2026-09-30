@@ -74,6 +74,12 @@ enum NotchMoreMenu {
         let menu = NSMenu()
         menu.addItem(MenuActionItem("Réglages…") { vm.showSettings() })
         menu.addItem(MenuActionItem("Vider les fichiers…") { NotchActions.confirmAndClearTray(vm) })
+        if Updater.shared.isAvailable {
+            menu.addItem(MenuActionItem("Rechercher les mises à jour…") {
+                vm.notchClose()
+                Updater.shared.checkForUpdates()
+            })
+        }
         #if DEBUG
             menu.addItem(simulationItem(for: vm))
         #endif

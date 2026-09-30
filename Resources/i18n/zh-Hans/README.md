@@ -20,7 +20,7 @@
 
 ## 🚀 使用方法
 
-请从 [Releases](https://github.com/Lakr233/DynamicNotch/releases) 页面下载最新版本。
+请从 [Releases](https://github.com/dev-thomass/DynamicNotch/releases) 页面下载最新版本。
 
 ## 🧑‍⚖️ 许可证
 

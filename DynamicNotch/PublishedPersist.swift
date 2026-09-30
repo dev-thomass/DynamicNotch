@@ -19,7 +19,7 @@ private let valueDecoder = JSONDecoder()
 /// File unique et sérielle pour toutes les écritures de réglages : deux
 /// changements rapprochés d'une même clé ne peuvent plus être réordonnés.
 /// Les tests appellent `persistWriteQueue.sync {}` pour attendre l'écriture.
-let persistWriteQueue = DispatchQueue(label: "wiki.qaq.DynamicNotch.persist")
+let persistWriteQueue = DispatchQueue(label: "DynamicNotch.persist")
 private let configDir = dataDirectory
     .appendingPathComponent("Config")
 

@@ -71,6 +71,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         _ = EventMonitors.shared
         // Sources d'activités (batterie, Pomodoro, chrono, plateau, AirDrop…).
         ActivityWiring.shared.install()
+        // Mises à jour automatiques (no-op sur une build locale sans clé).
+        Updater.shared.start()
 
         // Rebuild the windows when the user picks a different display
         // OU bascule "afficher sur tous les écrans".
