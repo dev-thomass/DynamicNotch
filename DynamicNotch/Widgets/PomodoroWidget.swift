@@ -215,7 +215,7 @@ final class PomodoroModel {
 
 struct PomodoroWidgetView: View {
     @ObservedObject var vm: NotchViewModel
-    private var model = PomodoroModel.shared
+    private let model = PomodoroModel.shared
 
     var body: some View {
         VStack(spacing: DS.Spacing.xs) {

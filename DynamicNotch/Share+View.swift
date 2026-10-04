@@ -54,7 +54,7 @@ struct ShareView: View {
     @State private var hover = false
     /// Incrémenté à l'entrée d'un glisser seulement : le rebond ne joue pas à la sortie.
     @State private var dropBounces = 0
-    private var shareActivity = ShareActivity.shared
+    private let shareActivity = ShareActivity.shared
 
     var body: some View {
         content

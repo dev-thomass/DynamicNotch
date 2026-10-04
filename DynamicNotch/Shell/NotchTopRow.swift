@@ -10,7 +10,7 @@ import SwiftUI
 
 struct NotchTopRow: View {
     @ObservedObject var vm: NotchViewModel
-    private var battery = BatteryMonitor.shared
+    private let battery = BatteryMonitor.shared
 
     var body: some View {
         HStack(spacing: 0) {

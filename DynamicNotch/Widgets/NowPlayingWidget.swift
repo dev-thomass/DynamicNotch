@@ -234,7 +234,7 @@ final class NowPlayingManager {
 
 struct NowPlayingWidgetView: View {
     @ObservedObject var vm: NotchViewModel
-    private var player = NowPlayingManager.shared
+    private let player = NowPlayingManager.shared
 
     var body: some View {
         HStack(spacing: DS.Spacing.sm) {
