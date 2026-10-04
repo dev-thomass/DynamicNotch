@@ -11,6 +11,7 @@
 		07A7A42F9414EDEDF308A60B /* NotchTopRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77FCD5E39BEAE468ADFE14D2 /* NotchTopRow.swift */; };
 		0810ACE9E511B32EEC8292E2 /* DataMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5615EECF941D6FDB2D216236 /* DataMigrationTests.swift */; };
 		0A2852818EA13D47213C6CCE /* NotchTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3565F7630AD533FBEFED069B /* NotchTab.swift */; };
+		12C7C6B60B0494560B5CEA5C /* MediaRemoteAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B6B79E066897C41F7DB607 /* MediaRemoteAdapter.swift */; };
 		14131CA1EE7EEF435E1B3976 /* StopwatchModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C22AE43DD3E7D647DD70C5 /* StopwatchModelTests.swift */; };
 		148901532DC9149900F2E06C /* Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901512DC9149900F2E06C /* Share.swift */; };
 		148901542DC9149900F2E06C /* Share+View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148901522DC9149900F2E06C /* Share+View.swift */; };
@@ -75,6 +76,7 @@
 		9CFC7B873A05E98E9428CB63 /* AgendaTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8E583019FCD45BA7390B3B /* AgendaTabView.swift */; };
 		A29881747A6D9C96002A3807 /* PomodoroModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */; };
 		A5645F8AE368C1F708F386A5 /* PowerEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E1E8AE280B0D0C94CCFD71 /* PowerEvents.swift */; };
+		A9E5ABBBD6CD5BE1C6E61476 /* MediaRemoteAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F869BBBFD587DC199D5B9C3 /* MediaRemoteAdapterTests.swift */; };
 		AF276C285A87604AB1737EF5 /* BatteryGlyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = C838795216BE09B207860823 /* BatteryGlyph.swift */; };
 		B5A34EDEA2B0DDD6262E0404 /* ActivityScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D45AC6AE54D0C8F6AB26A2 /* ActivityScheduler.swift */; };
 		BF650DBD55E7D902C190A629 /* ActivityWiring.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C80C685144D9A51F715F7DD /* ActivityWiring.swift */; };
@@ -117,6 +119,7 @@
 
 /* Begin PBXFileReference section */
 		020E4162E49FB914CEC36C65 /* NotchShellShapeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchShellShapeTests.swift; sourceTree = "<group>"; };
+		09B6B79E066897C41F7DB607 /* MediaRemoteAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MediaRemoteAdapter.swift; sourceTree = "<group>"; };
 		0C80C685144D9A51F715F7DD /* ActivityWiring.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivityWiring.swift; sourceTree = "<group>"; };
 		10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DisplayPreferenceTests.swift; sourceTree = "<group>"; };
 		148901512DC9149900F2E06C /* Share.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Share.swift; sourceTree = "<group>"; };
@@ -130,6 +133,7 @@
 		3909F68F1D9893523D61514F /* PomodoroProgressTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PomodoroProgressTests.swift; sourceTree = "<group>"; };
 		47915161D17B7AD399AC5406 /* AgendaPlanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgendaPlanner.swift; sourceTree = "<group>"; };
 		48FF6D1ED046148654903767 /* ClipboardTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClipboardTabView.swift; sourceTree = "<group>"; };
+		4F869BBBFD587DC199D5B9C3 /* MediaRemoteAdapterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MediaRemoteAdapterTests.swift; sourceTree = "<group>"; };
 		501F0E8B2C59E6BD00F0113C /* Language.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Language.swift; sourceTree = "<group>"; };
 		502E41D52C3CEC990060660E /* Ext+NSAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ext+NSAlert.swift"; sourceTree = "<group>"; };
 		504381802C3A86EA000ED325 /* DynamicNotch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DynamicNotch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -272,6 +276,7 @@
 				A1F7B63928A250BCE3C25902 /* NowPlayingTests.swift */,
 				50CA51181DDA34C443CF779A /* PomodoroNotifierTests.swift */,
 				7C879FEA7A6D49FA0599FA18 /* ClipboardHistoryTests.swift */,
+				4F869BBBFD587DC199D5B9C3 /* MediaRemoteAdapterTests.swift */,
 			);
 			name = DynamicNotchTests;
 			path = DynamicNotchTests;
@@ -425,6 +430,7 @@
 				W1D100010000000000000006 /* CalendarWidget.swift */,
 				47915161D17B7AD399AC5406 /* AgendaPlanner.swift */,
 				25CC9B6FE89E6C79FAC68076 /* PomodoroNotifier.swift */,
+				09B6B79E066897C41F7DB607 /* MediaRemoteAdapter.swift */,
 			);
 			path = Widgets;
 			sourceTree = "<group>";
@@ -457,6 +463,7 @@
 				5043817C2C3A86EA000ED325 /* Sources */,
 				5043817D2C3A86EA000ED325 /* Frameworks */,
 				5043817E2C3A86EA000ED325 /* Resources */,
+				BA31C1B6AEADC7187DD2E11C /* Build MediaRemoteAdapter */,
 			);
 			buildRules = (
 			);
@@ -541,6 +548,29 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		BA31C1B6AEADC7187DD2E11C /* Build MediaRemoteAdapter */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build MediaRemoteAdapter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"$SRCROOT/Tools/build-mediaremote-adapter.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		2EB4B06B66554423F07929C6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -566,6 +596,7 @@
 				D4D489CCC9BC91E129223DB1 /* NowPlayingTests.swift in Sources */,
 				C3A0FF6D1F620E608058AB7D /* PomodoroNotifierTests.swift in Sources */,
 				195C8600337098E40610A54C /* ClipboardHistoryTests.swift in Sources */,
+				A9E5ABBBD6CD5BE1C6E61476 /* MediaRemoteAdapterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -638,6 +669,7 @@
 				CA945440B727EB1474183262 /* ClipboardHistory.swift in Sources */,
 				8B00A91DD9A40F60E39F2B58 /* ClipboardTabView.swift in Sources */,
 				9910E4E61FC7964F4686296B /* ObservationTracking.swift in Sources */,
+				12C7C6B60B0494560B5CEA5C /* MediaRemoteAdapter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -809,8 +841,10 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_ENHANCED_SECURITY = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_POINTER_AUTHENTICATION = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DynamicNotch/Info.plist;
@@ -844,8 +878,10 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_ENHANCED_SECURITY = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_POINTER_AUTHENTICATION = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DynamicNotch/Info.plist;

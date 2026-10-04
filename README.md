@@ -24,8 +24,10 @@ history and more — all behind a clean, customisable design system.
   - **Clipboard** (last 20 copied texts, in memory only, password-manager
     copies skipped)
   - **Music** as a live activity (artwork + bars in the notch, card on track
-    change) via MediaRemote, falling back to Music / Spotify notifications
-    when macOS 15.4+ withholds MediaRemote data
+    change), for any player, via the bundled
+    [mediaremote-adapter](https://github.com/ungive/mediaremote-adapter)
+    (works on macOS 15.4+), falling back to MediaRemote and then to Music /
+    Spotify notifications
 - **Design system** — `DSTokens` (colors, spacing, radius, typography,
   motion) + `DSComponents` (buttons, modules, icon buttons, tab bar, badges,
   drop zones) used everywhere.
@@ -71,6 +73,12 @@ DynamicNotch/
 
 Everything stays on your Mac. No telemetry, no analytics, no network
 calls. See `Resources/Privacy.md` for the full breakdown.
+
+## Third-party code
+
+- [mediaremote-adapter](https://github.com/ungive/mediaremote-adapter)
+  (BSD 3-Clause), vendored in `Vendor/mediaremote-adapter` and built into
+  the app by `Tools/build-mediaremote-adapter.sh`.
 
 ## License
 

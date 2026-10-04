@@ -2,12 +2,14 @@
 //  NowPlayingWidget.swift
 //  DynamicNotch
 //
-//  Musique en cours, de deux sources :
-//   1. MediaRemote (framework privé, chargé par dlopen) : toutes les apps,
-//      pochette comprise. Depuis macOS 15.4, la lecture des infos peut être
-//      refusée aux apps tierces ; les commandes (lecture, suivant) restent.
-//   2. Les notifications distribuées de Musique et Spotify : titre, artiste,
-//      état. Aucune permission requise, fonctionne quand MediaRemote se tait.
+//  Musique en cours, par ordre de préférence :
+//   1. mediaremote-adapter (voir MediaRemoteAdapter.swift) : toutes les apps,
+//      pochette comprise, y compris depuis macOS 15.4.
+//   2. MediaRemote en direct (framework privé, chargé par dlopen) : même
+//      chose, mais la lecture des infos peut être refusée aux apps tierces
+//      depuis macOS 15.4 ; les commandes (lecture, suivant) restent.
+//   3. Les notifications distribuées de Musique et Spotify : titre, artiste,
+//      état. Aucune permission requise.
 //
 //  Tout est piloté par notifications, sans interrogation périodique.
 //
@@ -116,6 +118,10 @@ final class NowPlayingManager {
     /// Dernier état annoncé par Musique / Spotify, utilisé quand MediaRemote
     /// ne renvoie rien.
     private var playerInfo: PlayerTrackInfo?
+    /// Absent si le framework n'est pas dans le paquet (build sans la phase).
+    private let adapter = MediaRemoteAdapter()
+    /// Vrai dès que l'adaptateur a répondu : il devient alors la seule source.
+    private var adapterActive = false
 
     private init() {}
 
@@ -125,6 +131,10 @@ final class NowPlayingManager {
     func startObserving() {
         guard !observing else { return }
         observing = true
+
+        adapter?.start { [weak self] state in
+            self?.receive(adapter: state)
+        }
 
         MR.shared.register?(DispatchQueue.main)
         for name in [
@@ -154,8 +164,18 @@ final class NowPlayingManager {
         refresh()
     }
 
+    private func receive(adapter state: AdapterNowPlaying) {
+        adapterActive = true
+        apply(
+            title: state.title,
+            artist: state.artist,
+            artwork: state.artworkData.flatMap { NSImage(data: $0) },
+            isPlaying: state.isPlaying
+        )
+    }
+
     private func receive(playerInfo info: PlayerTrackInfo?) {
-        guard let info else { return }
+        guard !adapterActive, let info else { return }
         playerInfo = info
         apply(title: info.title, artist: info.artist, artwork: nil, isPlaying: info.isPlaying)
         // MediaRemote, s'il répond, complète avec la pochette.
@@ -166,7 +186,7 @@ final class NowPlayingManager {
     /// refusé depuis macOS 15.4) laisse la place à la dernière info de
     /// Musique / Spotify.
     func refresh() {
-        guard let getInfo = MR.shared.getNowPlayingInfo else { return }
+        guard !adapterActive, let getInfo = MR.shared.getNowPlayingInfo else { return }
         getInfo(.main) { [weak self] info in
             let title = info["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
             let artist = info["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
@@ -215,18 +235,24 @@ final class NowPlayingManager {
     }
 
     func togglePlay() {
-        _ = MR.shared.sendCommand?(MRCommand.togglePlayPause.rawValue, nil)
-        refresh()
+        send(.togglePlayPause)
     }
 
     func next() {
-        _ = MR.shared.sendCommand?(MRCommand.next.rawValue, nil)
-        refresh()
+        send(.next)
     }
 
     func previous() {
-        _ = MR.shared.sendCommand?(MRCommand.previous.rawValue, nil)
-        refresh()
+        send(.previous)
+    }
+
+    private func send(_ command: MRCommand) {
+        if adapterActive, let adapter {
+            adapter.send(command.rawValue)
+        } else {
+            _ = MR.shared.sendCommand?(command.rawValue, nil)
+            refresh()
+        }
     }
 }
 
