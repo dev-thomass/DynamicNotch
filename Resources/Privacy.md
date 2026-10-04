@@ -12,6 +12,14 @@ does and does not do with your data, in plain language.
 - **No account, no sign-up.**
 - Files you drop into DynamicNotch stay on your Mac.
 
+## Clipboard history
+
+The Clipboard tab keeps the last 20 **texts** you copied so you can copy them
+again. This history lives **in memory only**: it is never written to disk and
+disappears when DynamicNotch quits. Copies that password managers mark as
+confidential (`org.nspasteboard.ConcealedType` and related types) are never
+recorded. Turn it off in Settings → Behaviour → Clipboard history.
+
 ## What DynamicNotch stores on disk
 
 When you drop a file onto the notch, DynamicNotch keeps a **copy** of that file in

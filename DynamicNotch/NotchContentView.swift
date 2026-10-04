@@ -40,6 +40,8 @@ struct NotchContentView: View {
             NoteView(vm: vm)
         case .agenda:
             AgendaTabView()
+        case .clipboard:
+            ClipboardTabView(vm: vm)
         }
     }
 }

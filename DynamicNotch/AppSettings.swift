@@ -70,6 +70,12 @@ final class AppSettings: ObservableObject {
     @PublishedPersist(key: "pomodoroNotifications", defaultValue: true)
     var pomodoroNotifications: Bool
 
+    // MARK: clipboard
+
+    /// Historique des textes copiés (onglet Presse-papiers), en mémoire seulement.
+    @PublishedPersist(key: "clipboardHistoryEnabled", defaultValue: true)
+    var clipboardHistoryEnabled: Bool
+
     // MARK: wings (extensions latérales de l'encoche)
 
     /// Active globalement le système de wings — quand `false`, l'encoche

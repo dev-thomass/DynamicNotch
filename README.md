@@ -2,8 +2,8 @@
 
 A macOS notch utility that turns your MacBook's notch (or top center on
 displays without one) into a multi-purpose, paged dock for quick widgets:
-file drops, AirDrop, notes, Pomodoro, stopwatch, calendar
-and more — all behind a clean, customisable design system.
+file drops, AirDrop, notes, Pomodoro, stopwatch, calendar, clipboard
+history and more — all behind a clean, customisable design system.
 
 > Forked from [Lakr233/NotchDrop](https://github.com/Lakr233/NotchDrop) and
 > rebuilt around a widget-page architecture, a dedicated design system,
@@ -11,17 +11,21 @@ and more — all behind a clean, customisable design system.
 
 ## Highlights
 
-- **Tabbed panel** — five tabs live around the notch (Home, Files, Timers,
-  Notes, Agenda); the panel morphs out of the notch like the Dynamic Island.
+- **Tabbed panel** — six tabs live around the notch (Home, Files, Timers,
+  Notes, Agenda, Clipboard); the panel morphs out of the notch like the Dynamic Island.
 - **Built-in widgets**
   - **AirDrop** + generic file share
   - **Files** (drag-and-drop tray with auto-expiry)
   - **Notes** (quick scratchpad, debounced disk save)
   - **Stopwatch** (mm:ss.cc)
-  - **Pomodoro** (configurable focus / break / long break durations)
+  - **Pomodoro** (configurable focus / break / long break durations, macOS
+    notification at the end of each phase)
   - **Agenda** (today's events, next ones on Home, via EventKit)
-  - *Now Playing is not in the tabbed panel for now; it comes back with the
-    music task.*
+  - **Clipboard** (last 20 copied texts, in memory only, password-manager
+    copies skipped)
+  - **Music** as a live activity (artwork + bars in the notch, card on track
+    change) via MediaRemote, falling back to Music / Spotify notifications
+    when macOS 15.4+ withholds MediaRemote data
 - **Design system** — `DSTokens` (colors, spacing, radius, typography,
   motion) + `DSComponents` (buttons, modules, icon buttons, tab bar, badges,
   drop zones) used everywhere.

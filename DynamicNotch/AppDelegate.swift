@@ -77,6 +77,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Sources d'activités (batterie, Pomodoro, chrono, plateau, AirDrop…).
         ActivityWiring.shared.install()
 
+        AppSettings.shared.$clipboardHistoryEnabled
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { enabled in
+                MainActor.assumeIsolated {
+                    if enabled {
+                        ClipboardHistory.shared.start()
+                    } else {
+                        ClipboardHistory.shared.stop()
+                    }
+                }
+            }
+            .store(in: &settingsObservers)
+
         // Rebuild the windows when the user picks a different display
         // OU bascule "afficher sur tous les écrans".
         Publishers.CombineLatest3(

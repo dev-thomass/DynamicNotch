@@ -322,7 +322,7 @@ public struct DSIconButton: View {
 }
 
 /// Surbrillance de survol (0,08) et d'appui (0,14) posée sur la forme.
-private struct DSHighlightButtonStyle<S: Shape>: ButtonStyle {
+struct DSHighlightButtonStyle<S: Shape>: ButtonStyle {
     let shape: S
 
     func makeBody(configuration: Configuration) -> some View {

@@ -63,6 +63,12 @@ struct NotchSettingsView: View {
                 // "Toujours visible" — toggle retiré : l'encoche est désormais
                 // toujours pleinement visible. Pour la rendre plus discrète
                 // au repos, utilisez le slider Opacité dans Apparence.
+                Toggle(isOn: $settings.clipboardHistoryEnabled) {
+                    settingLabel(
+                        "Historique du presse-papiers",
+                        subtitle: "20 derniers textes copiés, en mémoire seulement"
+                    )
+                }
                 Toggle(isOn: $settings.escClosesNotch) {
                     settingLabel("Échap pour fermer", subtitle: "La touche Esc referme l'encoche ouverte")
                 }
@@ -333,6 +339,7 @@ struct NotchSettingsView: View {
         settings.pomodoroLongBreakMinutes = 15
         settings.pomodoroCyclesBeforeLongBreak = 4
         settings.pomodoroNotifications = true
+        settings.clipboardHistoryEnabled = true
         settings.wingsEnabled = true
         settings.wingBattery = true
         settings.wingStopwatch = true

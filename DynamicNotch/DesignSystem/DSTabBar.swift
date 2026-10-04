@@ -4,6 +4,8 @@
 //
 //  Barre d'onglets de la rangée de l'encoche : icônes 14 pt, pastille de
 //  sélection qui glisse d'un onglet à l'autre, rebond à la sélection.
+//  Boutons de 28 pt : les six onglets tiennent à gauche d'une encoche de
+//  MacBook (≈ 215 pt disponibles dans un panneau de 640 pt).
 //
 
 import SwiftUI
@@ -26,7 +28,7 @@ struct DSTabBar: View {
                         .font(.system(size: 14, weight: .medium))
                         .symbolEffect(.bounce, value: bounces[tab, default: 0])
                         .foregroundStyle(tab == selection ? DS.Color.textPrimary : DS.Color.textSecondary)
-                        .frame(width: 30, height: 26)
+                        .frame(width: 28, height: 26)
                         .background {
                             if tab == selection {
                                 RoundedRectangle(cornerRadius: 8, style: .continuous)
