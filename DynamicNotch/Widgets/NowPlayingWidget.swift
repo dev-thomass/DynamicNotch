@@ -13,7 +13,6 @@
 //
 
 import AppKit
-import Combine
 import SwiftUI
 
 // MARK: - MediaRemote dlopen helpers
@@ -99,13 +98,14 @@ extension PlayerTrackInfo {
 // MARK: - Manager
 
 @MainActor
-final class NowPlayingManager: ObservableObject {
+@Observable
+final class NowPlayingManager {
     static let shared = NowPlayingManager()
 
-    @Published var title: String = ""
-    @Published var artist: String = ""
-    @Published var artwork: NSImage?
-    @Published var isPlaying: Bool = false
+    var title: String = ""
+    var artist: String = ""
+    var artwork: NSImage?
+    var isPlaying: Bool = false
 
     /// Appelé quand le titre change (hors premier titre vu).
     var onTrackChange: (() -> Void)?
@@ -234,7 +234,7 @@ final class NowPlayingManager: ObservableObject {
 
 struct NowPlayingWidgetView: View {
     @ObservedObject var vm: NotchViewModel
-    @ObservedObject private var player = NowPlayingManager.shared
+    private var player = NowPlayingManager.shared
 
     var body: some View {
         HStack(spacing: DS.Spacing.sm) {

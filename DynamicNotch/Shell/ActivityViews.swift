@@ -154,7 +154,7 @@ private struct BatteryActivity: View {
     let id: ActivityID
     let place: ActivityPlace
     let namespace: Namespace.ID
-    @ObservedObject private var battery = BatteryMonitor.shared
+    private var battery = BatteryMonitor.shared
 
     private var isLow: Bool {
         if case .lowBattery = id {
@@ -222,7 +222,7 @@ private struct BatteryActivity: View {
 private struct PomodoroActivity: View {
     let place: ActivityPlace
     let namespace: Namespace.ID
-    @ObservedObject private var model = PomodoroModel.shared
+    private var model = PomodoroModel.shared
 
     var body: some View {
         switch place {
@@ -257,7 +257,7 @@ private struct PomodoroActivity: View {
 
 private struct StopwatchActivity: View {
     let place: ActivityPlace
-    @ObservedObject private var model = StopwatchModel.shared
+    private var model = StopwatchModel.shared
 
     var body: some View {
         switch place {
@@ -298,7 +298,7 @@ private struct StopwatchActivity: View {
 private struct NowPlayingActivity: View {
     let place: ActivityPlace
     let namespace: Namespace.ID
-    @ObservedObject private var player = NowPlayingManager.shared
+    private var player = NowPlayingManager.shared
 
     var body: some View {
         switch place {
@@ -339,7 +339,7 @@ private struct NowPlayingActivity: View {
 
 private struct CalendarActivity: View {
     let place: ActivityPlace
-    @ObservedObject private var store = CalendarStore.shared
+    private var store = CalendarStore.shared
 
     var body: some View {
         switch place {

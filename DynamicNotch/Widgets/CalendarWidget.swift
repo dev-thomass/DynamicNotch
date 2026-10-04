@@ -18,14 +18,15 @@ enum AgendaAccess: Equatable {
 }
 
 @MainActor
-final class CalendarStore: ObservableObject {
+@Observable
+final class CalendarStore {
     static let shared = CalendarStore()
 
-    @Published var nextEvent: EKEvent?
-    @Published private(set) var access: AgendaAccess = CalendarStore
+    var nextEvent: EKEvent?
+    private(set) var access: AgendaAccess = CalendarStore
         .access(for: EKEventStore.authorizationStatus(for: .event))
-    @Published private(set) var todayEvents: [AgendaEntry] = []
-    @Published private(set) var tomorrowEvents: [AgendaEntry] = []
+    private(set) var todayEvents: [AgendaEntry] = []
+    private(set) var tomorrowEvents: [AgendaEntry] = []
 
     private let store = EKEventStore()
     private var refreshTimer: Timer?

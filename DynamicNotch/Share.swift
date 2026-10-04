@@ -7,12 +7,14 @@
 //
 
 import Cocoa
+import Observation
 
 /// Envois AirDrop en cours (pour animer l'icône pendant l'envoi).
-final class ShareActivity: ObservableObject {
+@Observable
+final class ShareActivity {
     static let shared = ShareActivity()
 
-    @Published private(set) var isSending = false
+    private(set) var isSending = false
     private var count = 0
 
     func begin() {

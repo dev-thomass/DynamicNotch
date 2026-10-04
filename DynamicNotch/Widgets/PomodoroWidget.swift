@@ -5,11 +5,11 @@
 //  Pomodoro classique : 25 min focus → 5 min pause × 4 → 15 min pause longue.
 //
 
-import Combine
 import SwiftUI
 
 @MainActor
-final class PomodoroModel: ObservableObject {
+@Observable
+final class PomodoroModel {
     static let shared = PomodoroModel()
 
     enum Phase: String, Codable {
@@ -63,14 +63,14 @@ final class PomodoroModel: ObservableObject {
         AppSettings.shared.pomodoroCyclesBeforeLongBreak
     }
 
-    @Published private(set) var phase: Phase = .idle
-    @Published private(set) var remaining: TimeInterval = 0
-    @Published private(set) var sessionsCompleted: Int = 0
+    private(set) var phase: Phase = .idle
+    private(set) var remaining: TimeInterval = 0
+    private(set) var sessionsCompleted: Int = 0
     /// Le timer tourne-t-il actuellement ? Distinct de `phase != .idle` car
     /// pendant une pause utilisateur (paused), la phase reste `.work` mais le
     /// timer est arrêté. Sans cette distinction, on ne pouvait pas reprendre
     /// après pause — bug corrigé.
-    @Published private(set) var isRunning: Bool = false
+    private(set) var isRunning: Bool = false
 
     private var timer: Timer?
     private var phaseEndDate: Date?
@@ -215,7 +215,7 @@ final class PomodoroModel: ObservableObject {
 
 struct PomodoroWidgetView: View {
     @ObservedObject var vm: NotchViewModel
-    @ObservedObject private var model = PomodoroModel.shared
+    private var model = PomodoroModel.shared
 
     var body: some View {
         VStack(spacing: DS.Spacing.xs) {

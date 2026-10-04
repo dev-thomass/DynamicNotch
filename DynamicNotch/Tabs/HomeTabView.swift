@@ -29,7 +29,7 @@ struct HomeTabView: View {
 
 private struct HomeTodayModule: View {
     let vm: NotchViewModel
-    @ObservedObject private var calendar = CalendarStore.shared
+    private var calendar = CalendarStore.shared
 
     var body: some View {
         DSModule(
@@ -148,8 +148,8 @@ private struct HomeFilesModule: View {
 
 private struct HomeActionsModule: View {
     let vm: NotchViewModel
-    @ObservedObject private var stopwatch = StopwatchModel.shared
-    @ObservedObject private var pomodoro = PomodoroModel.shared
+    private var stopwatch = StopwatchModel.shared
+    private var pomodoro = PomodoroModel.shared
     @State private var airDropTargeted = false
 
     var body: some View {

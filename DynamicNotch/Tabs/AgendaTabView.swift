@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AgendaTabView: View {
-    @ObservedObject private var calendar = CalendarStore.shared
+    private var calendar = CalendarStore.shared
 
     var body: some View {
         DSModule {

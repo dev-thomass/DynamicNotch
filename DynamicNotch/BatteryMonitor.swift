@@ -7,15 +7,15 @@
 //  `onChange` reçoit le nouvel état et les événements détectés.
 //
 
-import Combine
 import IOKit.ps
 import SwiftUI
 
 @MainActor
-final class BatteryMonitor: ObservableObject {
+@Observable
+final class BatteryMonitor {
     static let shared = BatteryMonitor()
 
-    @Published private(set) var snapshot = PowerSnapshot(
+    private(set) var snapshot = PowerSnapshot(
         hasBattery: false, level: 1, isPluggedIn: true, isCharging: false, minutesToFull: nil
     )
     var onChange: ((PowerSnapshot, [PowerEvent]) -> Void)?

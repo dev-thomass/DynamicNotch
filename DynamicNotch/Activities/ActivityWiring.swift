@@ -121,18 +121,23 @@ final class ActivityWiring {
             settings.$wingBattery.map { _ in () }.eraseToAnyPublisher(),
             settings.$wingStopwatch.map { _ in () }.eraseToAnyPublisher(),
             settings.$wingPomodoro.map { _ in () }.eraseToAnyPublisher(),
-            settings.$wingCalendar.map { _ in () }.eraseToAnyPublisher(),
-            PomodoroModel.shared.$phase.map { _ in () }.eraseToAnyPublisher(),
-            StopwatchModel.shared.$running.map { _ in () }.eraseToAnyPublisher(),
-            StopwatchModel.shared.$accumulated.map { _ in () }.eraseToAnyPublisher(),
-            CalendarStore.shared.$nextEvent.map { _ in () }.eraseToAnyPublisher(),
-            NowPlayingManager.shared.$isPlaying.map { _ in () }.eraseToAnyPublisher()
+            settings.$wingCalendar.map { _ in () }.eraseToAnyPublisher()
         ]
         // receive(on:) : @Published émet avant l'écriture, on relit après.
         Publishers.MergeMany(triggers)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.reevaluate() }
             .store(in: &cancellables)
+        // Sources @Observable.
+        observeChanges {
+            _ = PomodoroModel.shared.phase
+            _ = StopwatchModel.shared.running
+            _ = StopwatchModel.shared.accumulated
+            _ = CalendarStore.shared.nextEvent
+            _ = NowPlayingManager.shared.isPlaying
+        } onChange: { [weak self] in
+            self?.reevaluate()
+        }
 
         let newTimer = Timer(timeInterval: 30, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.reevaluate() }

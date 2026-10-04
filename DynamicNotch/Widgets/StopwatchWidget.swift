@@ -6,19 +6,19 @@
 //  legibility (mm:ss.cc).
 //
 
-import Combine
 import SwiftUI
 
 @MainActor
-final class StopwatchModel: ObservableObject {
+@Observable
+final class StopwatchModel {
     static let shared = StopwatchModel()
 
     // Plus de minuterie : le temps écoulé est calculé à la demande à partir
     // de dates. Les vues qui l'affichent se rafraîchissent via TimelineView,
     // et seulement tant qu'elles sont à l'écran.
-    @Published private(set) var running = false
-    @Published private(set) var accumulated: TimeInterval = 0
-    @Published private(set) var startedAt: Date?
+    private(set) var running = false
+    private(set) var accumulated: TimeInterval = 0
+    private(set) var startedAt: Date?
 
     init() {}
 
@@ -68,7 +68,7 @@ final class StopwatchModel: ObservableObject {
 
 struct StopwatchWidgetView: View {
     @ObservedObject var vm: NotchViewModel
-    @ObservedObject private var model = StopwatchModel.shared
+    private var model = StopwatchModel.shared
 
     var body: some View {
         VStack(spacing: DS.Spacing.xs) {

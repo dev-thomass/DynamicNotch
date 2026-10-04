@@ -71,6 +71,7 @@
 		7D17CF4F2A49DAC4F209F404 /* ActivityCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B8959B44F9BDF8A50AA925 /* ActivityCenter.swift */; };
 		86D524CA874567BEC119C0DD /* DisplayPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10ADA05FDCA54266D1E6E28E /* DisplayPreferenceTests.swift */; };
 		8B00A91DD9A40F60E39F2B58 /* ClipboardTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FF6D1ED046148654903767 /* ClipboardTabView.swift */; };
+		9910E4E61FC7964F4686296B /* ObservationTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948662B514C807E787B1FE68 /* ObservationTracking.swift */; };
 		9CFC7B873A05E98E9428CB63 /* AgendaTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8E583019FCD45BA7390B3B /* AgendaTabView.swift */; };
 		A29881747A6D9C96002A3807 /* PomodoroModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */; };
 		A5645F8AE368C1F708F386A5 /* PowerEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E1E8AE280B0D0C94CCFD71 /* PowerEvents.swift */; };
@@ -171,6 +172,7 @@
 		7C879FEA7A6D49FA0599FA18 /* ClipboardHistoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryTests.swift; sourceTree = "<group>"; };
 		88F2EEDEB87473191497A4C4 /* WingLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WingLayout.swift; sourceTree = "<group>"; };
 		8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PomodoroModelTests.swift; sourceTree = "<group>"; };
+		948662B514C807E787B1FE68 /* ObservationTracking.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ObservationTracking.swift; sourceTree = "<group>"; };
 		97EAD3D3FF51AA7861ADF10A /* NotchShellShape.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchShellShape.swift; sourceTree = "<group>"; };
 		9A990D514073038A2109BCE6 /* PersistTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistTests.swift; sourceTree = "<group>"; };
 		9AE219D5A78A224CBF58604A /* FilesTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FilesTabView.swift; sourceTree = "<group>"; };
@@ -350,6 +352,7 @@
 				7003710C960D72ACC006D555 /* Debug */,
 				00B32EC902D919FA70B049CC /* Tabs */,
 				EE55B8010DF7DA88A542C87A /* Clipboard */,
+				948662B514C807E787B1FE68 /* ObservationTracking.swift */,
 			);
 			path = DynamicNotch;
 			sourceTree = "<group>";
@@ -634,6 +637,7 @@
 				3B268BBD315445FF9F85223C /* PomodoroNotifier.swift in Sources */,
 				CA945440B727EB1474183262 /* ClipboardHistory.swift in Sources */,
 				8B00A91DD9A40F60E39F2B58 /* ClipboardTabView.swift in Sources */,
+				9910E4E61FC7964F4686296B /* ObservationTracking.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
