@@ -76,6 +76,7 @@
 		8B00A91DD9A40F60E39F2B58 /* ClipboardTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FF6D1ED046148654903767 /* ClipboardTabView.swift */; };
 		9910E4E61FC7964F4686296B /* ObservationTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948662B514C807E787B1FE68 /* ObservationTracking.swift */; };
 		9CFC7B873A05E98E9428CB63 /* AgendaTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8E583019FCD45BA7390B3B /* AgendaTabView.swift */; };
+		9F04806FAF1CAF79C24124E1 /* NotchMiniPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 601577D30F97A02FCD37FD9A /* NotchMiniPlayer.swift */; };
 		A29881747A6D9C96002A3807 /* PomodoroModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D77393E145BFF18CC172305 /* PomodoroModelTests.swift */; };
 		A5645F8AE368C1F708F386A5 /* PowerEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E1E8AE280B0D0C94CCFD71 /* PowerEvents.swift */; };
 		A9E5ABBBD6CD5BE1C6E61476 /* MediaRemoteAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F869BBBFD587DC199D5B9C3 /* MediaRemoteAdapterTests.swift */; };
@@ -169,6 +170,7 @@
 		5615EECF941D6FDB2D216236 /* DataMigrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataMigrationTests.swift; sourceTree = "<group>"; };
 		59BB0950F9E4C65E8BF9B2B2 /* NotchViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchViewModelTests.swift; sourceTree = "<group>"; };
 		5B8E583019FCD45BA7390B3B /* AgendaTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgendaTabView.swift; sourceTree = "<group>"; };
+		601577D30F97A02FCD37FD9A /* NotchMiniPlayer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchMiniPlayer.swift; sourceTree = "<group>"; };
 		60AD62862C579F4400299297 /* NotchSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchSettingsView.swift; sourceTree = "<group>"; };
 		634197AFAEE666263C3989B1 /* WeatherStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WeatherStore.swift; sourceTree = "<group>"; };
 		63ECCE76D68562305F5E3C4D /* DebugTools.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugTools.swift; sourceTree = "<group>"; };
@@ -402,6 +404,7 @@
 				7825F77143AA60AB7DEF7608 /* ActivityViews.swift */,
 				3565F7630AD533FBEFED069B /* NotchTab.swift */,
 				77FCD5E39BEAE468ADFE14D2 /* NotchTopRow.swift */,
+				601577D30F97A02FCD37FD9A /* NotchMiniPlayer.swift */,
 			);
 			name = Shell;
 			path = Shell;
@@ -691,6 +694,7 @@
 				12C7C6B60B0494560B5CEA5C /* MediaRemoteAdapter.swift in Sources */,
 				FFE561641B2C2F4E3BC3E286 /* Weather.swift in Sources */,
 				3B22A9930FF7F6733F6809A2 /* WeatherStore.swift in Sources */,
+				9F04806FAF1CAF79C24124E1 /* NotchMiniPlayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
