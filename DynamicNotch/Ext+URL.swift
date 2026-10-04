@@ -48,7 +48,7 @@ extension URL {
                 return image
             }
         case .timedOut:
-            Log.drop.error("QLThumbnailGenerator timed out for \(lastPathComponent, privacy: .public)")
+            Log.drop.error("QLThumbnailGenerator timed out for \(self.lastPathComponent, privacy: .public)")
         }
 
         // Fallback: the system file icon. Always available and cheap.

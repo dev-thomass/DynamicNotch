@@ -158,7 +158,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 openAfterCreate: shouldOpen && index == 0
             ))
         }
-        Log.app.info("rebuilt \(windowControllers.count) notch window(s)")
+        Log.app.info("rebuilt \(self.windowControllers.count) notch window(s)")
     }
 
     /// Triggered when a second DynamicNotch launch posts a wake-up notification.
