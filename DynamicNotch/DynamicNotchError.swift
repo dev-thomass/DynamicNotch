@@ -11,7 +11,6 @@
 import Foundation
 
 enum DynamicNotchError: LocalizedError {
-
     // MARK: file load / drop
 
     /// The system handed us an item provider but neither URL loading nor in-place
@@ -46,19 +45,19 @@ enum DynamicNotchError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .providerLoadFailed:
-            return "Impossible de charger le fichier depuis la source du glissement."
+            "Impossible de charger le fichier depuis la source du glissement."
         case .providerLoadTimeout:
-            return "Le chargement du fichier a expiré. Veuillez réessayer."
+            "Le chargement du fichier a expiré. Veuillez réessayer."
         case .multipleFilesFailedToLoad:
-            return "Un ou plusieurs fichiers n'ont pas pu être chargés."
+            "Un ou plusieurs fichiers n'ont pas pu être chargés."
         case .sharingServiceUnavailable:
-            return "Le service de partage sélectionné n'est pas disponible."
+            "Le service de partage sélectionné n'est pas disponible."
         case .sharingServiceCannotPerformWithFiles:
-            return "Le service de partage ne peut pas traiter les fichiers fournis."
+            "Le service de partage ne peut pas traiter les fichiers fournis."
         case .importNotSupported:
-            return "Les éléments DynamicNotch sont en lecture seule (export uniquement)."
+            "Les éléments DynamicNotch sont en lecture seule (export uniquement)."
         case .singleInstanceLockFailed:
-            return "Impossible de démarrer DynamicNotch — une autre instance est peut-être déjà ouverte."
+            "Impossible de démarrer DynamicNotch — une autre instance est peut-être déjà ouverte."
         }
     }
 }

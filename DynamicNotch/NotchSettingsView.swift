@@ -13,23 +13,20 @@ import LaunchAtLogin
 import SwiftUI
 
 struct NotchSettingsView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject var tvm: TrayDrop = .shared
-    @StateObject var settings: AppSettings = .shared
+    @ObservedObject var vm: NotchViewModel
+    @ObservedObject var tvm: TrayDrop = .shared
+    @ObservedObject var settings: AppSettings = .shared
 
     var body: some View {
-        // Layout 3 colonnes : la section Widgets prend toute la largeur en
-        // haut (concerne le contenu principal), puis 3 colonnes pour les
-        // groupes thématiques. Le ScrollView garantit que tout reste
-        // accessible si l'utilisateur réduit la taille de la fenêtre.
+        // Layout 3 colonnes pour les groupes thématiques. Le ScrollView
+        // garantit que tout reste accessible si l'utilisateur réduit la
+        // taille de la fenêtre.
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
-                widgetsSection
-
                 HStack(alignment: .top, spacing: DS.Spacing.md) {
                     VStack(alignment: .leading, spacing: DS.Spacing.md) {
-                        appearanceSection
                         behaviorSection
+                        weatherSection
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
@@ -50,120 +47,7 @@ struct NotchSettingsView: View {
             }
             .padding(DS.Spacing.md)
         }
-        .transition(.scale(scale: 0.85).combined(with: .opacity))
-    }
-
-    // MARK: widgets
-
-    private var widgetsSection: some View {
-        sectionCard(title: "Widgets", systemImage: "rectangle.3.group") {
-            VStack(alignment: .leading, spacing: DS.Spacing.sm) {
-                ForEach(0 ..< vm.widgetPages.count, id: \.self) { pageIndex in
-                    widgetPageRow(pageIndex)
-                }
-                if vm.widgetPages.count < NotchViewModel.maxPages {
-                    Button {
-                        withAnimation(vm.animation) { vm.addPage() }
-                    } label: {
-                        Label("Ajouter une page", systemImage: "plus.circle")
-                            .font(DS.Typography.caption)
-                            .foregroundStyle(DS.Color.brand)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func widgetPageRow(_ pageIndex: Int) -> some View {
-        HStack(spacing: DS.Spacing.sm) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Page \(pageIndex + 1)")
-                    .font(DS.Typography.captionSmall)
-                    .foregroundStyle(DS.Color.textSecondary)
-                if vm.widgetPages.count > 1 {
-                    Button {
-                        withAnimation(vm.animation) { vm.removePage(pageIndex) }
-                    } label: {
-                        Text("Supprimer")
-                            .font(DS.Typography.captionSmall)
-                            .foregroundStyle(DS.Color.destructive)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .frame(width: 64, alignment: .leading)
-
-            // Widget chips: tap to toggle. Active widgets are filled with
-            // their tone, inactive widgets are outlined. Horizontal scroll
-            // lets us keep all options visible regardless of locale length.
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DS.Spacing.xs) {
-                    ForEach(NotchViewModel.Widget.allCases) { widget in
-                        widgetChip(widget, pageIndex: pageIndex)
-                    }
-                }
-                .padding(.vertical, 2)
-            }
-        }
-        .padding(.vertical, 2)
-    }
-
-    @ViewBuilder
-    private func widgetChip(_ widget: NotchViewModel.Widget, pageIndex: Int) -> some View {
-        let isActive = vm.widgetPages[pageIndex].contains(widget)
-        let canAdd = isActive || vm.widgetPages[pageIndex].count < NotchViewModel.maxWidgetsPerPage
-
-        Button {
-            withAnimation(vm.animation) {
-                vm.toggleWidget(widget, onPage: pageIndex)
-            }
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: widget.icon)
-                    .font(.system(size: 9, weight: .semibold))
-                Text(widget.label)
-                    .font(DS.Typography.captionSmall)
-            }
-            .padding(.horizontal, DS.Spacing.sm)
-            .padding(.vertical, 3)
-            .background(
-                Capsule(style: .continuous).fill(
-                    isActive ? DS.Color.brand.opacity(0.85) : DS.Color.surfaceRaised
-                )
-            )
-            .overlay(
-                Capsule(style: .continuous).strokeBorder(
-                    isActive ? DS.Color.brand : DS.Color.borderDefault,
-                    lineWidth: 1
-                )
-            )
-            .foregroundStyle(isActive ? DS.Color.textOnAccent : DS.Color.textSecondary)
-            .opacity(canAdd ? 1.0 : 0.4)
-        }
-        .buttonStyle(.plain)
-        .disabled(!canAdd)
-        .help(canAdd
-              ? Text(isActive ? "Retirer de la page" : "Ajouter à la page")
-              : Text("Page pleine (max \(NotchViewModel.maxWidgetsPerPage) widgets)")
-        )
-    }
-
-    // MARK: appearance
-
-    private var appearanceSection: some View {
-        sectionCard(title: "Apparence", systemImage: "paintbrush") {
-            HStack {
-                Text("Opacité de l'encoche").font(DS.Typography.caption)
-                Slider(value: $settings.notchOpacity, in: 0.4 ... 1.0, step: 0.05)
-                Text(String(format: "%.0f %%", settings.notchOpacity * 100))
-                    .font(DS.Typography.caption)
-                    .foregroundStyle(DS.Color.textSecondary)
-                    .monospacedDigit()
-                    .frame(width: 50, alignment: .trailing)
-            }
-        }
+        .transition(.opacity)
     }
 
     // MARK: behaviour
@@ -180,6 +64,12 @@ struct NotchSettingsView: View {
                 // "Toujours visible" — toggle retiré : l'encoche est désormais
                 // toujours pleinement visible. Pour la rendre plus discrète
                 // au repos, utilisez le slider Opacité dans Apparence.
+                Toggle(isOn: $settings.clipboardHistoryEnabled) {
+                    settingLabel(
+                        "Historique du presse-papiers",
+                        subtitle: "20 derniers textes copiés, en mémoire seulement"
+                    )
+                }
                 Toggle(isOn: $settings.escClosesNotch) {
                     settingLabel("Échap pour fermer", subtitle: "La touche Esc referme l'encoche ouverte")
                 }
@@ -196,25 +86,35 @@ struct NotchSettingsView: View {
         sectionCard(title: "Extensions latérales", systemImage: "rectangle.expand.vertical") {
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 Toggle(isOn: $settings.wingsEnabled) {
-                    settingLabel("Activer les extensions",
-                                 subtitle: "Étend l'encoche pour afficher batterie, chrono, focus en temps réel")
+                    settingLabel(
+                        "Activer les extensions",
+                        subtitle: "Étend l'encoche pour afficher batterie, chrono, focus en temps réel"
+                    )
                 }
                 Group {
                     Toggle(isOn: $settings.wingBattery) {
-                        settingLabel("Batterie en charge",
-                                     subtitle: "Icône colorée à gauche, pourcentage à droite")
+                        settingLabel(
+                            "Batterie en charge",
+                            subtitle: "Icône colorée à gauche, pourcentage à droite"
+                        )
                     }
                     Toggle(isOn: $settings.wingStopwatch) {
-                        settingLabel("Chronomètre actif",
-                                     subtitle: "Minutes à gauche, secondes à droite")
+                        settingLabel(
+                            "Chronomètre actif",
+                            subtitle: "Minutes à gauche, secondes à droite"
+                        )
                     }
                     Toggle(isOn: $settings.wingPomodoro) {
-                        settingLabel("Pomodoro en cours",
-                                     subtitle: "Pastille de phase + temps restant")
+                        settingLabel(
+                            "Pomodoro en cours",
+                            subtitle: "Pastille de phase + temps restant"
+                        )
                     }
                     Toggle(isOn: $settings.wingCalendar) {
-                        settingLabel("Événement imminent",
-                                     subtitle: "Countdown vers le prochain RDV (< 60 min)")
+                        settingLabel(
+                            "Événement imminent",
+                            subtitle: "Countdown vers le prochain RDV (< 60 min)"
+                        )
                     }
                 }
                 .disabled(!settings.wingsEnabled)
@@ -241,7 +141,9 @@ struct NotchSettingsView: View {
                             .tag(DisplayPreference.builtInWithNotch)
                         Text(DisplayPreference.mainAtResolveTime.displayName)
                             .tag(DisplayPreference.mainAtResolveTime)
-                        if !connectedExternals.isEmpty { Divider() }
+                        if !connectedExternals.isEmpty {
+                            Divider()
+                        }
                         ForEach(connectedExternals, id: \.self) { name in
                             Text(name).tag(DisplayPreference.named(name))
                         }
@@ -259,13 +161,17 @@ struct NotchSettingsView: View {
                 }
 
                 Toggle(isOn: $settings.forcePillMode) {
-                    settingLabel("Forcer le mode pilule",
-                                 subtitle: "Ignore l'encoche matérielle et affiche une pilule arrondie")
+                    settingLabel(
+                        "Forcer le mode pilule",
+                        subtitle: "Ignore l'encoche matérielle et affiche une pilule arrondie"
+                    )
                 }
 
                 Toggle(isOn: $settings.showOnAllScreens) {
-                    settingLabel("Afficher sur tous les écrans",
-                                 subtitle: "Une encoche sur chaque écran connecté simultanément")
+                    settingLabel(
+                        "Afficher sur tous les écrans",
+                        subtitle: "Une encoche sur chaque écran connecté simultanément"
+                    )
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -284,6 +190,21 @@ struct NotchSettingsView: View {
         }
     }
 
+    // MARK: weather
+
+    private var weatherSection: some View {
+        sectionCard(title: "Météo", systemImage: "cloud.sun.fill") {
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+                TextField("Ville (ex. Paris)", text: $settings.weatherCity)
+                    .textFieldStyle(.roundedBorder)
+                Text("Affichée sur l'Accueil, via Open-Meteo. Laisser vide pour ne rien envoyer sur le réseau.")
+                    .font(DS.Typography.captionSmall)
+                    .foregroundStyle(DS.Color.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     // MARK: pomodoro
 
     private var pomodoroSection: some View {
@@ -292,33 +213,43 @@ struct NotchSettingsView: View {
                 pomodoroStepper(
                     "Focus",
                     binding: $settings.pomodoroFocusMinutes,
-                    range: 5...90,
+                    range: 5 ... 90,
                     suffix: "min"
                 )
                 pomodoroStepper(
                     "Pause courte",
                     binding: $settings.pomodoroShortBreakMinutes,
-                    range: 1...30,
+                    range: 1 ... 30,
                     suffix: "min"
                 )
                 pomodoroStepper(
                     "Pause longue",
                     binding: $settings.pomodoroLongBreakMinutes,
-                    range: 5...60,
+                    range: 5 ... 60,
                     suffix: "min"
                 )
                 pomodoroStepper(
                     "Cycles avant pause longue",
                     binding: $settings.pomodoroCyclesBeforeLongBreak,
-                    range: 2...8,
+                    range: 2 ... 8,
                     suffix: nil
                 )
+                Toggle(isOn: $settings.pomodoroNotifications) {
+                    settingLabel(
+                        "Notification en fin de phase",
+                        subtitle: "Visible même quand l'encoche est masquée"
+                    )
+                }
             }
         }
     }
 
-    @ViewBuilder
-    private func pomodoroStepper(_ title: LocalizedStringKey, binding: Binding<Int>, range: ClosedRange<Int>, suffix: String?) -> some View {
+    private func pomodoroStepper(
+        _ title: LocalizedStringKey,
+        binding: Binding<Int>,
+        range: ClosedRange<Int>,
+        suffix: String?
+    ) -> some View {
         HStack {
             Text(title)
                 .font(DS.Typography.captionSmall)
@@ -385,7 +316,7 @@ struct NotchSettingsView: View {
                 }
                 DSButton("Afficher le dossier de stockage", systemImage: "folder", role: .secondary, size: .small) {
                     NSWorkspace.shared.activateFileViewerSelecting([
-                        documentsDirectory.appendingPathComponent(TrayDrop.DropItem.mainDir)
+                        dataDirectory.appendingPathComponent(TrayDrop.DropItem.mainDir)
                     ])
                 }
             }
@@ -413,7 +344,6 @@ struct NotchSettingsView: View {
         let title = "Réinitialiser tous les réglages ?"
         let message = "Les préférences vont être restaurées aux valeurs par défaut. Vos fichiers déposés ne seront pas affectés."
         guard NSAlert.popConfirm(title: title, message: message, confirm: "Réinitialiser", destructive: true) else { return }
-        settings.notchOpacity = 1.0
         settings.popOnHoverEnabled = true
         settings.alwaysVisibleWhenClosed = false
         settings.escClosesNotch = true
@@ -424,6 +354,9 @@ struct NotchSettingsView: View {
         settings.pomodoroShortBreakMinutes = 5
         settings.pomodoroLongBreakMinutes = 15
         settings.pomodoroCyclesBeforeLongBreak = 4
+        settings.pomodoroNotifications = true
+        settings.clipboardHistoryEnabled = true
+        settings.weatherCity = ""
         settings.wingsEnabled = true
         settings.wingBattery = true
         settings.wingStopwatch = true
@@ -437,9 +370,11 @@ struct NotchSettingsView: View {
     private var versionFooter: some View {
         HStack {
             Spacer()
-            Text(verbatim: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
-                .font(DS.Typography.captionSmall)
-                .foregroundStyle(DS.Color.textTertiary)
+            Text(
+                verbatim: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))"
+            )
+            .font(DS.Typography.captionSmall)
+            .foregroundStyle(DS.Color.textTertiary)
             Spacer()
         }
         .padding(.top, DS.Spacing.xs)
@@ -447,11 +382,10 @@ struct NotchSettingsView: View {
 
     // MARK: building blocks
 
-    @ViewBuilder
-    private func sectionCard<Content: View>(
+    private func sectionCard(
         title: LocalizedStringKey,
         systemImage: String,
-        @ViewBuilder content: @escaping () -> Content
+        @ViewBuilder content: @escaping () -> some View
     ) -> some View {
         VStack(alignment: .leading, spacing: DS.Spacing.sm) {
             HStack(spacing: DS.Spacing.xs) {
@@ -470,7 +404,6 @@ struct NotchSettingsView: View {
         }
     }
 
-    @ViewBuilder
     private func settingLabel(_ title: LocalizedStringKey, subtitle: LocalizedStringKey?) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(title).font(DS.Typography.body).foregroundStyle(DS.Color.textPrimary)

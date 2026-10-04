@@ -22,6 +22,8 @@
 # ───── Modern Swift idioms ─────
 --swiftversion 5.10
 --self remove
+# Logger : l'interpolation est une autoclosure, `self.` y reste obligatoire.
+--selfrequired debug,info,notice,warning,error,fault,trace,critical,log
 --guardelse same-line
 --elseposition same-line
 --ifdef no-indent

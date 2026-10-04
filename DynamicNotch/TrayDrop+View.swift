@@ -10,28 +10,29 @@
 import SwiftUI
 
 struct TrayView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject var tvm = TrayDrop.shared
+    @ObservedObject var vm: NotchViewModel
+    @ObservedObject var tvm = TrayDrop.shared
 
     @State private var targeting = false
     @State private var trashTargeting = false
+    /// Incrémenté à l'entrée d'un glisser seulement : le rebond ne joue pas à la sortie.
+    @State private var dropBounces = 0
 
     var storageTime: String {
         switch tvm.selectedFileStorageTime {
-        case .oneHour:   return "une heure"
-        case .oneDay:    return "un jour"
-        case .twoDays:   return "deux jours"
+        case .oneHour: return "une heure"
+        case .oneDay: return "un jour"
+        case .twoDays: return "deux jours"
         case .threeDays: return "trois jours"
-        case .oneWeek:   return "une semaine"
-        case .never:     return "toujours"
+        case .oneWeek: return "une semaine"
+        case .never: return "toujours"
         case .custom:
-            let unit: String
-            switch tvm.customStorageTimeUnit {
-            case .hours:  unit = "heures"
-            case .days:   unit = "jours"
-            case .weeks:  unit = "semaines"
-            case .months: unit = "mois"
-            case .years:  unit = "ans"
+            let unit = switch tvm.customStorageTimeUnit {
+            case .hours: "heures"
+            case .days: "jours"
+            case .weeks: "semaines"
+            case .months: "mois"
+            case .years: "ans"
             }
             return "\(tvm.customStorageTime) \(unit)"
         }
@@ -42,8 +43,14 @@ struct TrayView: View {
             content.padding(DS.Spacing.sm)
         }
         .onDrop(of: [.data], isTargeted: $targeting) { providers in
+            vm.hapticSender.send()
             DispatchQueue.global().async { tvm.load(providers) }
             return true
+        }
+        .onChange(of: targeting) { _, isTargeted in
+            if isTargeted {
+                dropBounces += 1
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("Plateau de fichiers"))
@@ -66,6 +73,7 @@ struct TrayView: View {
             Image(systemName: "tray.and.arrow.down.fill")
                 .font(.system(size: 22, weight: .light))
                 .foregroundStyle(DS.Color.textTertiary)
+                .symbolEffect(.bounce, value: dropBounces)
             Text("Glissez vos fichiers ici")
                 .font(DS.Typography.bodyEmphasis)
                 .foregroundStyle(DS.Color.textPrimary)
@@ -108,13 +116,13 @@ struct TrayView: View {
     /// (les noms sont uniques dans notre storage UUID/filename).
     private var trashDropZone: some View {
         Image(systemName: "trash")
-            .font(.system(size: 10, weight: .semibold))
+            .font(.system(size: 11, weight: .semibold))
             .foregroundStyle(trashTargeting ? .white : DS.Color.textTertiary)
             .frame(width: 26, height: 18)
             .background(
                 Capsule().fill(trashTargeting
-                               ? DS.Color.destructive
-                               : DS.Color.surfaceRaisedStrong)
+                    ? DS.Color.destructive
+                    : DS.Color.surfaceRaisedStrong)
             )
             .overlay(
                 Capsule().strokeBorder(
@@ -137,7 +145,7 @@ struct TrayView: View {
             confirmAndClearAll()
         } label: {
             Image(systemName: "xmark.bin")
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(DS.Color.textTertiary)
                 .frame(width: 26, height: 18)
                 .background(Capsule().fill(DS.Color.surfaceRaisedStrong))

@@ -25,10 +25,8 @@ struct DSGallery: View {
                 section("Spacing & Radius") { spacingRadiusSection }
                 section("Effects (Shadows & Glows)") { effectsSection }
                 section("Buttons") { buttonsSection }
-                section("Icon Tiles") { iconTilesSection }
-                section("Badges & Pills") { badgesPillsSection }
-                section("Cards & Drop Zone") { cardsDropZoneSection }
-                section("Notch Header") { notchHeaderSection }
+                section("Badges") { badgesPillsSection }
+                section("Drop Zone") { cardsDropZoneSection }
             }
             .padding(DS.Spacing.xxl)
         }
@@ -38,8 +36,7 @@ struct DSGallery: View {
 
     // MARK: section helper
 
-    @ViewBuilder
-    func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: DS.Spacing.md) {
             Text(title)
                 .font(DS.Typography.displayMedium)
@@ -76,24 +73,24 @@ struct DSGallery: View {
             colorRow("Surface", swatches: [
                 ("base", DS.Color.surfaceBase),
                 ("raised", DS.Color.surfaceRaised),
-                ("raisedStrong", DS.Color.surfaceRaisedStrong),
+                ("raisedStrong", DS.Color.surfaceRaisedStrong)
             ])
             colorRow("Text", swatches: [
                 ("primary", DS.Color.textPrimary),
                 ("secondary", DS.Color.textSecondary),
                 ("tertiary", DS.Color.textTertiary),
-                ("quaternary", DS.Color.textQuaternary),
+                ("quaternary", DS.Color.textQuaternary)
             ])
             colorRow("Brand", swatches: [
                 ("brand", DS.Color.brand),
                 ("brandStrong", DS.Color.brandStrong),
-                ("brandSoft", DS.Color.brandSoft),
+                ("brandSoft", DS.Color.brandSoft)
             ])
             colorRow("Semantic", swatches: [
                 ("destructive", DS.Color.destructive),
                 ("warning", DS.Color.warning),
                 ("success", DS.Color.success),
-                ("info", DS.Color.info),
+                ("info", DS.Color.info)
             ])
         }
     }
@@ -128,7 +125,7 @@ struct DSGallery: View {
                 Text("body — 13").font(DS.Typography.body)
                 Text("bodyEmphasis — 13 / semi").font(DS.Typography.bodyEmphasis)
                 Text("caption — 11").font(DS.Typography.caption)
-                Text("captionSmall — 10").font(DS.Typography.captionSmall)
+                Text("captionSmall — 11").font(DS.Typography.captionSmall)
                 Text("mono — 11 / mono").font(DS.Typography.mono)
             }
             .foregroundStyle(DS.Color.textPrimary)
@@ -138,9 +135,15 @@ struct DSGallery: View {
     var spacingRadiusSection: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.lg) {
             HStack(spacing: DS.Spacing.lg) {
-                ForEach([("xxs", DS.Spacing.xxs), ("xs", DS.Spacing.xs), ("sm", DS.Spacing.sm),
-                         ("md", DS.Spacing.md), ("lg", DS.Spacing.lg), ("xl", DS.Spacing.xl),
-                         ("xxl", DS.Spacing.xxl)], id: \.0) { name, value in
+                ForEach([
+                    ("xxs", DS.Spacing.xxs),
+                    ("xs", DS.Spacing.xs),
+                    ("sm", DS.Spacing.sm),
+                    ("md", DS.Spacing.md),
+                    ("lg", DS.Spacing.lg),
+                    ("xl", DS.Spacing.xl),
+                    ("xxl", DS.Spacing.xxl)
+                ], id: \.0) { name, value in
                     VStack(spacing: 4) {
                         Rectangle().fill(DS.Color.brand).frame(width: value, height: value)
                         Text(name).font(DS.Typography.captionSmall).foregroundStyle(DS.Color.textTertiary)
@@ -148,8 +151,14 @@ struct DSGallery: View {
                 }
             }
             HStack(spacing: DS.Spacing.lg) {
-                ForEach([("xs", DS.Radius.xs), ("sm", DS.Radius.sm), ("md", DS.Radius.md),
-                         ("lg", DS.Radius.lg), ("xl", DS.Radius.xl), ("xxl", DS.Radius.xxl)], id: \.0) { name, value in
+                ForEach([
+                    ("xs", DS.Radius.xs),
+                    ("sm", DS.Radius.sm),
+                    ("md", DS.Radius.md),
+                    ("lg", DS.Radius.lg),
+                    ("xl", DS.Radius.xl),
+                    ("xxl", DS.Radius.xxl)
+                ], id: \.0) { name, value in
                     VStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: value, style: .continuous)
                             .fill(DS.Color.surfaceRaisedStrong)
@@ -166,9 +175,6 @@ struct DSGallery: View {
             effectChip("shadowSm", DS.Effect.shadowSm)
             effectChip("shadowMd", DS.Effect.shadowMd)
             effectChip("shadowLg", DS.Effect.shadowLg)
-            effectChip("glowBrand", DS.Effect.glowBrand)
-            effectChip("glowDestructive", DS.Effect.glowDestructive)
-            effectChip("glowWarning", DS.Effect.glowWarning)
         }
     }
 
@@ -200,15 +206,6 @@ struct DSGallery: View {
         }
     }
 
-    var iconTilesSection: some View {
-        HStack(spacing: DS.Spacing.md) {
-            DSIconTile(systemImage: "gear",      title: "Settings",    tone: .brand) {}
-            DSIconTile(systemImage: "tray.full", title: "Inbox",       tone: .neutral) {}
-            DSIconTile(systemImage: "trash",     title: "Clear",       tone: .warning) {}
-            DSIconTile(systemImage: "power",     title: "Quit",        tone: .destructive) {}
-        }
-    }
-
     var badgesPillsSection: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.md) {
             HStack(spacing: DS.Spacing.sm) {
@@ -217,27 +214,11 @@ struct DSGallery: View {
                 DSBadge(count: 1234, tone: .warning)
                 DSBadge("NEW", tone: .neutral)
             }
-            HStack(spacing: DS.Spacing.sm) {
-                DSPill("Idle", systemImage: "moon", tone: .neutral)
-                DSPill("Connected", systemImage: "checkmark", tone: .success)
-                DSPill("Syncing", systemImage: "arrow.triangle.2.circlepath", tone: .brand)
-                DSPill("Quota low", systemImage: "exclamationmark", tone: .warning)
-                DSPill("Error", systemImage: "xmark", tone: .destructive)
-            }
         }
     }
 
     var cardsDropZoneSection: some View {
         HStack(spacing: DS.Spacing.lg) {
-            DSCard {
-                VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-                    Text("Card").font(DS.Typography.headline).foregroundStyle(DS.Color.textPrimary)
-                    Text("A standard surface for grouping content.")
-                        .font(DS.Typography.body).foregroundStyle(DS.Color.textSecondary)
-                }
-            }
-            .frame(width: 220)
-
             DSDropZone(isTargeted: false) {
                 VStack(spacing: DS.Spacing.xs) {
                     Image(systemName: "tray.and.arrow.down")
@@ -258,14 +239,6 @@ struct DSGallery: View {
             }
             .frame(width: 160, height: 100)
         }
-    }
-
-    var notchHeaderSection: some View {
-        DSNotchHeader(title: "DynamicNotch") { _ in }
-            .padding(DS.Spacing.md)
-            .frame(width: 480)
-            .background(DS.Color.surfaceRaised)
-            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
     }
 }
 

@@ -13,17 +13,49 @@
 import EventKit
 import SwiftUI
 
+enum AgendaAccess: Equatable {
+    case granted, notDetermined, denied
+}
+
 @MainActor
-final class CalendarStore: ObservableObject {
+@Observable
+final class CalendarStore {
     static let shared = CalendarStore()
 
-    @Published var nextEvent: EKEvent?
-    @Published var authorizationDenied: Bool = false
+    var nextEvent: EKEvent?
+    private(set) var access: AgendaAccess = CalendarStore
+        .access(for: EKEventStore.authorizationStatus(for: .event))
+    private(set) var todayEvents: [AgendaEntry] = []
+    private(set) var tomorrowEvents: [AgendaEntry] = []
 
     private let store = EKEventStore()
     private var refreshTimer: Timer?
 
     private init() {}
+
+    nonisolated static func access(for status: EKAuthorizationStatus) -> AgendaAccess {
+        switch status {
+        case .fullAccess: .granted
+        case .notDetermined: .notDetermined
+        default: .denied
+        }
+    }
+
+    /// Relit l'autorisation ; si l'accès est accordé, lance le suivi (sans invite).
+    func refreshAccess() {
+        access = Self.access(for: EKEventStore.authorizationStatus(for: .event))
+        if access == .granted, refreshTimer == nil {
+            startObserving()
+        }
+    }
+
+    /// Demande l'accès (invite système), puis relit l'autorisation.
+    func requestAccess() {
+        Task {
+            await requestAndRefresh()
+            refreshAccess()
+        }
+    }
 
     // MARK: lifecycle
 
@@ -51,18 +83,15 @@ final class CalendarStore: ObservableObject {
             // requestAccess(to:); we use #available to keep the deployment
             // target reasonable while staying compliant on modern macOS.
             if #available(macOS 14, *) {
-                let granted = try await store.requestFullAccessToEvents()
-                authorizationDenied = !granted
+                _ = try await store.requestFullAccessToEvents()
             } else {
-                let granted: Bool = await withCheckedContinuation { cont in
+                _ = await withCheckedContinuation { cont in
                     store.requestAccess(to: .event) { ok, _ in cont.resume(returning: ok) }
                 }
-                authorizationDenied = !granted
             }
             refresh()
         } catch {
             Log.app.error("calendar access request failed: \(error.localizedDescription, privacy: .public)")
-            authorizationDenied = true
         }
     }
 
@@ -74,114 +103,26 @@ final class CalendarStore: ObservableObject {
             .filter { !$0.isAllDay && $0.endDate > now }
             .sorted { $0.startDate < $1.startDate }
         nextEvent = events.first
-    }
-}
 
-struct CalendarWidgetView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject private var store = CalendarStore.shared
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-            HStack(spacing: DS.Spacing.xs) {
-                Image(systemName: "calendar")
-                    .font(.system(size: 9, weight: .semibold))
-                Text("Prochain événement")
-                    .font(DS.Typography.captionSmall)
-                Spacer()
-            }
-            .foregroundStyle(DS.Color.textTertiary)
-
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        let startOfToday = Calendar.current.startOfDay(for: now)
+        let endOfTomorrow = Calendar.current.date(byAdding: .day, value: 2, to: startOfToday)!
+        let dayPredicate = store.predicateForEvents(withStart: startOfToday, end: endOfTomorrow, calendars: nil)
+        let entries = store.events(matching: dayPredicate).map { event in
+            AgendaEntry(
+                id: AgendaEntry.makeID(
+                    eventIdentifier: event.eventIdentifier,
+                    title: event.title,
+                    start: event.startDate
+                ),
+                title: event.title ?? "Sans titre",
+                start: event.startDate,
+                end: event.endDate,
+                isAllDay: event.isAllDay,
+                color: event.calendar?.color
+            )
         }
-        .padding(DS.Spacing.sm)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .dsCard()
-        .dsRimLight()
-        .onAppear { store.startObserving() }
-    }
-
-    @ViewBuilder
-    private var content: some View {
-        if store.authorizationDenied {
-            denied
-        } else if let event = store.nextEvent {
-            eventCard(event)
-        } else {
-            emptyState
-        }
-    }
-
-    @ViewBuilder
-    private func eventCard(_ event: EKEvent) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(event.title ?? "Événement sans titre")
-                .font(DS.Typography.bodyEmphasis)
-                .foregroundStyle(DS.Color.textPrimary)
-                .lineLimit(1)
-            Text(formatTime(event))
-                .font(DS.Typography.caption)
-                .foregroundStyle(DS.Color.textSecondary)
-                .monospacedDigit()
-            if let loc = event.location, !loc.isEmpty {
-                Text(loc)
-                    .font(DS.Typography.captionSmall)
-                    .foregroundStyle(DS.Color.textTertiary)
-                    .lineLimit(1)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    }
-
-    private var emptyState: some View {
-        VStack(spacing: DS.Spacing.xs) {
-            Image(systemName: "calendar.badge.checkmark")
-                .font(.system(size: 18, weight: .light))
-                .foregroundStyle(DS.Color.textTertiary)
-            Text("Rien dans les 24 prochaines heures")
-                .font(DS.Typography.caption)
-                .foregroundStyle(DS.Color.textTertiary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private var denied: some View {
-        VStack(spacing: DS.Spacing.xs) {
-            Image(systemName: "lock")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(DS.Color.warning)
-            Text("Accès au calendrier refusé")
-                .font(DS.Typography.caption)
-                .foregroundStyle(DS.Color.textPrimary)
-            Button("Ouvrir les Réglages") {
-                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars") {
-                    NSWorkspace.shared.open(url)
-                }
-            }
-            .buttonStyle(.plain)
-            .font(DS.Typography.caption)
-            .foregroundStyle(DS.Color.brand)
-        }
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private func formatTime(_ event: EKEvent) -> String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        formatter.dateStyle = .none
-        let now = Date()
-        let cal = Calendar.current
-        if cal.isDateInToday(event.startDate) {
-            return formatter.string(from: event.startDate)
-        }
-        if cal.isDateInTomorrow(event.startDate) {
-            return "Demain " + formatter.string(from: event.startDate)
-        }
-        let rel = RelativeDateTimeFormatter()
-        rel.dateTimeStyle = .named
-        return rel.localizedString(for: event.startDate, relativeTo: now)
+        let split = AgendaPlanner.split(entries, now: now)
+        todayEvents = split.today
+        tomorrowEvents = split.tomorrow
     }
 }

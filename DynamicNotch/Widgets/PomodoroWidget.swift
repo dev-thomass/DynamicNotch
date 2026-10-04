@@ -5,11 +5,11 @@
 //  Pomodoro classique : 25 min focus → 5 min pause × 4 → 15 min pause longue.
 //
 
-import Combine
 import SwiftUI
 
 @MainActor
-final class PomodoroModel: ObservableObject {
+@Observable
+final class PomodoroModel {
     static let shared = PomodoroModel()
 
     enum Phase: String, Codable {
@@ -17,44 +17,69 @@ final class PomodoroModel: ObservableObject {
 
         var label: String {
             switch self {
-            case .idle:       "Prêt"
-            case .work:       "Focus"
+            case .idle: "Prêt"
+            case .work: "Focus"
             case .shortBreak: "Pause"
-            case .longBreak:  "Pause longue"
+            case .longBreak: "Pause longue"
             }
         }
 
         var tint: Color {
             switch self {
-            case .idle:       DS.Color.textSecondary
-            case .work:       DS.Color.destructive
+            case .idle: DS.Color.textSecondary
+            case .work: DS.Color.destructive
             case .shortBreak: DS.Color.success
-            case .longBreak:  DS.Color.brand
+            case .longBreak: DS.Color.brand
+            }
+        }
+
+        /// Titre de l'activité affichée à l'entrée dans la phase.
+        var activityTitle: String {
+            switch self {
+            case .idle: "Prêt"
+            case .work: "Au travail"
+            case .shortBreak: "Pause"
+            case .longBreak: "Pause longue"
             }
         }
     }
 
-    // Durées lues depuis AppSettings — `var` plutôt que `let` static pour
-    // refléter les changements en temps réel quand l'utilisateur tune ses
-    // réglages. La conversion en TimeInterval (secondes) reste centralisée ici.
-    var workDuration: TimeInterval       { TimeInterval(AppSettings.shared.pomodoroFocusMinutes      * 60) }
-    var shortBreakDuration: TimeInterval { TimeInterval(AppSettings.shared.pomodoroShortBreakMinutes * 60) }
-    var longBreakDuration: TimeInterval  { TimeInterval(AppSettings.shared.pomodoroLongBreakMinutes  * 60) }
-    var cyclesBeforeLongBreak: Int       { AppSettings.shared.pomodoroCyclesBeforeLongBreak }
+    /// Durées lues depuis AppSettings — `var` plutôt que `let` static pour
+    /// refléter les changements en temps réel quand l'utilisateur tune ses
+    /// réglages. La conversion en TimeInterval (secondes) reste centralisée ici.
+    var workDuration: TimeInterval {
+        TimeInterval(AppSettings.shared.pomodoroFocusMinutes * 60)
+    }
 
-    @Published private(set) var phase: Phase = .idle
-    @Published private(set) var remaining: TimeInterval = 0
-    @Published private(set) var sessionsCompleted: Int = 0
+    var shortBreakDuration: TimeInterval {
+        TimeInterval(AppSettings.shared.pomodoroShortBreakMinutes * 60)
+    }
+
+    var longBreakDuration: TimeInterval {
+        TimeInterval(AppSettings.shared.pomodoroLongBreakMinutes * 60)
+    }
+
+    var cyclesBeforeLongBreak: Int {
+        AppSettings.shared.pomodoroCyclesBeforeLongBreak
+    }
+
+    private(set) var phase: Phase = .idle
+    private(set) var remaining: TimeInterval = 0
+    private(set) var sessionsCompleted: Int = 0
     /// Le timer tourne-t-il actuellement ? Distinct de `phase != .idle` car
     /// pendant une pause utilisateur (paused), la phase reste `.work` mais le
     /// timer est arrêté. Sans cette distinction, on ne pouvait pas reprendre
     /// après pause — bug corrigé.
-    @Published private(set) var isRunning: Bool = false
+    private(set) var isRunning: Bool = false
 
     private var timer: Timer?
     private var phaseEndDate: Date?
 
-    private init() {}
+    /// Appelé à chaque changement de phase ; `naturalEnd` vaut `false` quand
+    /// l'utilisateur a passé la phase.
+    var onPhaseChange: ((_ phase: Phase, _ naturalEnd: Bool) -> Void)?
+
+    init() {}
 
     var formatted: String {
         let total = max(0, Int(remaining.rounded()))
@@ -63,16 +88,27 @@ final class PomodoroModel: ObservableObject {
 
     var phaseTotal: TimeInterval {
         switch phase {
-        case .idle:       workDuration
-        case .work:       workDuration
+        case .idle: workDuration
+        case .work: workDuration
         case .shortBreak: shortBreakDuration
-        case .longBreak:  longBreakDuration
+        case .longBreak: longBreakDuration
         }
     }
 
     var progress: Double {
         guard phaseTotal > 0, phase != .idle else { return 0 }
         return 1 - (remaining / phaseTotal)
+    }
+
+    /// Progression de la phase à `date`, continue entre deux ticks.
+    func progress(at date: Date) -> Double {
+        guard phaseTotal > 0, phase != .idle else { return 0 }
+        let left: TimeInterval = if isRunning, let end = phaseEndDate {
+            max(0, end.timeIntervalSince(date))
+        } else {
+            remaining
+        }
+        return min(1, max(0, 1 - left / phaseTotal))
     }
 
     /// Etat ergonomique du bouton principal — utilisé par la vue pour choisir
@@ -82,7 +118,9 @@ final class PomodoroModel: ObservableObject {
     enum PrimaryAction { case start, pause, resume }
 
     var primaryAction: PrimaryAction {
-        if phase == .idle { return .start }
+        if phase == .idle {
+            return .start
+        }
         return isRunning ? .pause : .resume
     }
 
@@ -90,8 +128,8 @@ final class PomodoroModel: ObservableObject {
 
     func performPrimary() {
         switch primaryAction {
-        case .start:  transition(to: .work)
-        case .pause:  pauseTimer()
+        case .start: transition(to: .work)
+        case .pause: pauseTimer()
         case .resume: resumeTimer()
         }
     }
@@ -106,7 +144,7 @@ final class PomodoroModel: ObservableObject {
     }
 
     func skip() {
-        advancePhase()
+        advancePhase(naturalEnd: false)
     }
 
     // MARK: internal
@@ -114,12 +152,14 @@ final class PomodoroModel: ObservableObject {
     private func transition(to next: Phase) {
         phase = next
         switch next {
-        case .idle:       remaining = 0
-        case .work:       remaining = workDuration
+        case .idle: remaining = 0
+        case .work: remaining = workDuration
         case .shortBreak: remaining = shortBreakDuration
-        case .longBreak:  remaining = longBreakDuration
+        case .longBreak: remaining = longBreakDuration
         }
-        if next != .idle { armTimer() }
+        if next != .idle {
+            armTimer()
+        }
     }
 
     private func pauseTimer() {
@@ -148,32 +188,34 @@ final class PomodoroModel: ObservableObject {
         guard let end = phaseEndDate else { return }
         remaining = end.timeIntervalSinceNow
         if remaining <= 0 {
-            advancePhase()
+            advancePhase(naturalEnd: true)
         }
     }
 
-    private func advancePhase() {
+    private func advancePhase(naturalEnd: Bool) {
         timer?.invalidate()
         timer = nil
         isRunning = false
         switch phase {
         case .work:
             sessionsCompleted += 1
-            let next: Phase = (sessionsCompleted % cyclesBeforeLongBreak == 0) ? .longBreak : .shortBreak
+            // max(1, …) : un réglage à 0 faisait planter le modulo.
+            let next: Phase = (sessionsCompleted % max(1, cyclesBeforeLongBreak) == 0) ? .longBreak : .shortBreak
             transition(to: next)
         case .shortBreak, .longBreak:
             transition(to: .work)
         case .idle:
-            break
+            return
         }
+        onPhaseChange?(phase, naturalEnd)
     }
 }
 
 // MARK: - View
 
 struct PomodoroWidgetView: View {
-    @StateObject var vm: NotchViewModel
-    @StateObject private var model = PomodoroModel.shared
+    @ObservedObject var vm: NotchViewModel
+    private let model = PomodoroModel.shared
 
     var body: some View {
         VStack(spacing: DS.Spacing.xs) {
@@ -184,13 +226,12 @@ struct PomodoroWidgetView: View {
         .padding(DS.Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .dsCard()
-        .dsRimLight()
     }
 
     private var header: some View {
         HStack(spacing: DS.Spacing.xs) {
             Image(systemName: "brain.head.profile")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
             Text(model.phase.label)
                 .font(DS.Typography.captionSmall)
             Spacer()
@@ -207,14 +248,17 @@ struct PomodoroWidgetView: View {
         ZStack {
             Circle()
                 .stroke(DS.Color.borderSubtle, lineWidth: 3)
-            Circle()
-                .trim(from: 0, to: model.progress)
-                .stroke(model.phase.tint, style: .init(lineWidth: 3, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 0.5), value: model.progress)
+            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !model.isRunning)) { context in
+                Circle()
+                    .trim(from: 0, to: model.progress(at: context.date))
+                    .stroke(model.phase.tint, style: .init(lineWidth: 3, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            }
             Text(timeDisplayed)
-                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .font(DS.Typography.title)
                 .monospacedDigit()
+                .contentTransition(.numericText(countsDown: true))
+                .animation(DS.Motion.micro, value: timeDisplayed)
                 .foregroundStyle(DS.Color.textPrimary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -233,21 +277,30 @@ struct PomodoroWidgetView: View {
 
     private var controls: some View {
         HStack(spacing: DS.Spacing.sm) {
-            circleBtn(systemImage: "arrow.counterclockwise",
-                      label: "Réinitialiser",
-                      enabled: model.phase != .idle || model.sessionsCompleted > 0) {
+            circleBtn(
+                systemImage: "arrow.counterclockwise",
+                label: "Réinitialiser",
+                enabled: model.phase != .idle || model.sessionsCompleted > 0
+            ) {
                 model.reset()
             }
 
-            circleBtn(systemImage: primaryIcon,
-                      label: primaryLabel,
-                      tint: primaryTint) {
+            circleBtn(
+                systemImage: primaryIcon,
+                label: primaryLabel,
+                tint: primaryTint
+            ) {
+                if !model.isRunning {
+                    vm.hapticSender.send()
+                }
                 model.performPrimary()
             }
 
-            circleBtn(systemImage: "forward.fill",
-                      label: "Passer à la suite",
-                      enabled: model.phase != .idle) {
+            circleBtn(
+                systemImage: "forward.fill",
+                label: "Passer à la suite",
+                enabled: model.phase != .idle
+            ) {
                 model.skip()
             }
         }
@@ -258,14 +311,14 @@ struct PomodoroWidgetView: View {
     private var primaryIcon: String {
         switch model.primaryAction {
         case .start, .resume: "play.fill"
-        case .pause:          "pause.fill"
+        case .pause: "pause.fill"
         }
     }
 
     private var primaryLabel: String {
         switch model.primaryAction {
-        case .start:  "Démarrer le focus"
-        case .pause:  "Mettre en pause"
+        case .start: "Démarrer le focus"
+        case .pause: "Mettre en pause"
         case .resume: "Reprendre"
         }
     }
@@ -274,7 +327,6 @@ struct PomodoroWidgetView: View {
         model.phase == .idle ? DS.Color.brand : model.phase.tint
     }
 
-    @ViewBuilder
     private func circleBtn(
         systemImage: String,
         label: String,
@@ -284,7 +336,8 @@ struct PomodoroWidgetView: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 10, weight: .semibold))
+                .contentTransition(.symbolEffect(.replace))
+                .font(.system(size: 11, weight: .semibold))
                 .frame(width: 24, height: 24)
                 .background(tint)
                 .foregroundStyle(DS.Color.textOnAccent)

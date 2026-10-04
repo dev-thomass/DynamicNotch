@@ -13,14 +13,13 @@
 //     "Target Dependency" so test files can `@testable import DynamicNotch`
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 final class PersistTests: XCTestCase {
-
     // MARK: round-trip
 
-    func test_persist_roundTrip_simpleString() throws {
+    func test_persist_roundTrip_simpleString() {
         let key = uniqueKey()
         let store = InMemoryStore()
         let persist = Persist(key: key, defaultValue: "alpha", engine: store)
@@ -30,6 +29,7 @@ final class PersistTests: XCTestCase {
         // simulates what happens across app restarts.
         var mutable = persist
         mutable.wrappedValue = "beta"
+        persistWriteQueue.sync {} // attend l'écriture asynchrone
 
         let reread = Persist(key: key, defaultValue: "alpha", engine: store)
         XCTAssertEqual(reread.wrappedValue, "beta", "value did not survive round trip")
@@ -51,6 +51,20 @@ final class PersistTests: XCTestCase {
         XCTAssertEqual(persist.wrappedValue, "fallback")
     }
 
+    // MARK: écriture
+
+    /// Créer un réglage ne doit jamais l'écrire : sinon la simple lecture des
+    /// valeurs par défaut crée les fichiers (et masque la migration).
+    func test_persist_creation_neverWritesBack() {
+        let key = uniqueKey()
+        let store = InMemoryStore()
+        let persist = Persist(key: key, defaultValue: "default", engine: store)
+        withExtendedLifetime(persist) {
+            persistWriteQueue.sync {} // attend une éventuelle écriture asynchrone
+            XCTAssertNil(store.data(forKey: key))
+        }
+    }
+
     // MARK: helpers
 
     private func uniqueKey() -> String {
@@ -59,9 +73,14 @@ final class PersistTests: XCTestCase {
 }
 
 /// In-memory `PersistProvider` used by tests. Avoids touching the user's
-/// `~/Documents/DynamicNotch/Config` folder during test runs.
+/// `~/Library/Application Support/DynamicNotch/Config` folder during test runs.
 private final class InMemoryStore: PersistProvider {
     private var storage: [String: Data] = [:]
-    func data(forKey key: String) -> Data? { storage[key] }
-    func set(_ data: Data?, forKey key: String) { storage[key] = data }
+    func data(forKey key: String) -> Data? {
+        storage[key]
+    }
+
+    func set(_ data: Data?, forKey key: String) {
+        storage[key] = data
+    }
 }

@@ -33,27 +33,19 @@ jobs:
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            build | xcbeautify --renderer github-actions || true
+            build | xcbeautify --renderer github-actions
 
-      # The test step only fires once the DynamicNotchTests target is wired in
-      # the .xcodeproj. The check below `|| true` keeps CI green during the
-      # transition; flip the failure mode by removing the trailing `|| true`
-      # once the target exists.
-      - name: Test (DynamicNotchTests target — opt-in)
+      - name: Test
         run: |
           set -o pipefail
-          if xcodebuild -project DynamicNotch.xcodeproj -list | grep -q DynamicNotchTests; then
-            xcodebuild \
-              -project DynamicNotch.xcodeproj \
-              -scheme DynamicNotch \
-              -destination 'platform=macOS' \
-              CODE_SIGN_IDENTITY="-" \
-              CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGNING_ALLOWED=NO \
-              test | xcbeautify --renderer github-actions
-          else
-            echo "DynamicNotchTests target not yet present in the project — skipping."
-          fi
+          xcodebuild \
+            -project DynamicNotch.xcodeproj \
+            -scheme DynamicNotch \
+            -destination 'platform=macOS' \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            test | xcbeautify --renderer github-actions
 
   lint:
     name: Lint (SwiftFormat)

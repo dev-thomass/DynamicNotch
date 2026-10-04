@@ -16,7 +16,9 @@ enum Language: String, CaseIterable, Identifiable, Codable {
     case japanese = "Japanese"
     case french = "French"
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var localized: String {
         NSLocalizedString(rawValue, comment: "")
@@ -56,7 +58,7 @@ enum Language: String, CaseIterable, Identifiable, Codable {
 
         let currentLanguages = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String]
         let currentLanguageCode = currentLanguages?.first
-        
+
         if currentLanguageCode == languageCode {
             return
         }
@@ -65,7 +67,10 @@ enum Language: String, CaseIterable, Identifiable, Codable {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             NSAlert.popRestart(
-                NSLocalizedString("The language has been changed. The app will restart for the changes to take effect.", comment: ""),
+                NSLocalizedString(
+                    "The language has been changed. The app will restart for the changes to take effect.",
+                    comment: ""
+                ),
                 completion: relaunchApp
             )
         }
@@ -111,8 +116,8 @@ private class PrivateBundle: Bundle, @unchecked Sendable {
         guard let languages = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
               let languageCode = languages.first,
               let bundlePath = Bundle.main.path(forResource: languageCode, ofType: "lproj"),
-              let bundle = Bundle(path: bundlePath)
-        else {
+              let bundle = Bundle(path: bundlePath) else
+        {
             return super.localizedString(forKey: key, value: value, table: tableName)
         }
         return bundle.localizedString(forKey: key, value: value, table: tableName)

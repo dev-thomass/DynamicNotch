@@ -68,7 +68,9 @@ extension NSItemProvider {
         var result: URL?
         // Guard against the loader calling back twice.
         let signalOnce = { [weak sem] (url: URL?) in
-            if result == nil { result = url }
+            if result == nil {
+                result = url
+            }
             sem?.signal()
         }
         trigger(signalOnce)
@@ -92,9 +94,15 @@ extension [NSItemProvider] {
 
     private static func shouldIgnore(_ url: URL) -> Bool {
         let name = url.lastPathComponent
-        if ignoredFileNames.contains(name) { return true }
-        if name.hasPrefix("._") { return true } // AppleDouble side-files
-        if name.hasPrefix(".") { return true }  // Hidden files Unix-style
+        if ignoredFileNames.contains(name) {
+            return true
+        }
+        if name.hasPrefix("._") {
+            return true
+        } // AppleDouble side-files
+        if name.hasPrefix(".") {
+            return true
+        } // Hidden files Unix-style
         return false
     }
 
@@ -102,8 +110,7 @@ extension [NSItemProvider] {
         var loaded: [URL] = []
         var failures = 0
         for provider in self {
-            guard let url = provider.convertToFilePathThatIsWhatWeThinkItWillWorkWithDynamicNotch()
-            else {
+            guard let url = provider.convertToFilePathThatIsWhatWeThinkItWillWorkWithDynamicNotch() else {
                 failures += 1
                 continue
             }

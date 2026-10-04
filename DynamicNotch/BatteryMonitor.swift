@@ -2,90 +2,105 @@
 //  BatteryMonitor.swift
 //  DynamicNotch
 //
-//  Singleton qui surveille l'état de la batterie via IOKit Power Source.
-//  Publie 4 valeurs observables : niveau (0..1), en charge, branché, présence
-//  de batterie. Refresh toutes les 10s + à chaque réveil de l'écran.
+//  État de la batterie, mis à jour instantanément par l'abonnement système
+//  IOPSNotificationCreateRunLoopSource (plus de minuterie de 10 s).
+//  `onChange` reçoit le nouvel état et les événements détectés.
 //
 
-import Combine
-import Foundation
 import IOKit.ps
+import SwiftUI
 
 @MainActor
-final class BatteryMonitor: ObservableObject {
+@Observable
+final class BatteryMonitor {
     static let shared = BatteryMonitor()
 
-    @Published private(set) var level: Double = 1.0
-    @Published private(set) var isCharging: Bool = false
-    @Published private(set) var isPluggedIn: Bool = false
-    @Published private(set) var hasBattery: Bool = false
+    private(set) var snapshot = PowerSnapshot(
+        hasBattery: false, level: 1, isPluggedIn: true, isCharging: false, minutesToFull: nil
+    )
+    var onChange: ((PowerSnapshot, [PowerEvent]) -> Void)?
 
-    private var timer: Timer?
+    private var detector = PowerEventDetector()
+    private var runLoopSource: CFRunLoopSource?
 
     private init() {
         refresh()
-        // 10 s est un bon compromis : suffisant pour voir grimper la charge,
-        // pas assez fréquent pour peser sur la batterie elle-même.
-        timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { _ in
-            Task { @MainActor [weak self] in self?.refresh() }
+        // Singleton jamais libéré : un pointeur non retenu suffit.
+        let context = Unmanaged.passUnretained(self).toOpaque()
+        let callback: IOPowerSourceCallbackType = { context in
+            guard let context else { return }
+            let monitor = Unmanaged<BatteryMonitor>.fromOpaque(context).takeUnretainedValue()
+            MainActor.assumeIsolated { monitor.refresh() }
+        }
+        if let source = IOPSNotificationCreateRunLoopSource(callback, context)?.takeRetainedValue() {
+            CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
+            runLoopSource = source
         }
     }
 
-    /// Affiche le pourcentage entier formaté (ex. "87 %"). Espace insécable
-    /// avant le % conformément aux règles typographiques françaises.
-    var percentText: String {
-        let pct = Int((level * 100).rounded())
-        return "\(pct) %"
+    // MARK: accès simplifiés
+
+    var level: Double {
+        snapshot.level
     }
 
-    /// Couleur indicative selon le niveau de charge — vert > 50 %, jaune
-    /// > 20 %, rouge en dessous. Utilisée par le wing batterie pour le
-    /// remplissage de l'icône.
+    var isCharging: Bool {
+        snapshot.isCharging
+    }
+
+    var isPluggedIn: Bool {
+        snapshot.isPluggedIn
+    }
+
+    var hasBattery: Bool {
+        snapshot.hasBattery
+    }
+
+    var percent: Int {
+        snapshot.percent
+    }
+
+    /// « 87 % », avec l'espace insécable de la typographie française.
+    var percentText: String {
+        "\(percent) %"
+    }
+
+    /// Vert au-dessus de 50 %, jaune au-dessus de 20 %, rouge en dessous.
     var indicativeTint: Color {
-        if level > 0.5 { return .green }
-        if level > 0.2 { return .yellow }
-        return .red
+        if level > 0.5 {
+            return DS.Color.success
+        }
+        if level > 0.2 {
+            return DS.Color.warning
+        }
+        return DS.Color.destructive
+    }
+
+    /// « Pleine dans 1 h 10 », « Pleine dans 25 min », ou `nil` si inconnu.
+    var timeToFullText: String? {
+        guard let minutes = snapshot.minutesToFull else { return nil }
+        if minutes < 60 {
+            return "Pleine dans \(minutes) min"
+        }
+        let rest = minutes % 60
+        return rest == 0 ? "Pleine dans \(minutes / 60) h" : "Pleine dans \(minutes / 60) h \(String(format: "%02d", rest))"
     }
 
     func refresh() {
-        guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-              let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [CFTypeRef]
-        else {
-            hasBattery = false
-            return
+        // Lecture impossible : on garde l'état précédent plutôt que de
+        // simuler une machine sans batterie (faux événements).
+        guard let next = Self.readSnapshot() else { return }
+        let events = detector.process(next)
+        snapshot = next
+        onChange?(next, events)
+    }
+
+    private static func readSnapshot() -> PowerSnapshot? {
+        guard let info = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
+              let sources = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef] else { return nil }
+        let descriptions = sources.compactMap {
+            IOPSGetPowerSourceDescription(info, $0)?.takeUnretainedValue() as? [String: Any]
         }
-
-        for source in sources {
-            guard let infoRef = IOPSGetPowerSourceDescription(snapshot, source)?.takeUnretainedValue(),
-                  let info = infoRef as? [String: Any]
-            else { continue }
-
-            let type = info[kIOPSTypeKey as String] as? String
-            guard type == kIOPSInternalBatteryType else { continue }
-
-            hasBattery = true
-
-            if let cap = info[kIOPSCurrentCapacityKey as String] as? Int,
-               let max = info[kIOPSMaxCapacityKey as String] as? Int, max > 0
-            {
-                level = Double(cap) / Double(max)
-            }
-            if let state = info[kIOPSPowerSourceStateKey as String] as? String {
-                isPluggedIn = (state == kIOPSACPowerValue)
-            }
-            if let charging = info[kIOPSIsChargingKey as String] as? Bool {
-                isCharging = charging
-            }
-            return
-        }
-
-        // Pas de batterie interne (Mac mini, Studio, …)
-        hasBattery = false
-        isCharging = false
-        isPluggedIn = true
+        return PowerSnapshot.parse(descriptions)
     }
 }
-
-// MARK: - Color import
-
-import SwiftUI

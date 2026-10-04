@@ -13,24 +13,49 @@ let sponsorPage = URL(string: "https://github.com/sponsors/Lakr233")!
 let bundleIdentifier = Bundle.main.bundleIdentifier!
 let appVersion = "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""))"
 
-private let availableDirectories = FileManager
-    .default
-    .urls(for: .documentDirectory, in: .userDomainMask)
-let documentsDirectory = availableDirectories[0]
+private let fileManager = FileManager.default
+/// Hôte des tests unitaires : XCTest injecte le bundle de tests dans l'app.
+let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+/// Répertoire des données de l'app (réglages, fichiers du plateau, verrou).
+/// Sous XCTest : un dossier temporaire, le vrai dossier n'est jamais touché.
+let dataDirectory = isRunningTests
+    ? fileManager.temporaryDirectory.appendingPathComponent("DynamicNotchTests-data")
+    : fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    .appendingPathComponent("DynamicNotch")
+/// Ancien emplacement, lu une seule fois par `DataMigration`.
+let legacyDataDirectory = fileManager
+    .urls(for: .documentDirectory, in: .userDomainMask)[0]
     .appendingPathComponent("DynamicNotch")
 let temporaryDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
     .appendingPathComponent(bundleIdentifier)
-try? FileManager.default.removeItem(at: temporaryDirectory)
-try? FileManager.default.createDirectory(
-    at: documentsDirectory,
-    withIntermediateDirectories: true,
-    attributes: nil
-)
-try? FileManager.default.createDirectory(
-    at: temporaryDirectory,
-    withIntermediateDirectories: true,
-    attributes: nil
-)
+
+// Hôte des tests unitaires : on démarre une app nue (ni verrou d'instance
+// unique, ni fenêtres, ni migration de données) sur un dossier de données
+// temporaire remis à zéro, et sans toucher au dossier temporaire de l'app
+// éventuellement en cours d'exécution.
+if isRunningTests {
+    try? fileManager.removeItem(at: dataDirectory)
+    try? fileManager.createDirectory(at: dataDirectory, withIntermediateDirectories: true)
+    try? fileManager.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
+    _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
+}
+
+try? fileManager.removeItem(at: temporaryDirectory)
+try? fileManager.createDirectory(at: dataDirectory, withIntermediateDirectories: true)
+try? fileManager.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
+
+#if DEBUG
+// Rendu des états en PNG, sans fenêtre ni verrou d'instance unique.
+if let index = CommandLine.arguments.firstIndex(of: "--render-states"),
+   index + 1 < CommandLine.arguments.count
+{
+    _ = NSApplication.shared
+    MainActor.assumeIsolated {
+        StateRenderer.renderAll(to: URL(fileURLWithPath: CommandLine.arguments[index + 1]))
+    }
+    exit(0)
+}
+#endif
 
 // Single-instance enforcement: claim a kernel-level flock(2) and bail out
 // (after waking the existing instance) if another copy is already running.
@@ -38,6 +63,8 @@ try? FileManager.default.createDirectory(
 guard SingleInstance.acquire() else {
     exit(0)
 }
+
+DataMigration.run(from: legacyDataDirectory, to: dataDirectory)
 
 _ = TrayDrop.shared
 TrayDrop.shared.cleanExpiredFiles()

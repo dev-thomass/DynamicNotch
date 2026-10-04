@@ -1,16 +1,45 @@
 # Privacy Policy — DynamicNotch
 
-_Last updated: 2026-05-09_
+_Last updated: 2026-09-26_
 
 DynamicNotch is a local-first macOS utility. This document explains what the app
 does and does not do with your data, in plain language.
 
 ## TL;DR
 
-- **No telemetry.** DynamicNotch never connects to the internet.
+- **No telemetry.** DynamicNotch only connects to the internet if you turn on
+  the weather (see below), and only to fetch it.
 - **No analytics, no crash reporters, no third-party SDKs.**
 - **No account, no sign-up.**
 - Files you drop into DynamicNotch stay on your Mac.
+
+## Weather
+
+The weather is **off until you type a city** in Settings → Weather. Once a
+city is set, DynamicNotch sends two kinds of requests to
+[Open-Meteo](https://open-meteo.com) (free, no account, no API key):
+
+- the city name, to `geocoding-api.open-meteo.com`, to find its coordinates;
+- those coordinates, to `api.open-meteo.com`, every 30 minutes.
+
+Nothing else is sent: no identifier, no location from your Mac. Clear the city
+field to stop all network requests.
+
+## Music
+
+To read what is playing on macOS 15.4 and later, DynamicNotch starts the
+system's `/usr/bin/perl` with the bundled
+[mediaremote-adapter](https://github.com/ungive/mediaremote-adapter) script.
+It reads the title, artist and artwork that macOS already shares with
+Control Center, stays on your Mac and stops when DynamicNotch quits.
+
+## Clipboard history
+
+The Clipboard tab keeps the last 20 **texts** you copied so you can copy them
+again. This history lives **in memory only**: it is never written to disk and
+disappears when DynamicNotch quits. Copies that password managers mark as
+confidential (`org.nspasteboard.ConcealedType` and related types) are never
+recorded. Turn it off in Settings → Behaviour → Clipboard history.
 
 ## What DynamicNotch stores on disk
 
@@ -19,14 +48,21 @@ your home folder so you can re-access it from the tray later.
 
 | Path | Purpose |
 |---|---|
-| `~/Documents/DynamicNotch/CopiedItems/<UUID>/<filename>` | The copy of each dropped file. |
-| `~/Documents/DynamicNotch/CopiedItems/<UUID>/.preview.png` | A 128 px Quick Look thumbnail used by the tray UI. |
-| `~/Documents/DynamicNotch/Config/*` | Your preferences (storage duration, language, display, opacity, …). Plain JSON. |
-| `~/Documents/DynamicNotch/.instance.lock` | Empty file used by `flock(2)` to prevent two DynamicNotch instances from running simultaneously. |
+| `~/Library/Application Support/DynamicNotch/CopiedItems/<UUID>/<filename>` | The copy of each dropped file. |
+| `~/Library/Application Support/DynamicNotch/CopiedItems/<UUID>/.preview.png` | A 128 px Quick Look thumbnail used by the tray UI. |
+| `~/Library/Application Support/DynamicNotch/Config/*` | Your preferences (storage duration, language, display, opacity, …). Plain JSON. |
+| `~/Library/Application Support/DynamicNotch/.instance.lock` | Empty file used by `flock(2)` to prevent two DynamicNotch instances from running simultaneously. |
 | `$TMPDIR/<bundle-id>/` | Temporary working copies during a drop. Cleared on quit. |
 
 These files are owned by your user, readable by other apps that have your
 permission to read your home folder (e.g. Finder, Spotlight, Time Machine).
+
+Older versions stored this data in `~/Documents/DynamicNotch`. On first
+launch after updating, DynamicNotch copies the still-used files from that
+folder into `~/Library/Application Support/DynamicNotch` once; the old
+`~/Documents/DynamicNotch` folder is left in place afterwards (nothing is
+deleted from it), so it is safe to remove by hand once you've confirmed the
+new location has everything you need.
 
 ### Recommended exclusions
 
@@ -34,9 +70,9 @@ If you handle sensitive files, consider excluding DynamicNotch's storage from
 backup tools and search indexers:
 
 - **Time Machine**: System Settings → General → Time Machine → Options → Add
-  `~/Documents/DynamicNotch`.
+  `~/Library/Application Support/DynamicNotch`.
 - **Spotlight**: System Settings → Spotlight → Search Privacy → Add
-  `~/Documents/DynamicNotch`.
+  `~/Library/Application Support/DynamicNotch`.
 
 You can also reduce the retention window in Settings → Storage (default: 1 day).
 After expiration, DynamicNotch deletes the cached copy automatically.
