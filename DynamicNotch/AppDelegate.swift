@@ -21,6 +21,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private var settingsObservers: Set<AnyCancellable> = []
+    /// ⌃⌥N depuis n'importe quelle app : ouvre ou ferme l'encoche.
+    @MainActor private lazy var toggleHotKey = GlobalHotKey(combo: .toggleNotch) { [weak self] in
+        self?.toggleNotch()
+    }
+
     /// Configuration d'écrans des fenêtres actuelles : on ne reconstruit que si elle change.
     private var lastLayout: WindowLayout?
 
@@ -86,6 +91,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         ClipboardHistory.shared.start()
                     } else {
                         ClipboardHistory.shared.stop()
+                    }
+                }
+            }
+            .store(in: &settingsObservers)
+
+        AppSettings.shared.$globalShortcutEnabled
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] enabled in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    if enabled {
+                        toggleHotKey.register()
+                    } else {
+                        toggleHotKey.unregister()
                     }
                 }
             }
@@ -204,6 +224,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         mainMenu.addItem(editItem)
 
         NSApp.mainMenu = mainMenu
+    }
+
+    /// Bascule de l'écran principal : ferme si ouvert, sinon ouvre le dernier onglet.
+    @MainActor
+    func toggleNotch() {
+        guard let vm = mainWindowController?.vm else { return }
+        if vm.presentation.isOpened {
+            vm.notchClose()
+        } else {
+            vm.notchOpen(.click)
+        }
     }
 
     @objc func handleWakeUpFromOtherInstance() {

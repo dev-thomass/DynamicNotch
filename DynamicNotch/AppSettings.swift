@@ -76,6 +76,12 @@ final class AppSettings: ObservableObject {
     @PublishedPersist(key: "clipboardHistoryEnabled", defaultValue: true)
     var clipboardHistoryEnabled: Bool
 
+    // MARK: shortcut
+
+    /// Raccourci global ⌃⌥N pour ouvrir ou fermer l'encoche.
+    @PublishedPersist(key: "globalShortcutEnabled", defaultValue: true)
+    var globalShortcutEnabled: Bool
+
     // MARK: weather
 
     /// Ville de la météo (Accueil). Vide : météo désactivée, aucune requête.
