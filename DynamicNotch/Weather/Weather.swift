@@ -126,27 +126,36 @@ enum OpenMeteo {
     static func decodeSnapshot(_ data: Data, place: String) throws -> WeatherSnapshot {
         struct Response: Decodable {
             struct Current: Decodable {
-                let temperature2m: Double
+                let temperature: Double
                 let weatherCode: Int
                 let isDay: Int?
+
+                enum CodingKeys: String, CodingKey {
+                    case temperature = "temperature_2m"
+                    case weatherCode = "weather_code"
+                    case isDay = "is_day"
+                }
             }
 
             struct Daily: Decodable {
-                let temperature2mMax: [Double?]
-                let temperature2mMin: [Double?]
+                let max: [Double?]
+                let min: [Double?]
+
+                enum CodingKeys: String, CodingKey {
+                    case max = "temperature_2m_max"
+                    case min = "temperature_2m_min"
+                }
             }
 
             let current: Current
             let daily: Daily?
         }
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        let response = try decoder.decode(Response.self, from: data)
+        let response = try JSONDecoder().decode(Response.self, from: data)
         return WeatherSnapshot(
             place: place,
-            temperature: response.current.temperature2m,
-            low: response.daily?.temperature2mMin.first ?? nil,
-            high: response.daily?.temperature2mMax.first ?? nil,
+            temperature: response.current.temperature,
+            low: response.daily?.min.first ?? nil,
+            high: response.daily?.max.first ?? nil,
             condition: WeatherCondition(code: response.current.weatherCode),
             isDay: (response.current.isDay ?? 1) == 1
         )
