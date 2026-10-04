@@ -5,7 +5,8 @@ Commit : 29718252613a5b0e210bdc64de0bd944ab379706 (2026-09-30)
 Licence : BSD 3-Clause (voir LICENSE)
 
 Copie sans modification de `bin/`, `include/` et `src/{adapter,private,utility}`
-(le client de test et les scripts de développement ne sont pas repris).
+et `src/test/NowPlayingTest.h` (importé par `adapter/test.m`)
+(le client de test lui-même et les scripts de développement ne sont pas repris).
 
 Le framework est compilé à chaque build par `Tools/build-mediaremote-adapter.sh`
 (phase « Build MediaRemoteAdapter » de la cible DynamicNotch) et copié dans

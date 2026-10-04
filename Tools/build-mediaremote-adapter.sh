@@ -46,7 +46,7 @@ xcrun clang -dynamiclib -fobjc-arc -fvisibility=default -O2 \
     "${ARCH_FLAGS[@]}" \
     -mmacosx-version-min="${MACOSX_DEPLOYMENT_TARGET:-14.0}" \
     -I "$VENDOR/include" -I "$VENDOR/src" \
-    -framework Foundation -framework AppKit -framework UniformTypeIdentifiers \
+    -framework Foundation -framework AppKit -framework MediaPlayer -framework UniformTypeIdentifiers \
     -install_name "@rpath/$NAME.framework/Versions/A/$NAME" \
     "$VENDOR"/src/adapter/*.m "$VENDOR"/src/private/*.m "$VENDOR"/src/utility/*.m \
     -o "$BINARY"
