@@ -1,14 +1,17 @@
 import Cocoa
 import Combine
 import Foundation
+import Observation
 import OrderedCollections
 import SwiftUI
 
-class TrayDrop: ObservableObject {
+@Observable
+final class TrayDrop: PersistObservable {
     static let shared = TrayDrop()
 
-    var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored var cancellables = Set<AnyCancellable>()
 
+    @ObservationIgnored
     @Persist(key: "keepInterval", defaultValue: 3600 * 24)
     var keepInterval: TimeInterval
 
@@ -46,22 +49,26 @@ class TrayDrop: ObservableObject {
         items.isEmpty
     }
 
+    @ObservationIgnored
     @PublishedPersist(key: "TrayDropItems", defaultValue: .init())
     var items: OrderedSet<DropItem>
 
+    @ObservationIgnored
     @PublishedPersist(key: "selectedFileStorageTime", defaultValue: .oneDay)
     var selectedFileStorageTime: FileStorageTime
 
+    @ObservationIgnored
     @PublishedPersist(key: "customStorageTime", defaultValue: 1)
     var customStorageTime: Int
 
+    @ObservationIgnored
     @PublishedPersist(key: "customStorageTimeUnit", defaultValue: .days)
     var customStorageTimeUnit: CustomstorageTimeUnit
 
-    @Published var isLoading: Int = 0
+    var isLoading: Int = 0
 
     /// Appelé sur la file principale après un dépôt réussi, avec le nombre de fichiers.
-    var onItemsAdded: ((Int) -> Void)?
+    @ObservationIgnored var onItemsAdded: ((Int) -> Void)?
 
     func load(_ providers: [NSItemProvider]) {
         // This call does blocking I/O (provider semaphores, file copies).

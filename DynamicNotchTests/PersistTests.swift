@@ -13,7 +13,9 @@
 //     "Target Dependency" so test files can `@testable import DynamicNotch`
 //
 
+import Combine
 @testable import DynamicNotch
+import Observation
 import XCTest
 
 final class PersistTests: XCTestCase {
@@ -65,6 +67,32 @@ final class PersistTests: XCTestCase {
         }
     }
 
+    // MARK: observation
+
+    /// Écrire un `@PublishedPersist` notifie Observation (SwiftUI), le
+    /// publisher Combine et le stockage.
+    func test_publishedPersist_notifiesObservationCombineAndStore() {
+        let store = InMemoryStore()
+        let model = ObservedModel(store: store)
+        var observed = false
+        withObservationTracking {
+            _ = model.flag
+        } onChange: {
+            observed = true
+        }
+        var published: [Bool] = []
+        let subscription = model.$flag.sink { published.append($0) }
+
+        model.flag = true
+        persistWriteQueue.sync {}
+
+        XCTAssertTrue(observed)
+        XCTAssertEqual(published, [false, true])
+        XCTAssertTrue(model.flag)
+        XCTAssertNotNil(store.data(forKey: ObservedModel.key))
+        subscription.cancel()
+    }
+
     // MARK: helpers
 
     private func uniqueKey() -> String {
@@ -82,5 +110,17 @@ private final class InMemoryStore: PersistProvider {
 
     func set(_ data: Data?, forKey key: String) {
         storage[key] = data
+    }
+}
+
+@Observable
+private final class ObservedModel: PersistObservable {
+    static let key = "test_observed_flag"
+
+    @ObservationIgnored
+    @PublishedPersist var flag: Bool
+
+    init(store: PersistProvider) {
+        _flag = PublishedPersist(key: Self.key, defaultValue: false, engine: store)
     }
 }

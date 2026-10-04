@@ -10,7 +10,7 @@
 import SwiftUI
 
 struct NotchTopRow: View {
-    @ObservedObject var vm: NotchViewModel
+    var vm: NotchViewModel
     private let battery = BatteryMonitor.shared
     private let player = NowPlayingManager.shared
 

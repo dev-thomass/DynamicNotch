@@ -2,25 +2,26 @@ import Cocoa
 import Combine
 import Foundation
 import LaunchAtLogin
+import Observation
 import SwiftUI
 
 @MainActor
-final class NotchViewModel: NSObject, ObservableObject {
-    var cancellables: Set<AnyCancellable> = []
+@Observable
+final class NotchViewModel: PersistObservable {
+    @ObservationIgnored var cancellables: Set<AnyCancellable> = []
     /// Abonnement à `ActivityCenter`, posé par `setupCancellables()`.
-    var activityObservation: ActivityObservation?
-    let activities: ActivityCenter
-    private var isSuspendingActivities = false
+    @ObservationIgnored var activityObservation: ActivityObservation?
+    @ObservationIgnored let activities: ActivityCenter
+    @ObservationIgnored private var isSuspendingActivities = false
     /// Pointeur dans la coque au dernier mouvement : le retour haptique du
     /// survol des ailes ne part qu'à l'entrée.
-    var isPointerInsideShell = false
+    @ObservationIgnored var isPointerInsideShell = false
 
     /// `activities` à `nil` → `ActivityCenter.shared`. (Une valeur par défaut
     /// `.shared` serait évaluée hors du MainActor en Swift 5 : avertissement.)
     init(geometry: NotchGeometry = .preview, activities: ActivityCenter? = nil) {
         self.geometry = geometry
         self.activities = activities ?? .shared
-        super.init()
         setupCancellables()
         // Une activité peut déjà être en cours (connexion, reconstruction des
         // fenêtres) : on la reprend d'emblée, sans animation.
@@ -44,11 +45,11 @@ final class NotchViewModel: NSObject, ObservableObject {
         case settings
     }
 
-    @Published private(set) var presentation: NotchPresentation = .closed
-    @Published var geometry: NotchGeometry
-    @Published var openReason: OpenReason = .unknown
-    @Published var spacing: CGFloat = 16
-    @Published var optionKeyPressed: Bool = false
+    private(set) var presentation: NotchPresentation = .closed
+    var geometry: NotchGeometry
+    var openReason: OpenReason = .unknown
+    var spacing: CGFloat = 16
+    var optionKeyPressed: Bool = false
 
     // MARK: géométrie (coordonnées écran AppKit)
 
@@ -102,20 +103,25 @@ final class NotchViewModel: NSObject, ObservableObject {
         )
     }
 
+    @ObservationIgnored
     @PublishedPersist(key: "selectedLanguage", defaultValue: .system)
     var selectedLanguage: Language
 
+    @ObservationIgnored
     @PublishedPersist(key: "hapticFeedback", defaultValue: true)
     var hapticFeedback: Bool
 
     /// Dernier onglet choisi, rouvert à chaque ouverture (sauf dépôt de fichier).
+    @ObservationIgnored
     @PublishedPersist(key: "lastTab", defaultValue: .home)
     var lastTab: NotchTab
 
     /// Bord par lequel arrive le contenu au prochain changement d'onglet.
-    @Published private(set) var tabSlideEdge: Edge = .trailing
+    private(set) var tabSlideEdge: Edge = .trailing
 
-    let hapticSender = PassthroughSubject<Void, Never>()
+    @ObservationIgnored let hapticSender = PassthroughSubject<Void, Never>()
+    /// Chaque nouvel état posé par `transition(to:)` (retour haptique, tests).
+    @ObservationIgnored let presentationChanges = PassthroughSubject<NotchPresentation, Never>()
 
     // MARK: états
 
@@ -168,6 +174,7 @@ final class NotchViewModel: NSObject, ObservableObject {
         withAnimation(DS.Motion.animation(kind)) {
             presentation = next
         }
+        presentationChanges.send(next)
     }
 
     func notchOpen(_ reason: OpenReason) {

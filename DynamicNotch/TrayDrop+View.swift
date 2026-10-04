@@ -10,8 +10,8 @@
 import SwiftUI
 
 struct TrayView: View {
-    @ObservedObject var vm: NotchViewModel
-    @ObservedObject var tvm = TrayDrop.shared
+    var vm: NotchViewModel
+    var tvm = TrayDrop.shared
 
     @State private var targeting = false
     @State private var trashTargeting = false

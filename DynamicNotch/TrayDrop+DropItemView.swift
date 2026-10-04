@@ -19,8 +19,8 @@ struct DropItemView: View {
     ]
 
     let item: TrayDrop.DropItem
-    @ObservedObject var vm: NotchViewModel
-    @ObservedObject var tvm = TrayDrop.shared
+    var vm: NotchViewModel
+    var tvm = TrayDrop.shared
 
     @State var hover = false
 

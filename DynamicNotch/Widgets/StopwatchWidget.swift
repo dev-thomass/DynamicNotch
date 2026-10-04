@@ -67,7 +67,7 @@ final class StopwatchModel {
 }
 
 struct StopwatchWidgetView: View {
-    @ObservedObject var vm: NotchViewModel
+    var vm: NotchViewModel
     private let model = StopwatchModel.shared
 
     var body: some View {

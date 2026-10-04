@@ -13,7 +13,7 @@ import SwiftUI
 private let noteFileURL = dataDirectory.appendingPathComponent("Config/quickNote.txt")
 
 struct NoteView: View {
-    @ObservedObject var vm: NotchViewModel
+    var vm: NotchViewModel
     @State private var content: String = ""
     @FocusState private var isFocused: Bool
     @State private var saveTask: DispatchWorkItem?

@@ -11,8 +11,8 @@
 import SwiftUI
 
 struct NotchView: View {
-    @ObservedObject var vm: NotchViewModel
-    @ObservedObject private var tray = TrayDrop.shared
+    var vm: NotchViewModel
+    private let tray = TrayDrop.shared
     @Namespace private var activityNamespace
     @State private var dropTargeting = false
 

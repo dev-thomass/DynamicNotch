@@ -77,6 +77,20 @@ struct Persist<Value: Codable> {
     }
 }
 
+/// Classe `@Observable` qui porte des `@PublishedPersist` : le macro génère
+/// `access` et `withMutation`, que l'enveloppe appelle pour notifier SwiftUI.
+protocol PersistObservable: AnyObject {
+    func access(keyPath: KeyPath<Self, some Any>)
+    func withMutation<MutationResult>(
+        keyPath: KeyPath<Self, some Any>,
+        _ mutation: () throws -> MutationResult
+    ) rethrows -> MutationResult
+}
+
+/// Valeur persistée, observée par SwiftUI (Observation) et publiée pour
+/// Combine (`$nom`). À déclarer `@ObservationIgnored` dans une classe
+/// `@Observable` conforme à `PersistObservable` : l'enveloppe fait elle-même
+/// le suivi.
 @propertyWrapper
 struct PublishedPersist<Value: Codable> {
     @Persist private var value: Value
@@ -91,15 +105,19 @@ struct PublishedPersist<Value: Codable> {
         set { value = newValue }
     }
 
-    static subscript<EnclosingSelf: ObservableObject>(
+    static subscript<EnclosingSelf: PersistObservable>(
         _enclosingInstance object: EnclosingSelf,
-        wrapped _: ReferenceWritableKeyPath<EnclosingSelf, Value>,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Value>,
         storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, PublishedPersist<Value>>
     ) -> Value {
-        get { object[keyPath: storageKeyPath].value }
+        get {
+            object.access(keyPath: wrappedKeyPath)
+            return object[keyPath: storageKeyPath].value
+        }
         set {
-            (object.objectWillChange as? ObservableObjectPublisher)?.send()
-            object[keyPath: storageKeyPath].value = newValue
+            object.withMutation(keyPath: wrappedKeyPath) {
+                object[keyPath: storageKeyPath].value = newValue
+            }
         }
     }
 

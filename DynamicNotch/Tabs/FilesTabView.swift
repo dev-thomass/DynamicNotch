@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FilesTabView: View {
-    @ObservedObject var vm: NotchViewModel
+    var vm: NotchViewModel
 
     var body: some View {
         HStack(spacing: 10) {

@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ClipboardTabView: View {
-    @ObservedObject var vm: NotchViewModel
-    @ObservedObject private var settings = AppSettings.shared
+    var vm: NotchViewModel
+    private let settings = AppSettings.shared
     private let history = ClipboardHistory.shared
 
     var body: some View {

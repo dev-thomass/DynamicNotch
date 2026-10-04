@@ -46,7 +46,7 @@ struct ShareView: View {
         }
     }
 
-    @ObservedObject var vm: NotchViewModel
+    var vm: NotchViewModel
     let type: ShareType
 
     @State var trigger: UUID = .init()
