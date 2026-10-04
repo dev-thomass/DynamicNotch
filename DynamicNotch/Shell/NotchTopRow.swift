@@ -3,7 +3,8 @@
 //  DynamicNotch
 //
 //  Rangée du haut du panneau ouvert, à hauteur de l'encoche (32 pt au moins) : les onglets à
-//  gauche de l'encoche physique, la batterie et le menu « … » à droite.
+//  gauche de l'encoche physique ; le mini lecteur, la batterie et le menu
+//  « … » à droite.
 //
 
 import SwiftUI
@@ -11,6 +12,7 @@ import SwiftUI
 struct NotchTopRow: View {
     @ObservedObject var vm: NotchViewModel
     private let battery = BatteryMonitor.shared
+    private let player = NowPlayingManager.shared
 
     var body: some View {
         HStack(spacing: 0) {
@@ -47,6 +49,7 @@ struct NotchTopRow: View {
 
     private var trailing: some View {
         HStack(spacing: 10) {
+            NotchMiniPlayer()
             if battery.hasBattery {
                 Text("\(battery.percent) %")
                     .font(DS.Typography.caption)
@@ -57,6 +60,7 @@ struct NotchTopRow: View {
             }
             moreMenu
         }
+        .animation(DS.Motion.micro, value: player.title.isEmpty)
     }
 
     /// Bouton « … » : ouvre le menu natif sous le pointeur.

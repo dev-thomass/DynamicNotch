@@ -66,6 +66,7 @@ final class MediaRemoteAdapter {
     private var buffer = LineBuffer()
     private var restarts = 0
     private let maxRestarts = 3
+    private var stopped = false
 
     /// `nil` si le script ou le framework manquent dans le paquet de l'app.
     init?(bundle: Bundle = .main) {
@@ -78,8 +79,13 @@ final class MediaRemoteAdapter {
     }
 
     /// Lance le flux ; `onUpdate` reçoit chaque nouvel état sur le MainActor.
-    func start(onUpdate: @escaping @MainActor (AdapterNowPlaying) -> Void) {
-        guard process == nil else { return }
+    /// `onGiveUp` est appelé si l'adaptateur s'arrête pour de bon (relances
+    /// épuisées) : l'appelant reprend alors ses autres sources.
+    func start(
+        onUpdate: @escaping @MainActor (AdapterNowPlaying) -> Void,
+        onGiveUp: @escaping @MainActor () -> Void = {}
+    ) {
+        guard process == nil, !stopped else { return }
         let process = Process()
         process.executableURL = perl
         process.arguments = [script.path, framework.path, "stream", "--no-diff", "--debounce=150"]
@@ -89,6 +95,11 @@ final class MediaRemoteAdapter {
 
         output.fileHandleForReading.readabilityHandler = { [weak self] handle in
             let chunk = handle.availableData
+            // Fin de flux : sans ça le gestionnaire boucle sur des lectures vides.
+            guard !chunk.isEmpty else {
+                handle.readabilityHandler = nil
+                return
+            }
             DispatchQueue.main.async {
                 MainActor.assumeIsolated {
                     guard let self else { return }
@@ -108,14 +119,16 @@ final class MediaRemoteAdapter {
                     guard let self else { return }
                     self.process = nil
                     self.buffer = LineBuffer()
+                    guard !self.stopped else { return }
                     // Relance limitée : un adaptateur cassé par une mise à
                     // jour de macOS ne doit pas tourner en boucle.
                     guard self.restarts < self.maxRestarts else {
                         Log.app.error("mediaremote-adapter stopped, giving up")
+                        onGiveUp()
                         return
                     }
                     self.restarts += 1
-                    self.start(onUpdate: onUpdate)
+                    self.start(onUpdate: onUpdate, onGiveUp: onGiveUp)
                 }
             }
         }
@@ -125,7 +138,14 @@ final class MediaRemoteAdapter {
             self.process = process
         } catch {
             Log.app.error("mediaremote-adapter failed to launch: \(error.localizedDescription, privacy: .public)")
+            onGiveUp()
         }
+    }
+
+    /// Arrête le flux sans relance (fermeture de l'app).
+    func stop() {
+        stopped = true
+        process?.terminate()
     }
 
     /// Commande MediaRemote (0 lecture, 1 pause, 2 bascule, 4 suivant, 5 précédent).

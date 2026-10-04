@@ -70,6 +70,12 @@ struct NotchSettingsView: View {
                         subtitle: "20 derniers textes copiés, en mémoire seulement"
                     )
                 }
+                Toggle(isOn: $settings.globalShortcutEnabled) {
+                    settingLabel(
+                        "Raccourci \(HotKeyCombo.toggleNotch.symbols)",
+                        subtitle: "Ouvre ou ferme l'encoche depuis n'importe quelle app"
+                    )
+                }
                 Toggle(isOn: $settings.escClosesNotch) {
                     settingLabel("Échap pour fermer", subtitle: "La touche Esc referme l'encoche ouverte")
                 }
@@ -347,6 +353,7 @@ struct NotchSettingsView: View {
         settings.popOnHoverEnabled = true
         settings.alwaysVisibleWhenClosed = false
         settings.escClosesNotch = true
+        settings.globalShortcutEnabled = true
         settings.displayPreference = .builtInWithNotch
         settings.forcePillMode = false
         settings.showOnAllScreens = false

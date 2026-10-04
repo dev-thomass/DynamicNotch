@@ -29,7 +29,10 @@ history and more — all behind a clean, customisable design system.
     change), for any player, via the bundled
     [mediaremote-adapter](https://github.com/ungive/mediaremote-adapter)
     (works on macOS 15.4+), falling back to MediaRemote and then to Music /
-    Spotify notifications
+    Spotify notifications, plus a mini player (play/pause, next) in the
+    panel's top row
+- **Global shortcut** — ⌃⌥N opens or closes the notch from any app (Carbon
+  hotkey, no accessibility permission; can be turned off in Settings).
 - **Design system** — `DSTokens` (colors, spacing, radius, typography,
   motion) + `DSComponents` (buttons, modules, icon buttons, tab bar, badges,
   drop zones) used everywhere.
