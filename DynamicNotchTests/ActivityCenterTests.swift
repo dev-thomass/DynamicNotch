@@ -3,8 +3,8 @@
 //  DynamicNotchTests
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 /// Minuterie manuelle : `advance(by:)` exécute de façon synchrone les travaux échus.
 @MainActor
@@ -19,7 +19,7 @@ final class ManualScheduler: ActivityScheduler {
         }
     }
 
-    private(set) var now = Date(timeIntervalSince1970: 1_000)
+    private(set) var now = Date(timeIntervalSince1970: 1000)
     private var jobs: [Job] = []
 
     func schedule(after seconds: TimeInterval, _ action: @escaping @MainActor () -> Void) -> ScheduledWork {
@@ -89,8 +89,8 @@ final class ActivityCenterTests: XCTestCase {
 
     func test_staleQueuedTransient_isDropped() {
         center.post(.lowBattery(percent: 10)) // 3 s
-        center.post(.charging)                // attend 3 s, dure 2,2 s
-        center.post(.unplugged)               // attend 5,2 s → abandonné
+        center.post(.charging) // attend 3 s, dure 2,2 s
+        center.post(.unplugged) // attend 5,2 s → abandonné
         scheduler.advance(by: 3)
         XCTAssertEqual(center.current?.id, .charging)
         scheduler.advance(by: 2.2)
@@ -171,7 +171,7 @@ final class ActivityCenterTests: XCTestCase {
         XCTAssertEqual(received, [
             ActivityDisplay(id: .charging, mode: .compact),
             ActivityDisplay(id: .charging, mode: .expanded),
-            ActivityDisplay(id: .charging, mode: .compact),
+            ActivityDisplay(id: .charging, mode: .compact)
         ])
         observation.cancel()
         center.setPersistent(.charging, active: false)

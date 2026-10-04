@@ -10,7 +10,7 @@ import SwiftUI
 
 struct NotchTopRow: View {
     @ObservedObject var vm: NotchViewModel
-    @ObservedObject private var battery = BatteryMonitor.shared
+    private let battery = BatteryMonitor.shared
 
     var body: some View {
         HStack(spacing: 0) {
@@ -75,7 +75,7 @@ enum NotchMoreMenu {
         menu.addItem(MenuActionItem("Réglages…") { vm.showSettings() })
         menu.addItem(MenuActionItem("Vider les fichiers…") { NotchActions.confirmAndClearTray(vm) })
         #if DEBUG
-            menu.addItem(simulationItem(for: vm))
+        menu.addItem(simulationItem(for: vm))
         #endif
         menu.addItem(.separator())
         menu.addItem(MenuActionItem("Quitter DynamicNotch") { NotchActions.confirmAndQuit(vm) })
@@ -89,21 +89,21 @@ enum NotchMoreMenu {
     }
 
     #if DEBUG
-        private static func simulationItem(for vm: NotchViewModel) -> NSMenuItem {
-            let submenu = NSMenu()
-            for name in ActivityID.samples.map(\.debugName) {
-                submenu.addItem(MenuActionItem(name) {
-                    vm.notchClose()
-                    // Laisser le panneau se fermer : ouvert, il suspend les activités.
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        MainActor.assumeIsolated { ActivitySimulator.run(name) }
-                    }
-                })
-            }
-            let item = NSMenuItem(title: "Simuler une activité", action: nil, keyEquivalent: "")
-            item.submenu = submenu
-            return item
+    private static func simulationItem(for vm: NotchViewModel) -> NSMenuItem {
+        let submenu = NSMenu()
+        for name in ActivityID.samples.map(\.debugName) {
+            submenu.addItem(MenuActionItem(name) {
+                vm.notchClose()
+                // Laisser le panneau se fermer : ouvert, il suspend les activités.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    MainActor.assumeIsolated { ActivitySimulator.run(name) }
+                }
+            })
         }
+        let item = NSMenuItem(title: "Simuler une activité", action: nil, keyEquivalent: "")
+        item.submenu = submenu
+        return item
+    }
     #endif
 }
 

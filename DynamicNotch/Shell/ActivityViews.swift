@@ -154,20 +154,26 @@ private struct BatteryActivity: View {
     let id: ActivityID
     let place: ActivityPlace
     let namespace: Namespace.ID
-    @ObservedObject private var battery = BatteryMonitor.shared
+    private let battery = BatteryMonitor.shared
 
     private var isLow: Bool {
-        if case .lowBattery = id { return true }
+        if case .lowBattery = id {
+            return true
+        }
         return false
     }
 
     private var tint: Color {
-        if isLow { return DS.Color.destructive }
+        if isLow {
+            return DS.Color.destructive
+        }
         return battery.isPluggedIn ? DS.Color.success : battery.indicativeTint
     }
 
     private var valueColor: Color {
-        if isLow { return DS.Color.destructive }
+        if isLow {
+            return DS.Color.destructive
+        }
         return battery.isPluggedIn ? DS.Color.success : DS.Color.textPrimary
     }
 
@@ -216,7 +222,7 @@ private struct BatteryActivity: View {
 private struct PomodoroActivity: View {
     let place: ActivityPlace
     let namespace: Namespace.ID
-    @ObservedObject private var model = PomodoroModel.shared
+    private let model = PomodoroModel.shared
 
     var body: some View {
         switch place {
@@ -251,7 +257,7 @@ private struct PomodoroActivity: View {
 
 private struct StopwatchActivity: View {
     let place: ActivityPlace
-    @ObservedObject private var model = StopwatchModel.shared
+    private let model = StopwatchModel.shared
 
     var body: some View {
         switch place {
@@ -292,7 +298,7 @@ private struct StopwatchActivity: View {
 private struct NowPlayingActivity: View {
     let place: ActivityPlace
     let namespace: Namespace.ID
-    @ObservedObject private var player = NowPlayingManager.shared
+    private let player = NowPlayingManager.shared
 
     var body: some View {
         switch place {
@@ -333,7 +339,7 @@ private struct NowPlayingActivity: View {
 
 private struct CalendarActivity: View {
     let place: ActivityPlace
-    @ObservedObject private var store = CalendarStore.shared
+    private let store = CalendarStore.shared
 
     var body: some View {
         switch place {
@@ -352,7 +358,8 @@ private struct CalendarActivity: View {
 
     private var countdown: some View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
-            let minutes = store.nextEvent.map { max(0, Int(ceil($0.startDate.timeIntervalSince(context.date) / 60))) } ?? 0
+            let minutes = store.nextEvent
+                .map { max(0, Int(ceil($0.startDate.timeIntervalSince(context.date) / 60))) } ?? 0
             Text("\(minutes) min")
                 .contentTransition(.numericText(countsDown: true))
                 .animation(DS.Motion.micro, value: minutes)

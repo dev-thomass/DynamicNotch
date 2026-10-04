@@ -25,7 +25,6 @@ import Darwin
 import Foundation
 
 enum SingleInstance {
-
     // MARK: configuration
 
     /// Distributed notification name used to wake the existing instance.

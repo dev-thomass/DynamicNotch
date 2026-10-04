@@ -3,7 +3,7 @@
 //  DynamicNotch
 //
 //  Branche les sources (batterie, Pomodoro, chrono, plateau, AirDrop,
-//  calendrier) sur ActivityCenter. Les événements ponctuels sont postés tels
+//  calendrier, musique) sur ActivityCenter. Les événements ponctuels sont postés tels
 //  quels ; l'état persistant est recalculé à chaque changement d'une source
 //  ou d'un réglage, et toutes les 30 s (décompte du calendrier).
 //
@@ -35,13 +35,23 @@ final class ActivityWiring {
     static func activePersistent(_ inputs: Inputs) -> Set<ActivityID> {
         guard inputs.wingsEnabled else { return [] }
         var active: Set<ActivityID> = []
-        if inputs.wingBattery, inputs.battery.hasBattery, inputs.battery.isPluggedIn { active.insert(.charging) }
-        if inputs.wingStopwatch, inputs.stopwatchHasTime { active.insert(.stopwatch) }
-        if inputs.wingPomodoro, inputs.pomodoroActive { active.insert(.pomodoroPhase) }
-        if inputs.musicPlaying { active.insert(.nowPlaying) }
+        if inputs.wingBattery, inputs.battery.hasBattery, inputs.battery.isPluggedIn {
+            active.insert(.charging)
+        }
+        if inputs.wingStopwatch, inputs.stopwatchHasTime {
+            active.insert(.stopwatch)
+        }
+        if inputs.wingPomodoro, inputs.pomodoroActive {
+            active.insert(.pomodoroPhase)
+        }
+        if inputs.musicPlaying {
+            active.insert(.nowPlaying)
+        }
         if inputs.wingCalendar, let start = inputs.nextEventStart {
             let delay = start.timeIntervalSince(inputs.now)
-            if delay > 0, delay < 60 * 60 { active.insert(.calendarSoon) }
+            if delay > 0, delay < 60 * 60 {
+                active.insert(.calendarSoon)
+            }
         }
         return active
     }
@@ -58,10 +68,10 @@ final class ActivityWiring {
     private var cancellables = Set<AnyCancellable>()
     private var timer: Timer?
 
-    // Le défaut `.shared` est résolu dans le corps plutôt qu'en valeur par
-    // défaut de paramètre : une valeur par défaut n'hérite pas de
-    // l'isolation MainActor de l'initialiseur, ce qui déclenche un
-    // avertissement (erreur en Swift 6) sur l'accès à `ActivityCenter.shared`.
+    /// Le défaut `.shared` est résolu dans le corps plutôt qu'en valeur par
+    /// défaut de paramètre : une valeur par défaut n'hérite pas de
+    /// l'isolation MainActor de l'initialiseur, ce qui déclenche un
+    /// avertissement (erreur en Swift 6) sur l'accès à `ActivityCenter.shared`.
     init(center: ActivityCenter? = nil) {
         self.center = center ?? .shared
     }
@@ -75,8 +85,14 @@ final class ActivityWiring {
             }
             reevaluate()
         }
-        PomodoroModel.shared.onPhaseChange = { [weak self] _, naturalEnd in
-            if naturalEnd { NSSound(named: "Glass")?.play() }
+        PomodoroModel.shared.onPhaseChange = { [weak self] phase, naturalEnd in
+            if naturalEnd {
+                NSSound(named: "Glass")?.play()
+                if AppSettings.shared.pomodoroNotifications {
+                    let minutes = Int(PomodoroModel.shared.phaseTotal / 60)
+                    PomodoroNotifier.notify(enteringPhase: phase, minutes: minutes)
+                }
+            }
             self?.center.post(.pomodoroPhase)
         }
         // Ces deux rappels sont documentés « sur la file principale », mais un
@@ -93,23 +109,35 @@ final class ActivityWiring {
             }
         }
 
+        NowPlayingManager.shared.onTrackChange = { [weak self] in
+            guard NowPlayingManager.shared.isPlaying else { return }
+            self?.center.post(.nowPlaying)
+        }
+        NowPlayingManager.shared.startObserving()
+
         let settings = AppSettings.shared
         let triggers: [AnyPublisher<Void, Never>] = [
             settings.$wingsEnabled.map { _ in () }.eraseToAnyPublisher(),
             settings.$wingBattery.map { _ in () }.eraseToAnyPublisher(),
             settings.$wingStopwatch.map { _ in () }.eraseToAnyPublisher(),
             settings.$wingPomodoro.map { _ in () }.eraseToAnyPublisher(),
-            settings.$wingCalendar.map { _ in () }.eraseToAnyPublisher(),
-            PomodoroModel.shared.$phase.map { _ in () }.eraseToAnyPublisher(),
-            StopwatchModel.shared.$running.map { _ in () }.eraseToAnyPublisher(),
-            StopwatchModel.shared.$accumulated.map { _ in () }.eraseToAnyPublisher(),
-            CalendarStore.shared.$nextEvent.map { _ in () }.eraseToAnyPublisher(),
+            settings.$wingCalendar.map { _ in () }.eraseToAnyPublisher()
         ]
         // receive(on:) : @Published émet avant l'écriture, on relit après.
         Publishers.MergeMany(triggers)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.reevaluate() }
             .store(in: &cancellables)
+        // Sources @Observable.
+        observeChanges {
+            _ = PomodoroModel.shared.phase
+            _ = StopwatchModel.shared.running
+            _ = StopwatchModel.shared.accumulated
+            _ = CalendarStore.shared.nextEvent
+            _ = NowPlayingManager.shared.isPlaying
+        } onChange: { [weak self] in
+            self?.reevaluate()
+        }
 
         let newTimer = Timer(timeInterval: 30, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.reevaluate() }
@@ -133,7 +161,7 @@ final class ActivityWiring {
             battery: BatteryMonitor.shared.snapshot,
             stopwatchHasTime: StopwatchModel.shared.hasTime,
             pomodoroActive: PomodoroModel.shared.phase != .idle,
-            musicPlaying: false, // activé par la tâche 12 (MediaRemote)
+            musicPlaying: NowPlayingManager.shared.isPlaying,
             nextEventStart: CalendarStore.shared.nextEvent?.startDate,
             now: Date()
         )

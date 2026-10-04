@@ -48,7 +48,7 @@ enum ActivityID: Hashable {
     /// Une valeur de chaque cas, pour la simulation et le rendu Debug.
     static let samples: [ActivityID] = [
         .charging, .unplugged, .lowBattery(percent: 10), .pomodoroPhase, .stopwatch,
-        .filesAdded(count: 3), .airDropSent, .nowPlaying, .calendarSoon,
+        .filesAdded(count: 3), .airDropSent, .nowPlaying, .calendarSoon
     ]
 
     /// Nom court (« charging », « lowBattery », …) pour la ligne de commande et les fichiers.

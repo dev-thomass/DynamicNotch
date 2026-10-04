@@ -16,11 +16,11 @@ import SwiftUI
 /// expectations (see UX guidelines in the design system docs).
 public struct DSButton: View {
     public enum Role {
-        case primary       // brand cyan, the default affirmative action
-        case secondary     // neutral surface, equal to primary in importance
-        case destructive   // red, requires confirmation when used
-        case warning       // orange, used for irreversible-but-not-destructive
-        case ghost         // text-only, lowest emphasis
+        case primary // brand cyan, the default affirmative action
+        case secondary // neutral surface, equal to primary in importance
+        case destructive // red, requires confirmation when used
+        case warning // orange, used for irreversible-but-not-destructive
+        case ghost // text-only, lowest emphasis
     }
 
     public enum Size {
@@ -85,18 +85,25 @@ public struct DSButton: View {
     private var iconSize: CGFloat {
         switch size { case .small: 11; case .medium: 13; case .large: 15 }
     }
+
     private var textFont: Font {
-        switch size { case .small: DS.Typography.caption; case .medium: DS.Typography.body; case .large: DS.Typography.headline }
+        switch size {
+        case .small: DS.Typography.caption; case .medium: DS.Typography.body; case .large: DS.Typography.headline
+        }
     }
+
     private var paddingH: CGFloat {
         switch size { case .small: DS.Spacing.sm; case .medium: DS.Spacing.md; case .large: DS.Spacing.lg }
     }
+
     private var paddingV: CGFloat {
         switch size { case .small: DS.Spacing.xs; case .medium: DS.Spacing.sm; case .large: DS.Spacing.md }
     }
+
     private var minHeight: CGFloat {
         switch size { case .small: 22; case .medium: 30; case .large: 40 }
     }
+
     private var foreground: Color {
         switch role {
         case .primary, .destructive, .warning: DS.Color.textOnAccent
@@ -104,6 +111,7 @@ public struct DSButton: View {
         case .ghost: DS.Color.textSecondary
         }
     }
+
     @ViewBuilder
     private var background: some View {
         switch role {
@@ -119,6 +127,7 @@ public struct DSButton: View {
             Color.clear
         }
     }
+
     @ViewBuilder
     private var borderOverlay: some View {
         switch role {
@@ -150,7 +159,7 @@ public struct DSBadge: View {
 
     public init(count: Int, tone: Tone = .brand) {
         // Cap at 99+ for legibility
-        self.text = count > 99 ? "99+" : String(count)
+        text = count > 99 ? "99+" : String(count)
         self.tone = tone
     }
 
@@ -173,10 +182,10 @@ public struct DSBadge: View {
     @ViewBuilder
     private var background: some View {
         switch tone {
-        case .brand:        DS.Color.brand
-        case .destructive:  DS.Color.destructive
-        case .warning:      DS.Color.warning
-        case .neutral:      DS.Color.surfaceRaisedStrong
+        case .brand: DS.Color.brand
+        case .destructive: DS.Color.destructive
+        case .warning: DS.Color.warning
+        case .neutral: DS.Color.surfaceRaisedStrong
         }
     }
 }
@@ -205,7 +214,10 @@ public struct DSDropZone<Label: View>: View {
                 .fill(isTargeted ? DS.Color.dropZoneTargetedFill : DS.Color.dropZoneIdle)
                 .overlay(
                     RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                        .strokeBorder(isTargeted ? DS.Color.dropZoneTargetedBorder : DS.Color.borderDefault, lineWidth: 1)
+                        .strokeBorder(
+                            isTargeted ? DS.Color.dropZoneTargetedBorder : DS.Color.borderDefault,
+                            lineWidth: 1
+                        )
                 )
                 .animation(DS.Motion.base, value: isTargeted)
                 .animation(DS.Motion.base, value: isLoading)
@@ -217,7 +229,8 @@ public struct DSDropZone<Label: View>: View {
 // MARK: - DSModule
 
 /// Module du panneau : carte gris sombre, rayon 16. Cliquable si `action`.
-/// Ne pas passer d'`action` si `content` contient lui-même des contrôles (boutons, champs) : le module entier devient un bouton.
+/// Ne pas passer d'`action` si `content` contient lui-même des contrôles (boutons, champs) : le module entier devient
+/// un bouton.
 public struct DSModule<Content: View>: View {
     private let title: String?
     private let action: (() -> Void)?
@@ -232,7 +245,10 @@ public struct DSModule<Content: View>: View {
     public var body: some View {
         if let action {
             Button(action: action) { card }
-                .buttonStyle(DSHighlightButtonStyle(shape: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)))
+                .buttonStyle(DSHighlightButtonStyle(shape: RoundedRectangle(
+                    cornerRadius: DS.Radius.lg,
+                    style: .continuous
+                )))
         } else {
             card
         }
@@ -265,8 +281,13 @@ public struct DSIconButton: View {
     public enum Size {
         case regular, large
 
-        var diameter: CGFloat { self == .regular ? 30 : 36 }
-        var iconSize: CGFloat { self == .regular ? 13 : 15 }
+        var diameter: CGFloat {
+            self == .regular ? 30 : 36
+        }
+
+        var iconSize: CGFloat {
+            self == .regular ? 13 : 15
+        }
     }
 
     private let systemImage: String
@@ -301,7 +322,7 @@ public struct DSIconButton: View {
 }
 
 /// Surbrillance de survol (0,08) et d'appui (0,14) posée sur la forme.
-private struct DSHighlightButtonStyle<S: Shape>: ButtonStyle {
+struct DSHighlightButtonStyle<S: Shape>: ButtonStyle {
     let shape: S
 
     func makeBody(configuration: Configuration) -> some View {
@@ -357,7 +378,7 @@ private struct PressActions: ViewModifier {
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { _ in onPress() }
-                    .onEnded   { _ in onRelease() }
+                    .onEnded { _ in onRelease() }
             )
     }
 }

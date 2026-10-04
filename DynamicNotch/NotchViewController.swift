@@ -32,5 +32,7 @@ class NotchViewController: NSHostingController<NotchView> {
 }
 
 private final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
-    override func acceptsFirstMouse(for _: NSEvent?) -> Bool { true }
+    override func acceptsFirstMouse(for _: NSEvent?) -> Bool {
+        true
+    }
 }

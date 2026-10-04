@@ -17,7 +17,9 @@ enum NotchPresentation: Equatable {
     case opened(NotchViewModel.ContentType)
 
     var isOpened: Bool {
-        if case .opened = self { return true }
+        if case .opened = self {
+            return true
+        }
         return false
     }
 
@@ -48,10 +50,22 @@ enum NotchPresentation: Equatable {
             // 80 pt pour l'encoche de 32 pt et la pilule de 24 pt ; plus haut
             // si l'encoche l'est, pour garder 48 pt de contenu sous elle.
             let height = max(80, notch.height + 48)
-            return ShellMetrics(bodyWidth: 340, bodyHeight: height, topRadius: largeEar, bottomRadius: 24, hasShadow: true)
+            return ShellMetrics(
+                bodyWidth: 340,
+                bodyHeight: height,
+                topRadius: largeEar,
+                bottomRadius: 24,
+                hasShadow: true
+            )
         case let .opened(content):
             let size = content.panelSize
-            return ShellMetrics(bodyWidth: size.width, bodyHeight: size.height, topRadius: largeEar, bottomRadius: 28, hasShadow: true)
+            return ShellMetrics(
+                bodyWidth: size.width,
+                bodyHeight: size.height,
+                topRadius: largeEar,
+                bottomRadius: 28,
+                hasShadow: true
+            )
         }
     }
 
@@ -69,7 +83,9 @@ enum NotchPresentation: Equatable {
     /// Ressort d'une transition : grandir rebondit, rétrécir non. Entre deux
     /// contenus ouverts, on compare la surface du panneau.
     static func motion(from: NotchPresentation, to: NotchPresentation) -> DS.Motion.Kind {
-        if (from == .closed && to == .peek) || (from == .peek && to == .closed) { return .micro }
+        if (from == .closed && to == .peek) || (from == .peek && to == .closed) {
+            return .micro
+        }
         if case let .opened(a) = from, case let .opened(b) = to {
             let areaA = a.panelSize.width * a.panelSize.height
             let areaB = b.panelSize.width * b.panelSize.height

@@ -25,12 +25,17 @@ struct AgendaEntry: Equatable, Identifiable {
 
 enum AgendaPlanner {
     /// Événements du jour de `now` et du lendemain ; « journée entière » d'abord, puis par heure.
-    static func split(_ entries: [AgendaEntry], now: Date, calendar: Calendar = .current) -> (today: [AgendaEntry], tomorrow: [AgendaEntry]) {
+    static func split(
+        _ entries: [AgendaEntry],
+        now: Date,
+        calendar: Calendar = .current
+    ) -> (today: [AgendaEntry], tomorrow: [AgendaEntry]) {
         let startOfToday = calendar.startOfDay(for: now)
         let startOfTomorrow = calendar.date(byAdding: .day, value: 1, to: startOfToday)!
         let startOfAfter = calendar.date(byAdding: .day, value: 1, to: startOfTomorrow)!
         let today = entries.filter { $0.start < startOfTomorrow && $0.end > startOfToday }
-        let tomorrow = entries.filter { $0.start < startOfAfter && $0.end > startOfTomorrow && $0.start >= startOfTomorrow }
+        let tomorrow = entries
+            .filter { $0.start < startOfAfter && $0.end > startOfTomorrow && $0.start >= startOfTomorrow }
         return (sorted(today), sorted(tomorrow))
     }
 
@@ -41,7 +46,9 @@ enum AgendaPlanner {
 
     private static func sorted(_ entries: [AgendaEntry]) -> [AgendaEntry] {
         entries.sorted { lhs, rhs in
-            if lhs.isAllDay != rhs.isAllDay { return lhs.isAllDay }
+            if lhs.isAllDay != rhs.isAllDay {
+                return lhs.isAllDay
+            }
             return lhs.start < rhs.start
         }
     }

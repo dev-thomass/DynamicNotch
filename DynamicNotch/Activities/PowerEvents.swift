@@ -19,7 +19,9 @@ struct PowerSnapshot: Equatable {
     /// `nil` quand macOS ne sait pas encore estimer.
     var minutesToFull: Int?
 
-    var percent: Int { Int((level * 100).rounded()) }
+    var percent: Int {
+        Int((level * 100).rounded())
+    }
 
     /// Parse les descriptions renvoyées par `IOPSGetPowerSourceDescription`.
     static func parse(_ descriptions: [[String: Any]]) -> PowerSnapshot {

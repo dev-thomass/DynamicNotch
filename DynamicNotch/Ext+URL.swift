@@ -37,12 +37,16 @@ extension URL {
         let sem = DispatchSemaphore(value: 0)
         var result: NSImage?
         QLThumbnailGenerator.shared.generateBestRepresentation(for: request) { rep, _ in
-            if let rep { result = rep.nsImage }
+            if let rep {
+                result = rep.nsImage
+            }
             sem.signal()
         }
         switch sem.wait(timeout: .now() + .seconds(5)) {
         case .success:
-            if let image = result { return image }
+            if let image = result {
+                return image
+            }
         case .timedOut:
             Log.drop.error("QLThumbnailGenerator timed out for \(self.lastPathComponent, privacy: .public)")
         }

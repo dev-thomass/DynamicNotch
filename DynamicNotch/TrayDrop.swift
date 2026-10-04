@@ -42,7 +42,9 @@ class TrayDrop: ObservableObject {
         .store(in: &cancellables)
     }
 
-    var isEmpty: Bool { items.isEmpty }
+    var isEmpty: Bool {
+        items.isEmpty
+    }
 
     @PublishedPersist(key: "TrayDropItems", defaultValue: .init())
     var items: OrderedSet<DropItem>
@@ -137,7 +139,9 @@ extension TrayDrop {
         case never = "Forever"
         case custom = "Custom"
 
-        var id: String { rawValue }
+        var id: String {
+            rawValue
+        }
 
         var localized: String {
             NSLocalizedString(rawValue, comment: "")
@@ -170,7 +174,9 @@ extension TrayDrop {
         case months = "Months"
         case years = "Years"
 
-        var id: String { rawValue }
+        var id: String {
+            rawValue
+        }
 
         var localized: String {
             NSLocalizedString(rawValue, comment: "")

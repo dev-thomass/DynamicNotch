@@ -54,7 +54,7 @@ struct ShareView: View {
     @State private var hover = false
     /// Incrémenté à l'entrée d'un glisser seulement : le rebond ne joue pas à la sortie.
     @State private var dropBounces = 0
-    @ObservedObject private var shareActivity = ShareActivity.shared
+    private let shareActivity = ShareActivity.shared
 
     var body: some View {
         content
@@ -69,7 +69,9 @@ struct ShareView: View {
             }
             .onTapGesture { handleTap() }
             .onChange(of: targeting) { _, isTargeted in
-                if isTargeted { dropBounces += 1 }
+                if isTargeted {
+                    dropBounces += 1
+                }
             }
     }
 
@@ -109,7 +111,6 @@ struct ShareView: View {
         )
     }
 
-    @ViewBuilder
     private var iconBubble: some View {
         ZStack {
             Circle()
@@ -123,13 +124,12 @@ struct ShareView: View {
         }
     }
 
-    @ViewBuilder
     private var background: some View {
         RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-            .fill(targeting ? DS.Color.brand.opacity(0.18) : (hover ? DS.Color.surfaceRaisedStrong : DS.Color.surfaceRaised))
+            .fill(targeting ? DS.Color.brand
+                .opacity(0.18) : (hover ? DS.Color.surfaceRaisedStrong : DS.Color.surfaceRaised))
     }
 
-    @ViewBuilder
     private var border: some View {
         RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
             .strokeBorder(

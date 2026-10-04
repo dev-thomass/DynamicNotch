@@ -3,9 +3,9 @@
 //  DynamicNotchTests
 //
 
+@testable import DynamicNotch
 import EventKit
 import XCTest
-@testable import DynamicNotch
 
 final class AgendaPlannerTests: XCTestCase {
     private var calendar: Calendar = {
@@ -15,11 +15,20 @@ final class AgendaPlannerTests: XCTestCase {
     }()
 
     /// Vendredi 26 septembre 2026, 10:00 (Paris).
-    private var now: Date { calendar.date(from: DateComponents(year: 2026, month: 9, day: 26, hour: 10))! }
+    private var now: Date {
+        calendar.date(from: DateComponents(year: 2026, month: 9, day: 26, hour: 10))!
+    }
 
     private func entry(_ id: String, day: Int, hour: Int, minutes: Int = 60, allDay: Bool = false) -> AgendaEntry {
         let start = calendar.date(from: DateComponents(year: 2026, month: 9, day: day, hour: hour))!
-        return AgendaEntry(id: id, title: id, start: start, end: start.addingTimeInterval(TimeInterval(minutes * 60)), isAllDay: allDay, color: nil)
+        return AgendaEntry(
+            id: id,
+            title: id,
+            start: start,
+            end: start.addingTimeInterval(TimeInterval(minutes * 60)),
+            isAllDay: allDay,
+            color: nil
+        )
     }
 
     func test_split_sortsTodayAndTomorrow_allDayFirst() {
@@ -28,7 +37,7 @@ final class AgendaPlannerTests: XCTestCase {
             entry("midi", day: 26, hour: 12),
             entry("matin", day: 26, hour: 8),
             entry("journée", day: 26, hour: 0, minutes: 24 * 60, allDay: true),
-            entry("hier", day: 25, hour: 18),
+            entry("hier", day: 25, hour: 18)
         ]
         let split = AgendaPlanner.split(entries, now: now, calendar: calendar)
         XCTAssertEqual(split.today.map(\.id), ["journée", "matin", "midi"])
@@ -41,7 +50,7 @@ final class AgendaPlannerTests: XCTestCase {
             entry("fini", day: 26, hour: 8),
             entry("en cours", day: 26, hour: 9, minutes: 90),
             entry("midi", day: 26, hour: 12),
-            entry("soir", day: 26, hour: 18),
+            entry("soir", day: 26, hour: 18)
         ]
         XCTAssertEqual(AgendaPlanner.upcoming(today, now: now, limit: 2).map(\.id), ["en cours", "midi"])
     }
@@ -55,8 +64,8 @@ final class AgendaPlannerTests: XCTestCase {
     }
 
     func test_makeID_distinguishesOccurrences_andIsStable() {
-        let first = Date(timeIntervalSince1970: 1_000)
-        let second = Date(timeIntervalSince1970: 87_400)
+        let first = Date(timeIntervalSince1970: 1000)
+        let second = Date(timeIntervalSince1970: 87400)
         let a = AgendaEntry.makeID(eventIdentifier: "evt", title: "Réunion", start: first)
         let b = AgendaEntry.makeID(eventIdentifier: "evt", title: "Réunion", start: second)
         XCTAssertNotEqual(a, b)

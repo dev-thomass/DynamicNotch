@@ -11,7 +11,6 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct DropItemView: View {
-
     /// Extensions whose tap-to-open could execute foreign code. We always
     /// prompt the user before handing one of these to NSWorkspace.
     private static let executableExtensions: Set<String> = [

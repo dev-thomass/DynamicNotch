@@ -2,7 +2,7 @@
 //  HomeTabView.swift
 //  DynamicNotch
 //
-//  Accueil : aujourd'hui (date + deux prochains événements), fichiers
+//  Accueil : aujourd'hui (date, météo, deux prochains événements), fichiers
 //  récents (zone de dépôt) et quatre actions rapides.
 //
 
@@ -14,8 +14,8 @@ struct HomeTabView: View {
     /// Largeur utile (640 − 2 × 16) moins deux espacements de 10, en 3,2 parts.
     private let unit: CGFloat = (640 - 32 - 20) / 3.2
 
-    // Chaque module observe seulement ses propres modèles : le Pomodoro qui
-    // avance deux fois par seconde ne réévalue ni l'agenda ni les aperçus.
+    /// Chaque module observe seulement ses propres modèles : le Pomodoro qui
+    /// avance deux fois par seconde ne réévalue ni l'agenda ni les aperçus.
     var body: some View {
         HStack(spacing: 10) {
             HomeTodayModule(vm: vm).frame(width: unit * 1.2)
@@ -29,7 +29,8 @@ struct HomeTabView: View {
 
 private struct HomeTodayModule: View {
     let vm: NotchViewModel
-    @ObservedObject private var calendar = CalendarStore.shared
+    private let calendar = CalendarStore.shared
+    private let weather = WeatherStore.shared
 
     var body: some View {
         DSModule(
@@ -37,13 +38,41 @@ private struct HomeTodayModule: View {
             action: calendar.access == .granted ? { vm.selectTab(.agenda) } : nil
         ) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(Date().formatted(.dateTime.weekday(.abbreviated).day()))
-                    .font(DS.Typography.displayMedium)
-                    .foregroundStyle(DS.Color.textPrimary)
+                HStack(alignment: .firstTextBaseline) {
+                    Text(Date().formatted(.dateTime.weekday(.abbreviated).day()))
+                        .font(DS.Typography.displayMedium)
+                        .foregroundStyle(DS.Color.textPrimary)
+                    Spacer(minLength: 4)
+                    weatherBadge
+                }
                 detail
             }
         }
         .onAppear { calendar.refreshAccess() }
+    }
+
+    /// Icône + température ; rien tant que la météo n'est pas chargée.
+    @ViewBuilder
+    private var weatherBadge: some View {
+        if case let .loaded(snapshot) = weather.state {
+            HStack(spacing: 4) {
+                Image(systemName: snapshot.condition.systemImage(isDay: snapshot.isDay))
+                    .symbolRenderingMode(.multicolor)
+                Text(snapshot.temperatureText)
+                    .monospacedDigit()
+                    .foregroundStyle(DS.Color.textPrimary)
+            }
+            .font(DS.Typography.bodyEmphasis)
+            .help(Text(weatherHelp(snapshot)))
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(Text(weatherHelp(snapshot)))
+        }
+    }
+
+    private func weatherHelp(_ snapshot: WeatherSnapshot) -> String {
+        [snapshot.place, snapshot.condition.label, snapshot.temperatureText, snapshot.rangeText]
+            .compactMap(\.self)
+            .joined(separator: " · ")
     }
 
     @ViewBuilder
@@ -148,8 +177,8 @@ private struct HomeFilesModule: View {
 
 private struct HomeActionsModule: View {
     let vm: NotchViewModel
-    @ObservedObject private var stopwatch = StopwatchModel.shared
-    @ObservedObject private var pomodoro = PomodoroModel.shared
+    private let stopwatch = StopwatchModel.shared
+    private let pomodoro = PomodoroModel.shared
     @State private var airDropTargeted = false
 
     var body: some View {
@@ -172,13 +201,17 @@ private struct HomeActionsModule: View {
                         return true
                     }
                     action(stopwatch.running ? "pause.fill" : "play.fill", "Chrono") {
-                        if !stopwatch.running { vm.hapticSender.send() }
+                        if !stopwatch.running {
+                            vm.hapticSender.send()
+                        }
                         stopwatch.toggle()
                     }
                 }
                 GridRow {
                     action(pomodoro.isRunning ? "pause.fill" : "brain.head.profile", "Pomodoro") {
-                        if !pomodoro.isRunning { vm.hapticSender.send() }
+                        if !pomodoro.isRunning {
+                            vm.hapticSender.send()
+                        }
                         pomodoro.performPrimary()
                     }
                     action("square.and.pencil", "Note") { vm.selectTab(.notes) }

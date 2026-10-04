@@ -7,15 +7,15 @@
 //  `onChange` reçoit le nouvel état et les événements détectés.
 //
 
-import Combine
 import IOKit.ps
 import SwiftUI
 
 @MainActor
-final class BatteryMonitor: ObservableObject {
+@Observable
+final class BatteryMonitor {
     static let shared = BatteryMonitor()
 
-    @Published private(set) var snapshot = PowerSnapshot(
+    private(set) var snapshot = PowerSnapshot(
         hasBattery: false, level: 1, isPluggedIn: true, isCharging: false, minutesToFull: nil
     )
     var onChange: ((PowerSnapshot, [PowerEvent]) -> Void)?
@@ -40,26 +40,48 @@ final class BatteryMonitor: ObservableObject {
 
     // MARK: accès simplifiés
 
-    var level: Double { snapshot.level }
-    var isCharging: Bool { snapshot.isCharging }
-    var isPluggedIn: Bool { snapshot.isPluggedIn }
-    var hasBattery: Bool { snapshot.hasBattery }
-    var percent: Int { snapshot.percent }
+    var level: Double {
+        snapshot.level
+    }
+
+    var isCharging: Bool {
+        snapshot.isCharging
+    }
+
+    var isPluggedIn: Bool {
+        snapshot.isPluggedIn
+    }
+
+    var hasBattery: Bool {
+        snapshot.hasBattery
+    }
+
+    var percent: Int {
+        snapshot.percent
+    }
 
     /// « 87 % », avec l'espace insécable de la typographie française.
-    var percentText: String { "\(percent) %" }
+    var percentText: String {
+        "\(percent) %"
+    }
 
     /// Vert au-dessus de 50 %, jaune au-dessus de 20 %, rouge en dessous.
     var indicativeTint: Color {
-        if level > 0.5 { return DS.Color.success }
-        if level > 0.2 { return DS.Color.warning }
+        if level > 0.5 {
+            return DS.Color.success
+        }
+        if level > 0.2 {
+            return DS.Color.warning
+        }
         return DS.Color.destructive
     }
 
     /// « Pleine dans 1 h 10 », « Pleine dans 25 min », ou `nil` si inconnu.
     var timeToFullText: String? {
         guard let minutes = snapshot.minutesToFull else { return nil }
-        if minutes < 60 { return "Pleine dans \(minutes) min" }
+        if minutes < 60 {
+            return "Pleine dans \(minutes) min"
+        }
         let rest = minutes % 60
         return rest == 0 ? "Pleine dans \(minutes / 60) h" : "Pleine dans \(minutes / 60) h \(String(format: "%02d", rest))"
     }
@@ -75,8 +97,7 @@ final class BatteryMonitor: ObservableObject {
 
     private static func readSnapshot() -> PowerSnapshot? {
         guard let info = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-              let sources = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef]
-        else { return nil }
+              let sources = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef] else { return nil }
         let descriptions = sources.compactMap {
             IOPSGetPowerSourceDescription(info, $0)?.takeUnretainedValue() as? [String: Any]
         }

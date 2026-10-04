@@ -51,7 +51,9 @@ struct NoteView: View {
                 // l'app `.accessory` soit explicitement active pour que les
                 // events clavier système soient routés vers le TextEditor.
                 .onChange(of: isFocused) { _, focused in
-                    if focused { activateForEditing() }
+                    if focused {
+                        activateForEditing()
+                    }
                 }
                 // Bloquer la propagation du tap au handler global de
                 // mouseDown qui ferait fermer la notch.
@@ -131,8 +133,7 @@ struct NoteView: View {
 
     private func loadNote() -> String {
         guard let data = try? Data(contentsOf: noteFileURL),
-              let str = String(data: data, encoding: .utf8)
-        else { return "" }
+              let str = String(data: data, encoding: .utf8) else { return "" }
         // Legacy: very old builds wrapped the body in JSON-style quotes.
         if str.hasPrefix("\""), str.hasSuffix("\"") {
             return String(str.dropFirst().dropLast())

@@ -3,9 +3,9 @@
 //  DynamicNotchTests
 //
 
+@testable import DynamicNotch
 import SwiftUI
 import XCTest
-@testable import DynamicNotch
 
 final class NotchShellShapeTests: XCTestCase {
     private let canvas = CGRect(x: 0, y: 0, width: 948, height: 584)

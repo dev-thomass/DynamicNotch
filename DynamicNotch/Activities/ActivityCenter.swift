@@ -42,7 +42,9 @@ final class ActivityCenter {
         self.scheduler = scheduler
     }
 
-    var isSuspended: Bool { suspensionCount > 0 }
+    var isSuspended: Bool {
+        suspensionCount > 0
+    }
 
     func post(_ id: ActivityID) {
         let pending = Pending(id: id, postedAt: scheduler.now)
@@ -60,7 +62,9 @@ final class ActivityCenter {
 
     func setPersistent(_ id: ActivityID, active: Bool) {
         let changed = active ? persistent.insert(id).inserted : persistent.remove(id) != nil
-        if changed { recompute() }
+        if changed {
+            recompute()
+        }
     }
 
     func beginSuspension() {
@@ -119,13 +123,12 @@ final class ActivityCenter {
     }
 
     private func recompute() {
-        let next: ActivityDisplay?
-        if let transient {
-            next = ActivityDisplay(id: transient.id, mode: .expanded)
+        let next: ActivityDisplay? = if let transient {
+            ActivityDisplay(id: transient.id, mode: .expanded)
         } else if let top = persistent.max(by: { $0.persistentPriority < $1.persistentPriority }) {
-            next = ActivityDisplay(id: top, mode: .compact)
+            ActivityDisplay(id: top, mode: .compact)
         } else {
-            next = nil
+            nil
         }
         guard next != current else { return }
         current = next

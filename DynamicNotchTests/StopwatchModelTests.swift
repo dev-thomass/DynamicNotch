@@ -3,8 +3,8 @@
 //  DynamicNotchTests
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 @MainActor
 final class StopwatchModelTests: XCTestCase {

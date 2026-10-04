@@ -3,11 +3,10 @@
 //  DynamicNotchTests
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 final class DisplayPreferenceTests: XCTestCase {
-
     // MARK: codable round-trip
 
     func test_codable_builtInWithNotch() throws {

@@ -9,7 +9,6 @@
 import Cocoa
 
 enum DisplayPreference: Codable, Equatable, Hashable {
-
     /// Use the built-in display when it has a hardware notch (the default,
     /// preserves the historical behaviour). Falls back to `.main` otherwise.
     case builtInWithNotch
@@ -27,13 +26,15 @@ enum DisplayPreference: Codable, Equatable, Hashable {
     func resolve() -> NSScreen? {
         switch self {
         case .builtInWithNotch:
-            if let screen = NSScreen.buildin, screen.safeAreaInsets.top > 0 { return screen }
+            if let screen = NSScreen.buildin, screen.safeAreaInsets.top > 0 {
+                return screen
+            }
             return .main
 
         case .mainAtResolveTime:
             return .main
 
-        case .named(let name):
+        case let .named(name):
             if let match = NSScreen.screens.first(where: { $0.localizedName == name }) {
                 return match
             }
@@ -48,11 +49,11 @@ enum DisplayPreference: Codable, Equatable, Hashable {
     var displayName: String {
         switch self {
         case .builtInWithNotch:
-            return "Écran intégré (encoche)"
+            "Écran intégré (encoche)"
         case .mainAtResolveTime:
-            return "Écran principal"
-        case .named(let name):
-            return name
+            "Écran principal"
+        case let .named(name):
+            name
         }
     }
 }

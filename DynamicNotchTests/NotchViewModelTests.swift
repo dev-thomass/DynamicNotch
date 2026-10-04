@@ -8,8 +8,8 @@
 //
 
 import Combine
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 @MainActor
 final class NotchViewModelTests: XCTestCase {

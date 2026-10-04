@@ -8,9 +8,11 @@
 import SwiftUI
 
 enum NotchTab: Int, CaseIterable, Codable, Identifiable {
-    case home, files, timers, notes, agenda
+    case home, files, timers, notes, agenda, clipboard
 
-    var id: Int { rawValue }
+    var id: Int {
+        rawValue
+    }
 
     var systemImage: String {
         switch self {
@@ -19,6 +21,7 @@ enum NotchTab: Int, CaseIterable, Codable, Identifiable {
         case .timers: "timer"
         case .notes: "note.text"
         case .agenda: "calendar"
+        case .clipboard: "doc.on.clipboard"
         }
     }
 
@@ -29,6 +32,7 @@ enum NotchTab: Int, CaseIterable, Codable, Identifiable {
         case .timers: "Minuteurs"
         case .notes: "Notes"
         case .agenda: "Agenda"
+        case .clipboard: "Presse-papiers"
         }
     }
 
@@ -36,7 +40,7 @@ enum NotchTab: Int, CaseIterable, Codable, Identifiable {
     var panelHeight: CGFloat {
         switch self {
         case .home, .files, .timers: 190
-        case .notes: 220
+        case .notes, .clipboard: 220
         case .agenda: 260
         }
     }

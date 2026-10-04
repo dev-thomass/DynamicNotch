@@ -3,8 +3,8 @@
 //  DynamicNotchTests
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 final class NotchGeometryTests: XCTestCase {
     /// MacBook Pro 14" de référence (mesuré le 2026-09-24).

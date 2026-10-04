@@ -3,12 +3,12 @@
 //  DynamicNotchTests
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 @MainActor
 final class ActivityWiringTests: XCTestCase {
-    private let now = Date(timeIntervalSince1970: 10_000)
+    private let now = Date(timeIntervalSince1970: 10000)
 
     private func inputs(
         wings: Bool = true,
@@ -21,7 +21,13 @@ final class ActivityWiringTests: XCTestCase {
     ) -> ActivityWiring.Inputs {
         ActivityWiring.Inputs(
             wingsEnabled: wings, wingBattery: true, wingStopwatch: true, wingPomodoro: true, wingCalendar: true,
-            battery: PowerSnapshot(hasBattery: hasBattery, level: 0.5, isPluggedIn: plugged, isCharging: plugged, minutesToFull: nil),
+            battery: PowerSnapshot(
+                hasBattery: hasBattery,
+                level: 0.5,
+                isPluggedIn: plugged,
+                isCharging: plugged,
+                minutesToFull: nil
+            ),
             stopwatchHasTime: stopwatch, pomodoroActive: pomodoro, musicPlaying: music,
             nextEventStart: minutes.map { now.addingTimeInterval($0 * 60) }, now: now
         )
@@ -37,7 +43,10 @@ final class ActivityWiringTests: XCTestCase {
     }
 
     func test_wingsDisabled_disablesEverything() {
-        XCTAssertEqual(ActivityWiring.activePersistent(inputs(wings: false, plugged: true, stopwatch: true, music: true)), [])
+        XCTAssertEqual(
+            ActivityWiring.activePersistent(inputs(wings: false, plugged: true, stopwatch: true, music: true)),
+            []
+        )
     }
 
     func test_timersAndMusic() {

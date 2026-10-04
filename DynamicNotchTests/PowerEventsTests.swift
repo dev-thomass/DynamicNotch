@@ -3,9 +3,9 @@
 //  DynamicNotchTests
 //
 
+@testable import DynamicNotch
 import IOKit.ps
 import XCTest
-@testable import DynamicNotch
 
 final class PowerEventsTests: XCTestCase {
     private func battery(_ capacity: Int, ac: Bool, charging: Bool = false, timeToFull: Int = -1) -> [String: Any] {
@@ -15,19 +15,28 @@ final class PowerEventsTests: XCTestCase {
             kIOPSMaxCapacityKey: 100,
             kIOPSPowerSourceStateKey: ac ? kIOPSACPowerValue : kIOPSBatteryPowerValue,
             kIOPSIsChargingKey: charging,
-            kIOPSTimeToFullChargeKey: timeToFull,
+            kIOPSTimeToFullChargeKey: timeToFull
         ]
     }
 
     private func snapshot(_ percent: Int, ac: Bool) -> PowerSnapshot {
-        PowerSnapshot(hasBattery: true, level: Double(percent) / 100, isPluggedIn: ac, isCharging: ac, minutesToFull: nil)
+        PowerSnapshot(
+            hasBattery: true,
+            level: Double(percent) / 100,
+            isPluggedIn: ac,
+            isCharging: ac,
+            minutesToFull: nil
+        )
     }
 
     // MARK: parse
 
     func test_parse_internalBattery() {
         let s = PowerSnapshot.parse([battery(82, ac: true, charging: true, timeToFull: 70)])
-        XCTAssertEqual(s, PowerSnapshot(hasBattery: true, level: 0.82, isPluggedIn: true, isCharging: true, minutesToFull: 70))
+        XCTAssertEqual(
+            s,
+            PowerSnapshot(hasBattery: true, level: 0.82, isPluggedIn: true, isCharging: true, minutesToFull: 70)
+        )
         XCTAssertEqual(s.percent, 82)
     }
 

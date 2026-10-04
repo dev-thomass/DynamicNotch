@@ -92,7 +92,11 @@ extension NotchViewModel {
             hapticSender.send()
         }
         let inside = deviceNotchRect.insetBy(dx: inset, dy: inset).contains(point)
-        if presentation == .closed, inside { notchPop() }
-        if presentation == .peek, !inside { notchClose() }
+        if presentation == .closed, inside {
+            notchPop()
+        }
+        if presentation == .peek, !inside {
+            notchClose()
+        }
     }
 }

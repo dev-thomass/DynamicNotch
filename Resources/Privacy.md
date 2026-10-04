@@ -7,10 +7,39 @@ does and does not do with your data, in plain language.
 
 ## TL;DR
 
-- **No telemetry.** DynamicNotch never connects to the internet.
+- **No telemetry.** DynamicNotch only connects to the internet if you turn on
+  the weather (see below), and only to fetch it.
 - **No analytics, no crash reporters, no third-party SDKs.**
 - **No account, no sign-up.**
 - Files you drop into DynamicNotch stay on your Mac.
+
+## Weather
+
+The weather is **off until you type a city** in Settings → Weather. Once a
+city is set, DynamicNotch sends two kinds of requests to
+[Open-Meteo](https://open-meteo.com) (free, no account, no API key):
+
+- the city name, to `geocoding-api.open-meteo.com`, to find its coordinates;
+- those coordinates, to `api.open-meteo.com`, every 30 minutes.
+
+Nothing else is sent: no identifier, no location from your Mac. Clear the city
+field to stop all network requests.
+
+## Music
+
+To read what is playing on macOS 15.4 and later, DynamicNotch starts the
+system's `/usr/bin/perl` with the bundled
+[mediaremote-adapter](https://github.com/ungive/mediaremote-adapter) script.
+It reads the title, artist and artwork that macOS already shares with
+Control Center, stays on your Mac and stops when DynamicNotch quits.
+
+## Clipboard history
+
+The Clipboard tab keeps the last 20 **texts** you copied so you can copy them
+again. This history lives **in memory only**: it is never written to disk and
+disappears when DynamicNotch quits. Copies that password managers mark as
+confidential (`org.nspasteboard.ConcealedType` and related types) are never
+recorded. Turn it off in Settings → Behaviour → Clipboard history.
 
 ## What DynamicNotch stores on disk
 

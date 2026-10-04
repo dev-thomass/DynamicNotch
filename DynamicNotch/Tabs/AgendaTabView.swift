@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AgendaTabView: View {
-    @ObservedObject private var calendar = CalendarStore.shared
+    private let calendar = CalendarStore.shared
 
     var body: some View {
         DSModule {
@@ -19,7 +19,9 @@ struct AgendaTabView: View {
                 prompt("Autoriser l'agenda") { calendar.requestAccess() }
             case .denied:
                 prompt("Autoriser dans Réglages Système") {
-                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars") {
+                    if let url =
+                        URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars")
+                    {
                         NSWorkspace.shared.open(url)
                     }
                 }
@@ -28,7 +30,6 @@ struct AgendaTabView: View {
         .onAppear { calendar.refreshAccess() }
     }
 
-    @ViewBuilder
     private var list: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 8) {
@@ -56,7 +57,9 @@ struct AgendaTabView: View {
                     Circle()
                         .fill(Color(nsColor: entry.color ?? .systemBlue))
                         .frame(width: 8, height: 8)
-                    Text(entry.isAllDay ? "Journée" : "\(entry.start.formatted(date: .omitted, time: .shortened))–\(entry.end.formatted(date: .omitted, time: .shortened))")
+                    Text(entry
+                        .isAllDay ? "Journée" :
+                        "\(entry.start.formatted(date: .omitted, time: .shortened))–\(entry.end.formatted(date: .omitted, time: .shortened))")
                         .monospacedDigit()
                         .foregroundStyle(DS.Color.textSecondary)
                         .frame(width: 104, alignment: .leading)

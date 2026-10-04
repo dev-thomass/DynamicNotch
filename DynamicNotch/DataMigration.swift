@@ -24,7 +24,7 @@ enum DataMigration {
         "pomodoroLongBreakMinutes", "pomodoroShortBreakMinutes",
         "popOnHoverEnabled", "quickNote.txt", "selectedFileStorageTime",
         "selectedLanguage", "showOnAllScreens", "widgetPages", "wingBattery",
-        "wingCalendar", "wingPomodoro", "wingStopwatch", "wingsEnabled",
+        "wingCalendar", "wingPomodoro", "wingStopwatch", "wingsEnabled"
     ]
 
     static func run(from legacy: URL, to destination: URL, fileManager: FileManager = .default) {
@@ -47,7 +47,11 @@ enum DataMigration {
         try? fileManager.createDirectory(at: config, withIntermediateDirectories: true)
         var succeeded = true
         for name in configFiles {
-            succeeded = copyIfAbsent(legacyConfig.appendingPathComponent(name), to: config.appendingPathComponent(name), fileManager) && succeeded
+            succeeded = copyIfAbsent(
+                legacyConfig.appendingPathComponent(name),
+                to: config.appendingPathComponent(name),
+                fileManager
+            ) && succeeded
         }
         succeeded = copyIfAbsent(
             legacy.appendingPathComponent("CopiedItems"),
@@ -63,13 +67,15 @@ enum DataMigration {
     /// Renvoie `false` seulement si une copie tentée a échoué.
     private static func copyIfAbsent(_ source: URL, to target: URL, _ fileManager: FileManager) -> Bool {
         guard fileManager.fileExists(atPath: source.path),
-              !fileManager.fileExists(atPath: target.path)
-        else { return true }
+              !fileManager.fileExists(atPath: target.path) else { return true }
         do {
             try fileManager.copyItem(at: source, to: target)
             return true
         } catch {
-            Log.app.error("migration: copie impossible de \(source.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            Log.app
+                .error(
+                    "migration: copie impossible de \(source.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)"
+                )
             return false
         }
     }

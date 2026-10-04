@@ -31,14 +31,19 @@ class NotchWindow: NSWindow {
             .fullScreenAuxiliary,
             .stationary,
             .canJoinAllSpaces,
-            .ignoresCycle,
+            .ignoresCycle
         ]
         level = .statusBar + 8 // kills ibar lol
         hasShadow = false
     }
 
-    override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { true }
+    override var canBecomeKey: Bool {
+        true
+    }
+
+    override var canBecomeMain: Bool {
+        true
+    }
 
     /// Makes the window become key on the first click rather than swallowing
     /// it. Without this, the user's first click on the notch only activates
@@ -47,7 +52,9 @@ class NotchWindow: NSWindow {
     /// view-level acceptsFirstMouse override (both are required: the window
     /// for focus, the view for click delivery).
     override func mouseDown(with event: NSEvent) {
-        if !isKeyWindow { makeKeyAndOrderFront(nil) }
+        if !isKeyWindow {
+            makeKeyAndOrderFront(nil)
+        }
         super.mouseDown(with: event)
     }
 }

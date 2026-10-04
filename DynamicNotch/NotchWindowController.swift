@@ -41,7 +41,7 @@ class NotchWindowController: NSWindowController {
                 let name = CommandLine.arguments[index + 1]
                 if name == "settings" {
                     vm?.showSettings()
-                } else if let tab = NotchTab.allCases.first(where: { "\($0)" == name }) {
+                } else if let tab = NotchTab.allCases.first(where: { name == "\($0)" }) {
                     vm?.selectTab(tab)
                 }
             }
@@ -49,7 +49,9 @@ class NotchWindowController: NSWindowController {
     }
 
     @available(*, unavailable)
-    required init?(coder _: NSCoder) { fatalError() }
+    required init?(coder _: NSCoder) {
+        fatalError()
+    }
 
     func destroy() {
         vm?.destroy()
