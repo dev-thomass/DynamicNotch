@@ -3,7 +3,7 @@
 //  DynamicNotch
 //
 //  Branche les sources (batterie, Pomodoro, chrono, plateau, AirDrop,
-//  calendrier) sur ActivityCenter. Les événements ponctuels sont postés tels
+//  calendrier, musique) sur ActivityCenter. Les événements ponctuels sont postés tels
 //  quels ; l'état persistant est recalculé à chaque changement d'une source
 //  ou d'un réglage, et toutes les 30 s (décompte du calendrier).
 //
@@ -105,6 +105,12 @@ final class ActivityWiring {
             }
         }
 
+        NowPlayingManager.shared.onTrackChange = { [weak self] in
+            guard NowPlayingManager.shared.isPlaying else { return }
+            self?.center.post(.nowPlaying)
+        }
+        NowPlayingManager.shared.startObserving()
+
         let settings = AppSettings.shared
         let triggers: [AnyPublisher<Void, Never>] = [
             settings.$wingsEnabled.map { _ in () }.eraseToAnyPublisher(),
@@ -115,7 +121,8 @@ final class ActivityWiring {
             PomodoroModel.shared.$phase.map { _ in () }.eraseToAnyPublisher(),
             StopwatchModel.shared.$running.map { _ in () }.eraseToAnyPublisher(),
             StopwatchModel.shared.$accumulated.map { _ in () }.eraseToAnyPublisher(),
-            CalendarStore.shared.$nextEvent.map { _ in () }.eraseToAnyPublisher()
+            CalendarStore.shared.$nextEvent.map { _ in () }.eraseToAnyPublisher(),
+            NowPlayingManager.shared.$isPlaying.map { _ in () }.eraseToAnyPublisher()
         ]
         // receive(on:) : @Published émet avant l'écriture, on relit après.
         Publishers.MergeMany(triggers)
@@ -145,7 +152,7 @@ final class ActivityWiring {
             battery: BatteryMonitor.shared.snapshot,
             stopwatchHasTime: StopwatchModel.shared.hasTime,
             pomodoroActive: PomodoroModel.shared.phase != .idle,
-            musicPlaying: false, // activé par la tâche 12 (MediaRemote)
+            musicPlaying: NowPlayingManager.shared.isPlaying,
             nextEventStart: CalendarStore.shared.nextEvent?.startDate,
             now: Date()
         )

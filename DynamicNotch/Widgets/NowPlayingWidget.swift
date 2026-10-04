@@ -2,13 +2,14 @@
 //  NowPlayingWidget.swift
 //  DynamicNotch
 //
-//  Read-only "Now Playing" display + media-key control via private
-//  MediaRemote framework dlopened at runtime.
+//  Musique en cours, de deux sources :
+//   1. MediaRemote (framework privé, chargé par dlopen) : toutes les apps,
+//      pochette comprise. Depuis macOS 15.4, la lecture des infos peut être
+//      refusée aux apps tierces ; les commandes (lecture, suivant) restent.
+//   2. Les notifications distribuées de Musique et Spotify : titre, artiste,
+//      état. Aucune permission requise, fonctionne quand MediaRemote se tait.
 //
-//  Why dlopen rather than a swift sub-process: simpler, no helper to ship,
-//  works reliably for **playback control** (the part users actually need).
-//  Reading the current track requires the framework's "GetNowPlayingInfo"
-//  callback — provided opportunistically, with a graceful empty state.
+//  Tout est piloté par notifications, sans interrogation périodique.
 //
 
 import AppKit
@@ -23,28 +24,76 @@ import SwiftUI
 private struct MR {
     typealias GetNowPlayingInfoFn = @convention(c) (DispatchQueue, @escaping ([String: Any]) -> Void) -> Void
     typealias SendCommandFn = @convention(c) (Int, [String: Any]?) -> Bool
+    typealias RegisterFn = @convention(c) (DispatchQueue) -> Void
 
     let getNowPlayingInfo: GetNowPlayingInfoFn?
     let sendCommand: SendCommandFn?
+    let register: RegisterFn?
 
     static let shared: MR = {
         guard let handle = dlopen(
             "/System/Library/PrivateFrameworks/MediaRemote.framework/MediaRemote",
             RTLD_LAZY
-        ) else { return .init(getNowPlayingInfo: nil, sendCommand: nil) }
+        ) else { return .init(getNowPlayingInfo: nil, sendCommand: nil, register: nil) }
 
         let getInfoSym = dlsym(handle, "MRMediaRemoteGetNowPlayingInfo")
         let sendSym = dlsym(handle, "MRMediaRemoteSendCommand")
+        let registerSym = dlsym(handle, "MRMediaRemoteRegisterForNowPlayingNotifications")
 
         let getInfo = getInfoSym.map { unsafeBitCast($0, to: GetNowPlayingInfoFn.self) }
         let send = sendSym.map { unsafeBitCast($0, to: SendCommandFn.self) }
-        return .init(getNowPlayingInfo: getInfo, sendCommand: send)
+        let register = registerSym.map { unsafeBitCast($0, to: RegisterFn.self) }
+        return .init(getNowPlayingInfo: getInfo, sendCommand: send, register: register)
     }()
 }
 
 /// MediaRemote command codes (from the public-but-undocumented enum).
 private enum MRCommand: Int {
     case play = 0, pause = 1, togglePlayPause = 2, next = 4, previous = 5
+}
+
+// MARK: - Sources
+
+/// Détecte un changement de morceau. Le premier titre vu sert de référence.
+struct NowPlayingTrackTracker {
+    private var lastTitle: String?
+
+    mutating func update(title: String) -> Bool {
+        guard !title.isEmpty else { return false }
+        defer { lastTitle = title }
+        guard let lastTitle else { return false }
+        return lastTitle != title
+    }
+}
+
+/// Morceau annoncé par Musique ou Spotify dans leurs notifications distribuées.
+struct PlayerTrackInfo: Equatable {
+    var title: String
+    var artist: String
+    var isPlaying: Bool
+
+    /// Noms des notifications que Musique et Spotify publient à chaque
+    /// changement de morceau ou d'état (lecture, pause, arrêt).
+    static let notificationNames = [
+        "com.apple.Music.playerInfo",
+        "com.spotify.client.PlaybackStateChanged"
+    ]
+}
+
+extension PlayerTrackInfo {
+    /// Lit le `userInfo` d'une de ces notifications. Renvoie `nil` si rien
+    /// d'exploitable (dictionnaire vide ou sans état de lecture).
+    init?(userInfo: [AnyHashable: Any]?) {
+        guard let userInfo, let state = userInfo["Player State"] as? String else { return nil }
+        isPlaying = state == "Playing"
+        if state == "Stopped" {
+            title = ""
+            artist = ""
+        } else {
+            title = userInfo["Name"] as? String ?? ""
+            artist = userInfo["Artist"] as? String ?? ""
+        }
+    }
 }
 
 // MARK: - Manager
@@ -58,54 +107,126 @@ final class NowPlayingManager: ObservableObject {
     @Published var artwork: NSImage?
     @Published var isPlaying: Bool = false
 
-    private var pollTimer: Timer?
+    /// Appelé quand le titre change (hors premier titre vu).
+    var onTrackChange: (() -> Void)?
+
+    private var observing = false
+    private var tracker = NowPlayingTrackTracker()
+    private var observers: [NSObjectProtocol] = []
+    /// Dernier état annoncé par Musique / Spotify, utilisé quand MediaRemote
+    /// ne renvoie rien.
+    private var playerInfo: PlayerTrackInfo?
 
     private init() {}
 
-    /// Start polling the system "now playing" info. Called when at least one
-    /// NowPlayingWidgetView is on screen.
+    /// Abonnement aux notifications MediaRemote, Musique et Spotify.
+    /// Idempotent : appelé au lancement par ActivityWiring et à l'apparition
+    /// du widget.
     func startObserving() {
-        guard pollTimer == nil else { return }
-        refresh()
-        pollTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
-            Task { @MainActor [weak self] in self?.refresh() }
+        guard !observing else { return }
+        observing = true
+
+        MR.shared.register?(DispatchQueue.main)
+        for name in [
+            "kMRMediaRemoteNowPlayingInfoDidChangeNotification",
+            "kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification"
+        ] {
+            observers.append(NotificationCenter.default.addObserver(
+                forName: .init(name),
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated { self?.refresh() }
+            })
         }
+
+        let distributed = DistributedNotificationCenter.default()
+        for name in PlayerTrackInfo.notificationNames {
+            observers.append(distributed.addObserver(
+                forName: .init(name),
+                object: nil,
+                queue: .main
+            ) { [weak self] note in
+                let info = PlayerTrackInfo(userInfo: note.userInfo)
+                MainActor.assumeIsolated { self?.receive(playerInfo: info) }
+            })
+        }
+        refresh()
     }
 
-    func stopObserving() {
-        pollTimer?.invalidate()
-        pollTimer = nil
+    private func receive(playerInfo info: PlayerTrackInfo?) {
+        guard let info else { return }
+        playerInfo = info
+        apply(title: info.title, artist: info.artist, artwork: nil, isPlaying: info.isPlaying)
+        // MediaRemote, s'il répond, complète avec la pochette.
+        refresh()
     }
 
-    /// Refresh from MediaRemote. Silent no-op if the framework can't be
-    /// resolved (sandbox restrictions on a future macOS, etc.).
+    /// Interroge MediaRemote. Une réponse vide (rien en lecture, ou accès
+    /// refusé depuis macOS 15.4) laisse la place à la dernière info de
+    /// Musique / Spotify.
     func refresh() {
         guard let getInfo = MR.shared.getNowPlayingInfo else { return }
         getInfo(.main) { [weak self] info in
+            let title = info["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
+            let artist = info["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
+            let artworkData = info["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
+            let rate = info["kMRMediaRemoteNowPlayingInfoPlaybackRate"] as? Double ?? 0
             Task { @MainActor in
                 guard let self else { return }
-                self.title = info["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
-                self.artist = info["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
-                if let data = info["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data {
-                    self.artwork = NSImage(data: data)
-                }
-                if let rate = info["kMRMediaRemoteNowPlayingInfoPlaybackRate"] as? Double {
-                    self.isPlaying = rate > 0
+                if title.isEmpty {
+                    let fallback = self.playerInfo
+                    self.apply(
+                        title: fallback?.title ?? "",
+                        artist: fallback?.artist ?? "",
+                        artwork: nil,
+                        isPlaying: fallback?.isPlaying ?? false
+                    )
+                } else {
+                    self.apply(
+                        title: title,
+                        artist: artist,
+                        artwork: artworkData.flatMap { NSImage(data: $0) },
+                        isPlaying: rate > 0
+                    )
                 }
             }
         }
     }
 
+    private func apply(title: String, artist: String, artwork: NSImage?, isPlaying: Bool) {
+        let trackChanged = tracker.update(title: title)
+        if self.title != title {
+            self.title = title
+        }
+        if self.artist != artist {
+            self.artist = artist
+        }
+        // Une source sans pochette n'efface pas celle du morceau en cours.
+        if artwork != nil || title.isEmpty || trackChanged {
+            self.artwork = artwork
+        }
+        if self.isPlaying != isPlaying {
+            self.isPlaying = isPlaying
+        }
+        if trackChanged {
+            onTrackChange?()
+        }
+    }
+
     func togglePlay() {
-        _ = MR.shared.sendCommand?(MRCommand.togglePlayPause.rawValue, nil); refresh()
+        _ = MR.shared.sendCommand?(MRCommand.togglePlayPause.rawValue, nil)
+        refresh()
     }
 
     func next() {
-        _ = MR.shared.sendCommand?(MRCommand.next.rawValue, nil); refresh()
+        _ = MR.shared.sendCommand?(MRCommand.next.rawValue, nil)
+        refresh()
     }
 
     func previous() {
-        _ = MR.shared.sendCommand?(MRCommand.previous.rawValue, nil); refresh()
+        _ = MR.shared.sendCommand?(MRCommand.previous.rawValue, nil)
+        refresh()
     }
 }
 
