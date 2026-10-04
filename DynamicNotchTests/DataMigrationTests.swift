@@ -3,13 +3,19 @@
 //  DynamicNotchTests
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 final class DataMigrationTests: XCTestCase {
     private var root: URL!
-    private var legacy: URL { root.appendingPathComponent("legacy") }
-    private var destination: URL { root.appendingPathComponent("destination") }
+    private var legacy: URL {
+        root.appendingPathComponent("legacy")
+    }
+
+    private var destination: URL {
+        root.appendingPathComponent("destination")
+    }
+
     private let fm = FileManager.default
 
     override func setUpWithError() throws {

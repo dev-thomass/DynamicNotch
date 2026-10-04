@@ -22,7 +22,8 @@ final class CalendarStore: ObservableObject {
     static let shared = CalendarStore()
 
     @Published var nextEvent: EKEvent?
-    @Published private(set) var access: AgendaAccess = CalendarStore.access(for: EKEventStore.authorizationStatus(for: .event))
+    @Published private(set) var access: AgendaAccess = CalendarStore
+        .access(for: EKEventStore.authorizationStatus(for: .event))
     @Published private(set) var todayEvents: [AgendaEntry] = []
     @Published private(set) var tomorrowEvents: [AgendaEntry] = []
 
@@ -42,7 +43,9 @@ final class CalendarStore: ObservableObject {
     /// Relit l'autorisation ; si l'accès est accordé, lance le suivi (sans invite).
     func refreshAccess() {
         access = Self.access(for: EKEventStore.authorizationStatus(for: .event))
-        if access == .granted, refreshTimer == nil { startObserving() }
+        if access == .granted, refreshTimer == nil {
+            startObserving()
+        }
     }
 
     /// Demande l'accès (invite système), puis relit l'autorisation.
@@ -105,7 +108,11 @@ final class CalendarStore: ObservableObject {
         let dayPredicate = store.predicateForEvents(withStart: startOfToday, end: endOfTomorrow, calendars: nil)
         let entries = store.events(matching: dayPredicate).map { event in
             AgendaEntry(
-                id: AgendaEntry.makeID(eventIdentifier: event.eventIdentifier, title: event.title, start: event.startDate),
+                id: AgendaEntry.makeID(
+                    eventIdentifier: event.eventIdentifier,
+                    title: event.title,
+                    start: event.startDate
+                ),
                 title: event.title ?? "Sans titre",
                 start: event.startDate,
                 end: event.endDate,
@@ -118,4 +125,3 @@ final class CalendarStore: ObservableObject {
         tomorrowEvents = split.tomorrow
     }
 }
-

@@ -24,9 +24,13 @@ public class EventMonitor {
     }
 
     public func stop() {
-        if let globalMonitor { NSEvent.removeMonitor(globalMonitor) }
+        if let globalMonitor {
+            NSEvent.removeMonitor(globalMonitor)
+        }
         globalMonitor = nil
-        if let localMonitor { NSEvent.removeMonitor(localMonitor) }
+        if let localMonitor {
+            NSEvent.removeMonitor(localMonitor)
+        }
         localMonitor = nil
     }
 }

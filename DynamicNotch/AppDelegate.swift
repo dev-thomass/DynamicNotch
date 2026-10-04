@@ -16,7 +16,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// `showOnAllScreens` est ON, sinon un seul). Le 1er reste accessible
     /// via `mainWindowController` pour la compat (wake-up, etc.).
     var windowControllers: [NotchWindowController] = []
-    var mainWindowController: NotchWindowController? { windowControllers.first }
+    var mainWindowController: NotchWindowController? {
+        windowControllers.first
+    }
+
     private var settingsObservers: Set<AnyCancellable> = []
     /// Configuration d'écrans des fenêtres actuelles : on ne reconstruit que si elle change.
     private var lastLayout: WindowLayout?
@@ -41,7 +44,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Re-read each time we need it (was cached at launch and never refreshed).
     /// Cheap call, no need to memoize.
-    var isLaunchedAtLogin: Bool { LaunchAtLogin.wasLaunchedAtLogin }
+    var isLaunchedAtLogin: Bool {
+        LaunchAtLogin.wasLaunchedAtLogin
+    }
 
     func applicationDidFinishLaunching(_: Notification) {
         NotificationCenter.default.addObserver(
@@ -90,7 +95,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         rebuildApplicationWindows(force: true)
 
         #if DEBUG
-            ActivitySimulator.handleLaunchArguments()
+        ActivitySimulator.handleLaunchArguments()
         #endif
     }
 
@@ -113,13 +118,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// `didChangeScreenParametersNotification` arrive souvent sans changement réel :
     /// reconstruire à chaque fois provoquait un flash et perdait l'état.
     func rebuildApplicationWindows(force: Bool) {
-        let screens: [NSScreen]
-        if AppSettings.shared.showOnAllScreens {
-            screens = NSScreen.screens
+        let screens: [NSScreen] = if AppSettings.shared.showOnAllScreens {
+            NSScreen.screens
         } else if let one = findScreenFitsOurNeeds() {
-            screens = [one]
+            [one]
         } else {
-            screens = []
+            []
         }
         let forcePill = AppSettings.shared.forcePillMode
         let layout = WindowLayout(screens: screens.map { ScreenDescriptor($0) }, forcePill: forcePill)
@@ -140,7 +144,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 openAfterCreate: shouldOpen && index == 0
             ))
         }
-        Log.app.info("rebuilt \(self.windowControllers.count) notch window(s)")
+        Log.app.info("rebuilt \(windowControllers.count) notch window(s)")
     }
 
     /// Triggered when a second DynamicNotch launch posts a wake-up notification.
@@ -162,13 +166,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Menu Édition avec les key equivalents standard.
         let editItem = NSMenuItem()
         let editMenu = NSMenu(title: "Édition")
-        editMenu.addItem(NSMenuItem(title: "Annuler",            action: Selector(("undo:")),                    keyEquivalent: "z"))
-        editMenu.addItem(NSMenuItem(title: "Rétablir",           action: Selector(("redo:")),                    keyEquivalent: "Z"))
+        editMenu.addItem(NSMenuItem(title: "Annuler", action: Selector(("undo:")), keyEquivalent: "z"))
+        editMenu.addItem(NSMenuItem(title: "Rétablir", action: Selector(("redo:")), keyEquivalent: "Z"))
         editMenu.addItem(NSMenuItem.separator())
-        editMenu.addItem(NSMenuItem(title: "Couper",             action: #selector(NSText.cut(_:)),              keyEquivalent: "x"))
-        editMenu.addItem(NSMenuItem(title: "Copier",             action: #selector(NSText.copy(_:)),             keyEquivalent: "c"))
-        editMenu.addItem(NSMenuItem(title: "Coller",             action: #selector(NSText.paste(_:)),            keyEquivalent: "v"))
-        editMenu.addItem(NSMenuItem(title: "Tout sélectionner",  action: #selector(NSResponder.selectAll(_:)),   keyEquivalent: "a"))
+        editMenu.addItem(NSMenuItem(title: "Couper", action: #selector(NSText.cut(_:)), keyEquivalent: "x"))
+        editMenu.addItem(NSMenuItem(title: "Copier", action: #selector(NSText.copy(_:)), keyEquivalent: "c"))
+        editMenu.addItem(NSMenuItem(title: "Coller", action: #selector(NSText.paste(_:)), keyEquivalent: "v"))
+        editMenu.addItem(NSMenuItem(
+            title: "Tout sélectionner",
+            action: #selector(NSResponder.selectAll(_:)),
+            keyEquivalent: "a"
+        ))
         editItem.submenu = editMenu
         mainMenu.addItem(editItem)
 
@@ -185,8 +193,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldHandleReopen(_: NSApplication, hasVisibleWindows _: Bool) -> Bool {
         guard let controller = mainWindowController,
-              let vm = controller.vm
-        else { return true }
+              let vm = controller.vm else { return true }
         vm.notchOpen(.click)
         return true
     }

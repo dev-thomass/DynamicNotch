@@ -36,8 +36,7 @@ struct DSGallery: View {
 
     // MARK: section helper
 
-    @ViewBuilder
-    func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: DS.Spacing.md) {
             Text(title)
                 .font(DS.Typography.displayMedium)
@@ -74,24 +73,24 @@ struct DSGallery: View {
             colorRow("Surface", swatches: [
                 ("base", DS.Color.surfaceBase),
                 ("raised", DS.Color.surfaceRaised),
-                ("raisedStrong", DS.Color.surfaceRaisedStrong),
+                ("raisedStrong", DS.Color.surfaceRaisedStrong)
             ])
             colorRow("Text", swatches: [
                 ("primary", DS.Color.textPrimary),
                 ("secondary", DS.Color.textSecondary),
                 ("tertiary", DS.Color.textTertiary),
-                ("quaternary", DS.Color.textQuaternary),
+                ("quaternary", DS.Color.textQuaternary)
             ])
             colorRow("Brand", swatches: [
                 ("brand", DS.Color.brand),
                 ("brandStrong", DS.Color.brandStrong),
-                ("brandSoft", DS.Color.brandSoft),
+                ("brandSoft", DS.Color.brandSoft)
             ])
             colorRow("Semantic", swatches: [
                 ("destructive", DS.Color.destructive),
                 ("warning", DS.Color.warning),
                 ("success", DS.Color.success),
-                ("info", DS.Color.info),
+                ("info", DS.Color.info)
             ])
         }
     }
@@ -136,9 +135,15 @@ struct DSGallery: View {
     var spacingRadiusSection: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.lg) {
             HStack(spacing: DS.Spacing.lg) {
-                ForEach([("xxs", DS.Spacing.xxs), ("xs", DS.Spacing.xs), ("sm", DS.Spacing.sm),
-                         ("md", DS.Spacing.md), ("lg", DS.Spacing.lg), ("xl", DS.Spacing.xl),
-                         ("xxl", DS.Spacing.xxl)], id: \.0) { name, value in
+                ForEach([
+                    ("xxs", DS.Spacing.xxs),
+                    ("xs", DS.Spacing.xs),
+                    ("sm", DS.Spacing.sm),
+                    ("md", DS.Spacing.md),
+                    ("lg", DS.Spacing.lg),
+                    ("xl", DS.Spacing.xl),
+                    ("xxl", DS.Spacing.xxl)
+                ], id: \.0) { name, value in
                     VStack(spacing: 4) {
                         Rectangle().fill(DS.Color.brand).frame(width: value, height: value)
                         Text(name).font(DS.Typography.captionSmall).foregroundStyle(DS.Color.textTertiary)
@@ -146,8 +151,14 @@ struct DSGallery: View {
                 }
             }
             HStack(spacing: DS.Spacing.lg) {
-                ForEach([("xs", DS.Radius.xs), ("sm", DS.Radius.sm), ("md", DS.Radius.md),
-                         ("lg", DS.Radius.lg), ("xl", DS.Radius.xl), ("xxl", DS.Radius.xxl)], id: \.0) { name, value in
+                ForEach([
+                    ("xs", DS.Radius.xs),
+                    ("sm", DS.Radius.sm),
+                    ("md", DS.Radius.md),
+                    ("lg", DS.Radius.lg),
+                    ("xl", DS.Radius.xl),
+                    ("xxl", DS.Radius.xxl)
+                ], id: \.0) { name, value in
                     VStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: value, style: .continuous)
                             .fill(DS.Color.surfaceRaisedStrong)
@@ -229,7 +240,6 @@ struct DSGallery: View {
             .frame(width: 160, height: 100)
         }
     }
-
 }
 
 #Preview("Design System Gallery") {

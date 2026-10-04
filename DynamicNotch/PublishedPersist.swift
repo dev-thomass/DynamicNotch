@@ -81,7 +81,9 @@ struct Persist<Value: Codable> {
 struct PublishedPersist<Value: Codable> {
     @Persist private var value: Value
 
-    var projectedValue: AnyPublisher<Value, Never> { $value }
+    var projectedValue: AnyPublisher<Value, Never> {
+        $value
+    }
 
     @available(*, unavailable, message: "accessing wrappedValue will result undefined behavior")
     var wrappedValue: Value {

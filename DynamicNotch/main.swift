@@ -21,7 +21,7 @@ let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFil
 let dataDirectory = isRunningTests
     ? fileManager.temporaryDirectory.appendingPathComponent("DynamicNotchTests-data")
     : fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("DynamicNotch")
+    .appendingPathComponent("DynamicNotch")
 /// Ancien emplacement, lu une seule fois par `DataMigration`.
 let legacyDataDirectory = fileManager
     .urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -45,16 +45,16 @@ try? fileManager.createDirectory(at: dataDirectory, withIntermediateDirectories:
 try? fileManager.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
 
 #if DEBUG
-    // Rendu des états en PNG, sans fenêtre ni verrou d'instance unique.
-    if let index = CommandLine.arguments.firstIndex(of: "--render-states"),
-       index + 1 < CommandLine.arguments.count
-    {
-        _ = NSApplication.shared
-        MainActor.assumeIsolated {
-            StateRenderer.renderAll(to: URL(fileURLWithPath: CommandLine.arguments[index + 1]))
-        }
-        exit(0)
+// Rendu des états en PNG, sans fenêtre ni verrou d'instance unique.
+if let index = CommandLine.arguments.firstIndex(of: "--render-states"),
+   index + 1 < CommandLine.arguments.count
+{
+    _ = NSApplication.shared
+    MainActor.assumeIsolated {
+        StateRenderer.renderAll(to: URL(fileURLWithPath: CommandLine.arguments[index + 1]))
     }
+    exit(0)
+}
 #endif
 
 // Single-instance enforcement: claim a kernel-level flock(2) and bail out

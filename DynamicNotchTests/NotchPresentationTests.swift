@@ -3,8 +3,8 @@
 //  DynamicNotchTests
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 final class NotchPresentationTests: XCTestCase {
     private let notch = CGSize(width: 185, height: 32)
@@ -15,12 +15,18 @@ final class NotchPresentationTests: XCTestCase {
 
     /// Au repos, la coque épouse l'encoche : aucun pixel noir hors de l'encoche.
     func test_closed_isExactlyTheHardwareNotch() {
-        XCTAssertEqual(metrics(.closed), ShellMetrics(bodyWidth: 185, bodyHeight: 32, topRadius: 0, bottomRadius: 10, hasShadow: false))
+        XCTAssertEqual(
+            metrics(.closed),
+            ShellMetrics(bodyWidth: 185, bodyHeight: 32, topRadius: 0, bottomRadius: 10, hasShadow: false)
+        )
     }
 
     /// Le survol n'élargit plus : il allonge de 3 pt vers le bas.
     func test_peek_growsDownOnly() {
-        XCTAssertEqual(metrics(.peek), ShellMetrics(bodyWidth: 185, bodyHeight: 35, topRadius: 0, bottomRadius: 10, hasShadow: false))
+        XCTAssertEqual(
+            metrics(.peek),
+            ShellMetrics(bodyWidth: 185, bodyHeight: 35, topRadius: 0, bottomRadius: 10, hasShadow: false)
+        )
     }
 
     func test_compact_addsTwoEqualWings_withEars() {
@@ -32,24 +38,42 @@ final class NotchPresentationTests: XCTestCase {
     }
 
     func test_expanded_and_opened() {
-        XCTAssertEqual(metrics(.expanded(.charging)), ShellMetrics(bodyWidth: 340, bodyHeight: 80, topRadius: 10, bottomRadius: 24, hasShadow: true))
-        XCTAssertEqual(metrics(.opened(.tab(.home))), ShellMetrics(bodyWidth: 640, bodyHeight: 190, topRadius: 10, bottomRadius: 28, hasShadow: true))
+        XCTAssertEqual(
+            metrics(.expanded(.charging)),
+            ShellMetrics(bodyWidth: 340, bodyHeight: 80, topRadius: 10, bottomRadius: 24, hasShadow: true)
+        )
+        XCTAssertEqual(
+            metrics(.opened(.tab(.home))),
+            ShellMetrics(bodyWidth: 640, bodyHeight: 190, topRadius: 10, bottomRadius: 28, hasShadow: true)
+        )
         XCTAssertEqual(metrics(.opened(.tab(.notes))).bodyHeight, 220)
         XCTAssertEqual(metrics(.opened(.tab(.agenda))).bodyHeight, 260)
         XCTAssertEqual(metrics(.opened(.settings)).bodyWidth, 880)
     }
 
     func test_pill_states() {
-        XCTAssertEqual(metrics(.closed, hardware: false), ShellMetrics(bodyWidth: 190, bodyHeight: 24, topRadius: 0, bottomRadius: 12, hasShadow: false))
-        XCTAssertEqual(metrics(.peek, hardware: false), ShellMetrics(bodyWidth: 190, bodyHeight: 27, topRadius: 0, bottomRadius: 13.5, hasShadow: false))
+        XCTAssertEqual(
+            metrics(.closed, hardware: false),
+            ShellMetrics(bodyWidth: 190, bodyHeight: 24, topRadius: 0, bottomRadius: 12, hasShadow: false)
+        )
+        XCTAssertEqual(
+            metrics(.peek, hardware: false),
+            ShellMetrics(bodyWidth: 190, bodyHeight: 27, topRadius: 0, bottomRadius: 13.5, hasShadow: false)
+        )
 
         let compact = metrics(.compact(.charging), hardware: false)
         XCTAssertEqual(compact.bodyWidth, 190 + WingLayout.wingsWidth(for: .charging, scale: 2))
         XCTAssertEqual(compact.topRadius, 0)
         XCTAssertEqual(compact.bottomRadius, 12)
 
-        XCTAssertEqual(metrics(.expanded(.charging), hardware: false), ShellMetrics(bodyWidth: 340, bodyHeight: 80, topRadius: 0, bottomRadius: 24, hasShadow: true))
-        XCTAssertEqual(metrics(.opened(.tab(.home)), hardware: false), ShellMetrics(bodyWidth: 640, bodyHeight: 190, topRadius: 0, bottomRadius: 28, hasShadow: true))
+        XCTAssertEqual(
+            metrics(.expanded(.charging), hardware: false),
+            ShellMetrics(bodyWidth: 340, bodyHeight: 80, topRadius: 0, bottomRadius: 24, hasShadow: true)
+        )
+        XCTAssertEqual(
+            metrics(.opened(.tab(.home)), hardware: false),
+            ShellMetrics(bodyWidth: 640, bodyHeight: 190, topRadius: 0, bottomRadius: 28, hasShadow: true)
+        )
     }
 
     func test_motion() {
@@ -72,7 +96,10 @@ final class NotchPresentationTests: XCTestCase {
 
     func test_motion_equalMagnitude_usesExpand() {
         XCTAssertEqual(NotchPresentation.motion(from: .compact(.charging), to: .compact(.stopwatch)), .expand)
-        XCTAssertEqual(NotchPresentation.motion(from: .expanded(.filesAdded(count: 2)), to: .expanded(.airDropSent)), .expand)
+        XCTAssertEqual(
+            NotchPresentation.motion(from: .expanded(.filesAdded(count: 2)), to: .expanded(.airDropSent)),
+            .expand
+        )
     }
 
     func test_wingWidth_fitsWidestValue_andIsPixelAligned() {
@@ -84,7 +111,11 @@ final class NotchPresentationTests: XCTestCase {
     }
 
     func test_expanded_growsWithTallNotch() {
-        let tall = NotchPresentation.expanded(.charging).metrics(notch: CGSize(width: 200, height: 38), hasHardwareNotch: true, scale: 2)
+        let tall = NotchPresentation.expanded(.charging).metrics(
+            notch: CGSize(width: 200, height: 38),
+            hasHardwareNotch: true,
+            scale: 2
+        )
         XCTAssertEqual(tall.bodyHeight, 86)
     }
 

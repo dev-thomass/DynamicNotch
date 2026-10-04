@@ -35,13 +35,23 @@ final class ActivityWiring {
     static func activePersistent(_ inputs: Inputs) -> Set<ActivityID> {
         guard inputs.wingsEnabled else { return [] }
         var active: Set<ActivityID> = []
-        if inputs.wingBattery, inputs.battery.hasBattery, inputs.battery.isPluggedIn { active.insert(.charging) }
-        if inputs.wingStopwatch, inputs.stopwatchHasTime { active.insert(.stopwatch) }
-        if inputs.wingPomodoro, inputs.pomodoroActive { active.insert(.pomodoroPhase) }
-        if inputs.musicPlaying { active.insert(.nowPlaying) }
+        if inputs.wingBattery, inputs.battery.hasBattery, inputs.battery.isPluggedIn {
+            active.insert(.charging)
+        }
+        if inputs.wingStopwatch, inputs.stopwatchHasTime {
+            active.insert(.stopwatch)
+        }
+        if inputs.wingPomodoro, inputs.pomodoroActive {
+            active.insert(.pomodoroPhase)
+        }
+        if inputs.musicPlaying {
+            active.insert(.nowPlaying)
+        }
         if inputs.wingCalendar, let start = inputs.nextEventStart {
             let delay = start.timeIntervalSince(inputs.now)
-            if delay > 0, delay < 60 * 60 { active.insert(.calendarSoon) }
+            if delay > 0, delay < 60 * 60 {
+                active.insert(.calendarSoon)
+            }
         }
         return active
     }
@@ -58,10 +68,10 @@ final class ActivityWiring {
     private var cancellables = Set<AnyCancellable>()
     private var timer: Timer?
 
-    // Le défaut `.shared` est résolu dans le corps plutôt qu'en valeur par
-    // défaut de paramètre : une valeur par défaut n'hérite pas de
-    // l'isolation MainActor de l'initialiseur, ce qui déclenche un
-    // avertissement (erreur en Swift 6) sur l'accès à `ActivityCenter.shared`.
+    /// Le défaut `.shared` est résolu dans le corps plutôt qu'en valeur par
+    /// défaut de paramètre : une valeur par défaut n'hérite pas de
+    /// l'isolation MainActor de l'initialiseur, ce qui déclenche un
+    /// avertissement (erreur en Swift 6) sur l'accès à `ActivityCenter.shared`.
     init(center: ActivityCenter? = nil) {
         self.center = center ?? .shared
     }
@@ -76,7 +86,9 @@ final class ActivityWiring {
             reevaluate()
         }
         PomodoroModel.shared.onPhaseChange = { [weak self] _, naturalEnd in
-            if naturalEnd { NSSound(named: "Glass")?.play() }
+            if naturalEnd {
+                NSSound(named: "Glass")?.play()
+            }
             self?.center.post(.pomodoroPhase)
         }
         // Ces deux rappels sont documentés « sur la file principale », mais un
@@ -103,7 +115,7 @@ final class ActivityWiring {
             PomodoroModel.shared.$phase.map { _ in () }.eraseToAnyPublisher(),
             StopwatchModel.shared.$running.map { _ in () }.eraseToAnyPublisher(),
             StopwatchModel.shared.$accumulated.map { _ in () }.eraseToAnyPublisher(),
-            CalendarStore.shared.$nextEvent.map { _ in () }.eraseToAnyPublisher(),
+            CalendarStore.shared.$nextEvent.map { _ in () }.eraseToAnyPublisher()
         ]
         // receive(on:) : @Published émet avant l'écriture, on relit après.
         Publishers.MergeMany(triggers)

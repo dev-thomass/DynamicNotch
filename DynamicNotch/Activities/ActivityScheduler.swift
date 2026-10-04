@@ -31,7 +31,9 @@ final class ScheduledWork {
 
 @MainActor
 final class MainQueueScheduler: ActivityScheduler {
-    var now: Date { Date() }
+    var now: Date {
+        Date()
+    }
 
     func schedule(after seconds: TimeInterval, _ action: @escaping @MainActor () -> Void) -> ScheduledWork {
         let item = DispatchWorkItem { MainActor.assumeIsolated { action() } }

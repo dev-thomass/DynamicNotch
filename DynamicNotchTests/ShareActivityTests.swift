@@ -3,8 +3,8 @@
 //  DynamicNotchTests
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 final class ShareActivityTests: XCTestCase {
     func test_sendingState_isBalanced() {

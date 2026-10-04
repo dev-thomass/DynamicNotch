@@ -26,10 +26,14 @@ final class StopwatchModel: ObservableObject {
         accumulated + (startedAt.map { max(0, date.timeIntervalSince($0)) } ?? 0)
     }
 
-    var elapsed: TimeInterval { elapsed() }
+    var elapsed: TimeInterval {
+        elapsed()
+    }
 
     /// Vrai dès qu'il y a quelque chose à afficher (en cours ou en pause).
-    var hasTime: Bool { running || accumulated > 0 }
+    var hasTime: Bool {
+        running || accumulated > 0
+    }
 
     /// mm:ss.cc, pour le widget.
     func formatted(at date: Date = Date()) -> String {
@@ -96,7 +100,9 @@ struct StopwatchWidgetView: View {
                     systemImage: model.running ? "pause.fill" : "play.fill",
                     role: model.running ? .warning : .primary
                 ) {
-                    if !model.running { vm.hapticSender.send() }
+                    if !model.running {
+                        vm.hapticSender.send()
+                    }
                     model.toggle()
                 }
             }
@@ -106,7 +112,6 @@ struct StopwatchWidgetView: View {
         .dsCard()
     }
 
-    @ViewBuilder
     private func circleBtn(systemImage: String, role: ButtonRole, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
@@ -125,15 +130,16 @@ struct StopwatchWidgetView: View {
 
         var background: Color {
             switch self {
-            case .primary:   DS.Color.brand
-            case .warning:   DS.Color.warning
+            case .primary: DS.Color.brand
+            case .warning: DS.Color.warning
             case .secondary: DS.Color.surfaceRaisedStrong
             }
         }
+
         var foreground: Color {
             switch self {
             case .secondary: DS.Color.textPrimary
-            default:         DS.Color.textOnAccent
+            default: DS.Color.textOnAccent
             }
         }
     }

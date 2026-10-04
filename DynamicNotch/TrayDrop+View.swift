@@ -20,20 +20,19 @@ struct TrayView: View {
 
     var storageTime: String {
         switch tvm.selectedFileStorageTime {
-        case .oneHour:   return "une heure"
-        case .oneDay:    return "un jour"
-        case .twoDays:   return "deux jours"
+        case .oneHour: return "une heure"
+        case .oneDay: return "un jour"
+        case .twoDays: return "deux jours"
         case .threeDays: return "trois jours"
-        case .oneWeek:   return "une semaine"
-        case .never:     return "toujours"
+        case .oneWeek: return "une semaine"
+        case .never: return "toujours"
         case .custom:
-            let unit: String
-            switch tvm.customStorageTimeUnit {
-            case .hours:  unit = "heures"
-            case .days:   unit = "jours"
-            case .weeks:  unit = "semaines"
-            case .months: unit = "mois"
-            case .years:  unit = "ans"
+            let unit = switch tvm.customStorageTimeUnit {
+            case .hours: "heures"
+            case .days: "jours"
+            case .weeks: "semaines"
+            case .months: "mois"
+            case .years: "ans"
             }
             return "\(tvm.customStorageTime) \(unit)"
         }
@@ -49,7 +48,9 @@ struct TrayView: View {
             return true
         }
         .onChange(of: targeting) { _, isTargeted in
-            if isTargeted { dropBounces += 1 }
+            if isTargeted {
+                dropBounces += 1
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("Plateau de fichiers"))
@@ -120,8 +121,8 @@ struct TrayView: View {
             .frame(width: 26, height: 18)
             .background(
                 Capsule().fill(trashTargeting
-                               ? DS.Color.destructive
-                               : DS.Color.surfaceRaisedStrong)
+                    ? DS.Color.destructive
+                    : DS.Color.surfaceRaisedStrong)
             )
             .overlay(
                 Capsule().strokeBorder(

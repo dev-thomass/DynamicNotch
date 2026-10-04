@@ -43,12 +43,16 @@ class Share: NSObject, NSSharingServiceDelegate {
 
     func begin() {
         Share.inFlight.insert(self)
-        if serviceName == .sendViaAirDrop { ShareActivity.shared.begin() }
+        if serviceName == .sendViaAirDrop {
+            ShareActivity.shared.begin()
+        }
         do {
             try sendEx(files)
         } catch {
             Share.inFlight.remove(self)
-            if serviceName == .sendViaAirDrop { ShareActivity.shared.end() }
+            if serviceName == .sendViaAirDrop {
+                ShareActivity.shared.end()
+            }
             NSAlert.popError(error)
         }
     }
@@ -62,7 +66,9 @@ class Share: NSObject, NSSharingServiceDelegate {
     }
 
     func sharingService(_: NSSharingService, didFailToShareItems _: [Any], error _: Error) {
-        if serviceName == .sendViaAirDrop { ShareActivity.shared.end() }
+        if serviceName == .sendViaAirDrop {
+            ShareActivity.shared.end()
+        }
         Share.inFlight.remove(self)
     }
 
@@ -70,13 +76,16 @@ class Share: NSObject, NSSharingServiceDelegate {
         if let serviceName {
             guard let service = NSSharingService(named: serviceName) else {
                 throw NSError(domain: "ShareService", code: 1, userInfo: [
-                    NSLocalizedDescriptionKey: NSLocalizedString("Selected sharing service not available", comment: ""),
+                    NSLocalizedDescriptionKey: NSLocalizedString("Selected sharing service not available", comment: "")
                 ])
             }
 
             guard service.canPerform(withItems: files) else {
                 throw NSError(domain: "ShareService", code: 2, userInfo: [
-                    NSLocalizedDescriptionKey: NSLocalizedString("Sharing service cannot perform with given files", comment: ""),
+                    NSLocalizedDescriptionKey: NSLocalizedString(
+                        "Sharing service cannot perform with given files",
+                        comment: ""
+                    )
                 ])
             }
 

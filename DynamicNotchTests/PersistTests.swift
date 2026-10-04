@@ -13,14 +13,13 @@
 //     "Target Dependency" so test files can `@testable import DynamicNotch`
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 final class PersistTests: XCTestCase {
-
     // MARK: round-trip
 
-    func test_persist_roundTrip_simpleString() throws {
+    func test_persist_roundTrip_simpleString() {
         let key = uniqueKey()
         let store = InMemoryStore()
         let persist = Persist(key: key, defaultValue: "alpha", engine: store)
@@ -77,6 +76,11 @@ final class PersistTests: XCTestCase {
 /// `~/Library/Application Support/DynamicNotch/Config` folder during test runs.
 private final class InMemoryStore: PersistProvider {
     private var storage: [String: Data] = [:]
-    func data(forKey key: String) -> Data? { storage[key] }
-    func set(_ data: Data?, forKey key: String) { storage[key] = data }
+    func data(forKey key: String) -> Data? {
+        storage[key]
+    }
+
+    func set(_ data: Data?, forKey key: String) {
+        storage[key] = data
+    }
 }

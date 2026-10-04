@@ -14,8 +14,8 @@ struct HomeTabView: View {
     /// Largeur utile (640 − 2 × 16) moins deux espacements de 10, en 3,2 parts.
     private let unit: CGFloat = (640 - 32 - 20) / 3.2
 
-    // Chaque module observe seulement ses propres modèles : le Pomodoro qui
-    // avance deux fois par seconde ne réévalue ni l'agenda ni les aperçus.
+    /// Chaque module observe seulement ses propres modèles : le Pomodoro qui
+    /// avance deux fois par seconde ne réévalue ni l'agenda ni les aperçus.
     var body: some View {
         HStack(spacing: 10) {
             HomeTodayModule(vm: vm).frame(width: unit * 1.2)
@@ -172,13 +172,17 @@ private struct HomeActionsModule: View {
                         return true
                     }
                     action(stopwatch.running ? "pause.fill" : "play.fill", "Chrono") {
-                        if !stopwatch.running { vm.hapticSender.send() }
+                        if !stopwatch.running {
+                            vm.hapticSender.send()
+                        }
                         stopwatch.toggle()
                     }
                 }
                 GridRow {
                     action(pomodoro.isRunning ? "pause.fill" : "brain.head.profile", "Pomodoro") {
-                        if !pomodoro.isRunning { vm.hapticSender.send() }
+                        if !pomodoro.isRunning {
+                            vm.hapticSender.send()
+                        }
                         pomodoro.performPrimary()
                     }
                     action("square.and.pencil", "Note") { vm.selectTab(.notes) }

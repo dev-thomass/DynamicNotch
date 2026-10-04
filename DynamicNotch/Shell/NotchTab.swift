@@ -10,7 +10,9 @@ import SwiftUI
 enum NotchTab: Int, CaseIterable, Codable, Identifiable {
     case home, files, timers, notes, agenda
 
-    var id: Int { rawValue }
+    var id: Int {
+        rawValue
+    }
 
     var systemImage: String {
         switch self {

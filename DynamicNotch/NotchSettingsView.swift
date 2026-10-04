@@ -79,25 +79,35 @@ struct NotchSettingsView: View {
         sectionCard(title: "Extensions latérales", systemImage: "rectangle.expand.vertical") {
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 Toggle(isOn: $settings.wingsEnabled) {
-                    settingLabel("Activer les extensions",
-                                 subtitle: "Étend l'encoche pour afficher batterie, chrono, focus en temps réel")
+                    settingLabel(
+                        "Activer les extensions",
+                        subtitle: "Étend l'encoche pour afficher batterie, chrono, focus en temps réel"
+                    )
                 }
                 Group {
                     Toggle(isOn: $settings.wingBattery) {
-                        settingLabel("Batterie en charge",
-                                     subtitle: "Icône colorée à gauche, pourcentage à droite")
+                        settingLabel(
+                            "Batterie en charge",
+                            subtitle: "Icône colorée à gauche, pourcentage à droite"
+                        )
                     }
                     Toggle(isOn: $settings.wingStopwatch) {
-                        settingLabel("Chronomètre actif",
-                                     subtitle: "Minutes à gauche, secondes à droite")
+                        settingLabel(
+                            "Chronomètre actif",
+                            subtitle: "Minutes à gauche, secondes à droite"
+                        )
                     }
                     Toggle(isOn: $settings.wingPomodoro) {
-                        settingLabel("Pomodoro en cours",
-                                     subtitle: "Pastille de phase + temps restant")
+                        settingLabel(
+                            "Pomodoro en cours",
+                            subtitle: "Pastille de phase + temps restant"
+                        )
                     }
                     Toggle(isOn: $settings.wingCalendar) {
-                        settingLabel("Événement imminent",
-                                     subtitle: "Countdown vers le prochain RDV (< 60 min)")
+                        settingLabel(
+                            "Événement imminent",
+                            subtitle: "Countdown vers le prochain RDV (< 60 min)"
+                        )
                     }
                 }
                 .disabled(!settings.wingsEnabled)
@@ -124,7 +134,9 @@ struct NotchSettingsView: View {
                             .tag(DisplayPreference.builtInWithNotch)
                         Text(DisplayPreference.mainAtResolveTime.displayName)
                             .tag(DisplayPreference.mainAtResolveTime)
-                        if !connectedExternals.isEmpty { Divider() }
+                        if !connectedExternals.isEmpty {
+                            Divider()
+                        }
                         ForEach(connectedExternals, id: \.self) { name in
                             Text(name).tag(DisplayPreference.named(name))
                         }
@@ -142,13 +154,17 @@ struct NotchSettingsView: View {
                 }
 
                 Toggle(isOn: $settings.forcePillMode) {
-                    settingLabel("Forcer le mode pilule",
-                                 subtitle: "Ignore l'encoche matérielle et affiche une pilule arrondie")
+                    settingLabel(
+                        "Forcer le mode pilule",
+                        subtitle: "Ignore l'encoche matérielle et affiche une pilule arrondie"
+                    )
                 }
 
                 Toggle(isOn: $settings.showOnAllScreens) {
-                    settingLabel("Afficher sur tous les écrans",
-                                 subtitle: "Une encoche sur chaque écran connecté simultanément")
+                    settingLabel(
+                        "Afficher sur tous les écrans",
+                        subtitle: "Une encoche sur chaque écran connecté simultanément"
+                    )
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -175,33 +191,37 @@ struct NotchSettingsView: View {
                 pomodoroStepper(
                     "Focus",
                     binding: $settings.pomodoroFocusMinutes,
-                    range: 5...90,
+                    range: 5 ... 90,
                     suffix: "min"
                 )
                 pomodoroStepper(
                     "Pause courte",
                     binding: $settings.pomodoroShortBreakMinutes,
-                    range: 1...30,
+                    range: 1 ... 30,
                     suffix: "min"
                 )
                 pomodoroStepper(
                     "Pause longue",
                     binding: $settings.pomodoroLongBreakMinutes,
-                    range: 5...60,
+                    range: 5 ... 60,
                     suffix: "min"
                 )
                 pomodoroStepper(
                     "Cycles avant pause longue",
                     binding: $settings.pomodoroCyclesBeforeLongBreak,
-                    range: 2...8,
+                    range: 2 ... 8,
                     suffix: nil
                 )
             }
         }
     }
 
-    @ViewBuilder
-    private func pomodoroStepper(_ title: LocalizedStringKey, binding: Binding<Int>, range: ClosedRange<Int>, suffix: String?) -> some View {
+    private func pomodoroStepper(
+        _ title: LocalizedStringKey,
+        binding: Binding<Int>,
+        range: ClosedRange<Int>,
+        suffix: String?
+    ) -> some View {
         HStack {
             Text(title)
                 .font(DS.Typography.captionSmall)
@@ -319,9 +339,11 @@ struct NotchSettingsView: View {
     private var versionFooter: some View {
         HStack {
             Spacer()
-            Text(verbatim: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
-                .font(DS.Typography.captionSmall)
-                .foregroundStyle(DS.Color.textTertiary)
+            Text(
+                verbatim: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))"
+            )
+            .font(DS.Typography.captionSmall)
+            .foregroundStyle(DS.Color.textTertiary)
             Spacer()
         }
         .padding(.top, DS.Spacing.xs)
@@ -329,11 +351,10 @@ struct NotchSettingsView: View {
 
     // MARK: building blocks
 
-    @ViewBuilder
-    private func sectionCard<Content: View>(
+    private func sectionCard(
         title: LocalizedStringKey,
         systemImage: String,
-        @ViewBuilder content: @escaping () -> Content
+        @ViewBuilder content: @escaping () -> some View
     ) -> some View {
         VStack(alignment: .leading, spacing: DS.Spacing.sm) {
             HStack(spacing: DS.Spacing.xs) {
@@ -352,7 +373,6 @@ struct NotchSettingsView: View {
         }
     }
 
-    @ViewBuilder
     private func settingLabel(_ title: LocalizedStringKey, subtitle: LocalizedStringKey?) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(title).font(DS.Typography.body).foregroundStyle(DS.Color.textPrimary)

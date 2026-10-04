@@ -128,10 +128,14 @@ extension TrayDrop.DropItem {
     }
 
     var shouldClean: Bool {
-        if !FileManager.default.fileExists(atPath: storageURL.path) { return true }
+        if !FileManager.default.fileExists(atPath: storageURL.path) {
+            return true
+        }
         let keepInterval = TrayDrop.shared.keepInterval
         guard keepInterval > 0 else { return true } // avoid non-reasonable value deleting user's files
-        if Date().timeIntervalSince(copiedDate) > TrayDrop.shared.keepInterval { return true }
+        if Date().timeIntervalSince(copiedDate) > TrayDrop.shared.keepInterval {
+            return true
+        }
         return false
     }
 }

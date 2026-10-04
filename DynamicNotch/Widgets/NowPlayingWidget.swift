@@ -22,7 +22,7 @@ import SwiftUI
 /// widget body instead of crashing.
 private struct MR {
     typealias GetNowPlayingInfoFn = @convention(c) (DispatchQueue, @escaping ([String: Any]) -> Void) -> Void
-    typealias SendCommandFn       = @convention(c) (Int, [String: Any]?) -> Bool
+    typealias SendCommandFn = @convention(c) (Int, [String: Any]?) -> Bool
 
     let getNowPlayingInfo: GetNowPlayingInfoFn?
     let sendCommand: SendCommandFn?
@@ -34,15 +34,15 @@ private struct MR {
         ) else { return .init(getNowPlayingInfo: nil, sendCommand: nil) }
 
         let getInfoSym = dlsym(handle, "MRMediaRemoteGetNowPlayingInfo")
-        let sendSym    = dlsym(handle, "MRMediaRemoteSendCommand")
+        let sendSym = dlsym(handle, "MRMediaRemoteSendCommand")
 
         let getInfo = getInfoSym.map { unsafeBitCast($0, to: GetNowPlayingInfoFn.self) }
-        let send    = sendSym.map { unsafeBitCast($0, to: SendCommandFn.self) }
+        let send = sendSym.map { unsafeBitCast($0, to: SendCommandFn.self) }
         return .init(getNowPlayingInfo: getInfo, sendCommand: send)
     }()
 }
 
-// MediaRemote command codes (from the public-but-undocumented enum).
+/// MediaRemote command codes (from the public-but-undocumented enum).
 private enum MRCommand: Int {
     case play = 0, pause = 1, togglePlayPause = 2, next = 4, previous = 5
 }
@@ -96,9 +96,17 @@ final class NowPlayingManager: ObservableObject {
         }
     }
 
-    func togglePlay() { _ = MR.shared.sendCommand?(MRCommand.togglePlayPause.rawValue, nil); refresh() }
-    func next()       { _ = MR.shared.sendCommand?(MRCommand.next.rawValue, nil); refresh() }
-    func previous()   { _ = MR.shared.sendCommand?(MRCommand.previous.rawValue, nil); refresh() }
+    func togglePlay() {
+        _ = MR.shared.sendCommand?(MRCommand.togglePlayPause.rawValue, nil); refresh()
+    }
+
+    func next() {
+        _ = MR.shared.sendCommand?(MRCommand.next.rawValue, nil); refresh()
+    }
+
+    func previous() {
+        _ = MR.shared.sendCommand?(MRCommand.previous.rawValue, nil); refresh()
+    }
 }
 
 // MARK: - View
@@ -155,9 +163,11 @@ struct NowPlayingWidgetView: View {
             Spacer(minLength: 0)
             HStack(spacing: DS.Spacing.sm) {
                 mediaBtn("backward.fill", "Précédent") { player.previous() }
-                mediaBtn(player.isPlaying ? "pause.fill" : "play.fill",
-                         player.isPlaying ? "Pause" : "Lecture",
-                         size: 14) { player.togglePlay() }
+                mediaBtn(
+                    player.isPlaying ? "pause.fill" : "play.fill",
+                    player.isPlaying ? "Pause" : "Lecture",
+                    size: 14
+                ) { player.togglePlay() }
                 mediaBtn("forward.fill", "Suivant") { player.next() }
                 Spacer()
             }
@@ -165,8 +175,12 @@ struct NowPlayingWidgetView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
-    private func mediaBtn(_ systemImage: String, _ label: LocalizedStringKey, size: CGFloat = 11, action: @escaping () -> Void) -> some View {
+    private func mediaBtn(
+        _ systemImage: String,
+        _ label: LocalizedStringKey,
+        size: CGFloat = 11,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.system(size: size, weight: .semibold))

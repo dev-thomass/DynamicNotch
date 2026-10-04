@@ -20,8 +20,7 @@ public enum DS {}
 
 public extension DS {
     enum Color {
-
-        // ─── Surface ──────────────────────────────────────────────────────────
+        /// ─── Surface ──────────────────────────────────────────────────────────
         /// Pure black — used for the notch shell itself.
         public static let surfaceBase = SwiftUI.Color.black
 
@@ -35,17 +34,17 @@ public extension DS {
         public static let surfaceScrim = SwiftUI.Color.black.opacity(0.55)
 
         // ─── Text ─────────────────────────────────────────────────────────────
-        public static let textPrimary    = SwiftUI.Color.white
-        public static let textSecondary  = SwiftUI.Color.white.opacity(0.72)
-        public static let textTertiary   = SwiftUI.Color.white.opacity(0.48)
+        public static let textPrimary = SwiftUI.Color.white
+        public static let textSecondary = SwiftUI.Color.white.opacity(0.72)
+        public static let textTertiary = SwiftUI.Color.white.opacity(0.48)
         public static let textQuaternary = SwiftUI.Color.white.opacity(0.28)
-        public static let textOnAccent   = SwiftUI.Color.white
+        public static let textOnAccent = SwiftUI.Color.white
 
         // ─── Brand ────────────────────────────────────────────────────────────
         /// Primary brand cyan — picked from the icon's drop highlight.
-        public static let brand        = SwiftUI.Color(red: 0.475, green: 0.725, blue: 1.000)   // #79B9FF
-        public static let brandStrong  = SwiftUI.Color(red: 0.357, green: 0.659, blue: 1.000)   // #5BA8FF
-        public static let brandSoft    = SwiftUI.Color(red: 0.769, green: 0.886, blue: 1.000)   // #C4E2FF
+        public static let brand = SwiftUI.Color(red: 0.475, green: 0.725, blue: 1.000) // #79B9FF
+        public static let brandStrong = SwiftUI.Color(red: 0.357, green: 0.659, blue: 1.000) // #5BA8FF
+        public static let brandSoft = SwiftUI.Color(red: 0.769, green: 0.886, blue: 1.000) // #C4E2FF
 
         /// Brand gradient (used for hero glows, primary buttons).
         public static let brandGradient = LinearGradient(
@@ -55,26 +54,26 @@ public extension DS {
         )
 
         // ─── Semantic ─────────────────────────────────────────────────────────
-        public static let destructive  = SwiftUI.Color(red: 1.000, green: 0.271, blue: 0.227)   // #FF453A
-        public static let warning      = SwiftUI.Color(red: 1.000, green: 0.624, blue: 0.039)   // #FF9F0A
-        public static let success      = SwiftUI.Color(red: 0.188, green: 0.820, blue: 0.345)   // #30D158
-        public static let info         = SwiftUI.Color(red: 0.392, green: 0.824, blue: 1.000)   // #64D2FF
+        public static let destructive = SwiftUI.Color(red: 1.000, green: 0.271, blue: 0.227) // #FF453A
+        public static let warning = SwiftUI.Color(red: 1.000, green: 0.624, blue: 0.039) // #FF9F0A
+        public static let success = SwiftUI.Color(red: 0.188, green: 0.820, blue: 0.345) // #30D158
+        public static let info = SwiftUI.Color(red: 0.392, green: 0.824, blue: 1.000) // #64D2FF
 
         // ─── Border ───────────────────────────────────────────────────────────
-        public static let borderSubtle  = SwiftUI.Color.white.opacity(0.06)
+        public static let borderSubtle = SwiftUI.Color.white.opacity(0.06)
         public static let borderDefault = SwiftUI.Color.white.opacity(0.12)
-        public static let borderStrong  = SwiftUI.Color.white.opacity(0.22)
-        public static let borderFocus   = brand
+        public static let borderStrong = SwiftUI.Color.white.opacity(0.22)
+        public static let borderFocus = brand
         /// Trait fin unique des cartes (0,5 pt).
         public static let hairline = SwiftUI.Color.white.opacity(0.10)
 
         /// Fond des modules du panneau (gris système sombre).
-        public static let module = SwiftUI.Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255)   // #1C1C1E
+        public static let module = SwiftUI.Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255) // #1C1C1E
 
-        // ─── Drop zone (specific to file drag affordances) ────────────────────
-        public static let dropZoneIdle      = SwiftUI.Color.white.opacity(0.08)
+        /// ─── Drop zone (specific to file drag affordances) ────────────────────
+        public static let dropZoneIdle = SwiftUI.Color.white.opacity(0.08)
         /// Fond de la zone de dépôt quand elle est ciblée par un glisser.
-        public static let dropZoneTargetedFill   = SwiftUI.Color.white.opacity(0.10)
+        public static let dropZoneTargetedFill = SwiftUI.Color.white.opacity(0.10)
         /// Bordure de la zone de dépôt quand elle est ciblée par un glisser.
         public static let dropZoneTargetedBorder = SwiftUI.Color.white.opacity(0.35)
     }
@@ -85,11 +84,11 @@ public extension DS {
 public extension DS {
     enum Spacing {
         public static let xxs: CGFloat = 2
-        public static let xs:  CGFloat = 4
-        public static let sm:  CGFloat = 8
-        public static let md:  CGFloat = 12
-        public static let lg:  CGFloat = 16
-        public static let xl:  CGFloat = 24
+        public static let xs: CGFloat = 4
+        public static let sm: CGFloat = 8
+        public static let md: CGFloat = 12
+        public static let lg: CGFloat = 16
+        public static let xl: CGFloat = 24
         public static let xxl: CGFloat = 32
         public static let xxxl: CGFloat = 48
     }
@@ -99,12 +98,12 @@ public extension DS {
 
 public extension DS {
     enum Radius {
-        public static let xs:   CGFloat = 4
-        public static let sm:   CGFloat = 8
-        public static let md:   CGFloat = 12
-        public static let lg:   CGFloat = 16
-        public static let xl:   CGFloat = 24
-        public static let xxl:  CGFloat = 32
+        public static let xs: CGFloat = 4
+        public static let sm: CGFloat = 8
+        public static let md: CGFloat = 12
+        public static let lg: CGFloat = 16
+        public static let xl: CGFloat = 24
+        public static let xxl: CGFloat = 32
         public static let pill: CGFloat = 999
     }
 }
@@ -116,22 +115,22 @@ public extension DS {
     enum Typography {
         // SF Pro standard, comme les HUD et la barre de menus du système.
         // Rien sous 11 pt : en dessous, le texte bave sur fond noir.
-        public static let displayLarge  = Font.system(size: 28, weight: .bold)
+        public static let displayLarge = Font.system(size: 28, weight: .bold)
         public static let displayMedium = Font.system(size: 22, weight: .bold)
-        public static let title         = Font.system(size: 17, weight: .semibold)
-        public static let headline      = Font.system(size: 15, weight: .semibold)
-        public static let body          = Font.system(size: 13, weight: .regular)
-        public static let bodyEmphasis  = Font.system(size: 13, weight: .semibold)
-        public static let caption       = Font.system(size: 11, weight: .medium)
-        public static let captionSmall  = Font.system(size: 11, weight: .regular)
-        public static let mono          = Font.system(size: 11, weight: .medium, design: .monospaced)
+        public static let title = Font.system(size: 17, weight: .semibold)
+        public static let headline = Font.system(size: 15, weight: .semibold)
+        public static let body = Font.system(size: 13, weight: .regular)
+        public static let bodyEmphasis = Font.system(size: 13, weight: .semibold)
+        public static let caption = Font.system(size: 11, weight: .medium)
+        public static let captionSmall = Font.system(size: 11, weight: .regular)
+        public static let mono = Font.system(size: 11, weight: .medium, design: .monospaced)
 
         // ─── Coque et activités ───────────────────────────────────────────
         /// Ailes de l'encoche : même corps que la barre de menus.
-        public static let wing             = Font.system(size: 13, weight: .semibold).monospacedDigit()
-        public static let activityTitle    = Font.system(size: 15, weight: .semibold)
+        public static let wing = Font.system(size: 13, weight: .semibold).monospacedDigit()
+        public static let activityTitle = Font.system(size: 15, weight: .semibold)
         public static let activitySubtitle = Font.system(size: 12, weight: .regular)
-        public static let activityValue    = Font.system(size: 26, weight: .semibold).monospacedDigit()
+        public static let activityValue = Font.system(size: 26, weight: .semibold).monospacedDigit()
     }
 }
 
@@ -144,7 +143,7 @@ public extension DS {
         /// Transitions d'état des composants.
         public static let base = Animation.spring(response: 0.32, dampingFraction: 0.78)
 
-        // ─── Coque : seuls ressorts autorisés ─────────────────────────────
+        /// ─── Coque : seuls ressorts autorisés ─────────────────────────────
         /// Ouverture, expansion : léger rebond.
         public static let expand = Animation.spring(response: 0.42, dampingFraction: 0.78)
         /// Fermeture, repli : pas de rebond (Apple ne rebondit pas en rentrant).
@@ -162,7 +161,7 @@ public extension DS {
             }
         }
 
-        // ─── Contenu ──────────────────────────────────────────────────────
+        /// ─── Contenu ──────────────────────────────────────────────────────
         /// Entrée du contenu qui émerge de l'encoche.
         public static let emergeIn = Animation.spring(response: 0.38, dampingFraction: 0.82).delay(0.03)
         /// Sortie : rétraction rapide vers l'encoche.
@@ -175,7 +174,7 @@ public extension DS {
 public extension DS {
     enum Effect {
         // Drop shadows
-        public static let shadowSm = Shadow(color: .black.opacity(0.30), radius: 6,  x: 0, y: 2)
+        public static let shadowSm = Shadow(color: .black.opacity(0.30), radius: 6, x: 0, y: 2)
         public static let shadowMd = Shadow(color: .black.opacity(0.35), radius: 14, x: 0, y: 6)
         public static let shadowLg = Shadow(color: .black.opacity(0.45), radius: 28, x: 0, y: 12)
 
@@ -205,14 +204,13 @@ public extension View {
 
     /// Apply the standard DS card surface (raised background + subtle border).
     func dsCard(radius: CGFloat = DS.Radius.lg) -> some View {
-        self
-            .background(
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .fill(DS.Color.module)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .strokeBorder(DS.Color.hairline, lineWidth: 0.5)
-            )
+        background(
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .fill(DS.Color.module)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .strokeBorder(DS.Color.hairline, lineWidth: 0.5)
+        )
     }
 }

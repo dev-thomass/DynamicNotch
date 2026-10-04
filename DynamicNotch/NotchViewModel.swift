@@ -52,27 +52,54 @@ final class NotchViewModel: NSObject, ObservableObject {
 
     // MARK: géométrie (coordonnées écran AppKit)
 
-    var deviceNotchRect: CGRect { geometry.notchRect }
-    var screenRect: CGRect { geometry.screen.frame }
-    var hasHardwareNotch: Bool { geometry.hasHardwareNotch }
-    /// Marge de survol et de clic : élargie de 4 pt autour d'une vraie encoche.
-    var inset: CGFloat { hasHardwareNotch ? -4 : 0 }
-
-    var metrics: ShellMetrics {
-        presentation.metrics(notch: deviceNotchRect.size, hasHardwareNotch: hasHardwareNotch, scale: geometry.screen.scale)
+    var deviceNotchRect: CGRect {
+        geometry.notchRect
     }
 
-    var notchOpenedSize: CGSize { contentType.panelSize }
+    var screenRect: CGRect {
+        geometry.screen.frame
+    }
+
+    var hasHardwareNotch: Bool {
+        geometry.hasHardwareNotch
+    }
+
+    /// Marge de survol et de clic : élargie de 4 pt autour d'une vraie encoche.
+    var inset: CGFloat {
+        hasHardwareNotch ? -4 : 0
+    }
+
+    var metrics: ShellMetrics {
+        presentation.metrics(
+            notch: deviceNotchRect.size,
+            hasHardwareNotch: hasHardwareNotch,
+            scale: geometry.screen.scale
+        )
+    }
+
+    var notchOpenedSize: CGSize {
+        contentType.panelSize
+    }
 
     var notchOpenedRect: CGRect {
         let size = notchOpenedSize
-        return CGRect(x: deviceNotchRect.midX - size.width / 2, y: screenRect.maxY - size.height, width: size.width, height: size.height)
+        return CGRect(
+            x: deviceNotchRect.midX - size.width / 2,
+            y: screenRect.maxY - size.height,
+            width: size.width,
+            height: size.height
+        )
     }
 
     /// Rectangle de la coque dans son état courant.
     var currentShellRect: CGRect {
         let m = metrics
-        return CGRect(x: deviceNotchRect.midX - m.bodyWidth / 2, y: screenRect.maxY - m.bodyHeight, width: m.bodyWidth, height: m.bodyHeight)
+        return CGRect(
+            x: deviceNotchRect.midX - m.bodyWidth / 2,
+            y: screenRect.maxY - m.bodyHeight,
+            width: m.bodyWidth,
+            height: m.bodyHeight
+        )
     }
 
     @PublishedPersist(key: "selectedLanguage", defaultValue: .system)
@@ -94,13 +121,17 @@ final class NotchViewModel: NSObject, ObservableObject {
 
     /// Contenu du panneau ouvert (le dernier onglet hors de l'état ouvert).
     var contentType: ContentType {
-        if case let .opened(content) = presentation { return content }
+        if case let .opened(content) = presentation {
+            return content
+        }
         return .tab(lastTab)
     }
 
     /// Onglet affiché, `nil` hors onglets (fermé, réglages…).
     var currentTab: NotchTab? {
-        if case let .opened(.tab(tab)) = presentation { return tab }
+        if case let .opened(.tab(tab)) = presentation {
+            return tab
+        }
         return nil
     }
 
@@ -110,7 +141,9 @@ final class NotchViewModel: NSObject, ObservableObject {
         let from = currentTab ?? lastTab
         tabSlideEdge = NotchTab.slideEdge(from: from, to: tab)
         lastTab = tab
-        if from != tab || currentTab == nil { hapticSender.send() }
+        if from != tab || currentTab == nil {
+            hapticSender.send()
+        }
         transition(to: .opened(.tab(tab)))
     }
 
@@ -171,7 +204,9 @@ final class NotchViewModel: NSObject, ObservableObject {
 
     func showSettings() {
         // Hors de l'état ouvert : on passe par l'ouverture (suspension des activités).
-        if !presentation.isOpened { notchOpen(.click) }
+        if !presentation.isOpened {
+            notchOpen(.click)
+        }
         transition(to: .opened(.settings))
     }
 
@@ -193,9 +228,9 @@ final class NotchViewModel: NSObject, ObservableObject {
     }
 
     #if DEBUG
-        /// Rendu PNG des états (DebugTools) : pose un état sans animation.
-        func setPresentationForRendering(_ state: NotchPresentation) {
-            presentation = state
-        }
+    /// Rendu PNG des états (DebugTools) : pose un état sans animation.
+    func setPresentationForRendering(_ state: NotchPresentation) {
+        presentation = state
+    }
     #endif
 }

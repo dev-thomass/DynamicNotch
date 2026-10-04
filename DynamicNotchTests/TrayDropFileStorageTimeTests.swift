@@ -3,17 +3,16 @@
 //  DynamicNotchTests
 //
 
-import XCTest
 @testable import DynamicNotch
+import XCTest
 
 final class TrayDropFileStorageTimeTests: XCTestCase {
-
     func test_oneHour_returnsExactly3600s() {
         XCTAssertEqual(TrayDrop.FileStorageTime.oneHour.toTimeInterval(customTime: 0), 3600)
     }
 
     func test_oneDay_returnsExactly86400s() {
-        XCTAssertEqual(TrayDrop.FileStorageTime.oneDay.toTimeInterval(customTime: 0), 86_400)
+        XCTAssertEqual(TrayDrop.FileStorageTime.oneDay.toTimeInterval(customTime: 0), 86400)
     }
 
     func test_oneWeek_returnsExactly604_800s() {
@@ -25,6 +24,6 @@ final class TrayDropFileStorageTimeTests: XCTestCase {
     }
 
     func test_custom_passesThroughCustomTime() {
-        XCTAssertEqual(TrayDrop.FileStorageTime.custom.toTimeInterval(customTime: 12_345), 12_345)
+        XCTAssertEqual(TrayDrop.FileStorageTime.custom.toTimeInterval(customTime: 12345), 12345)
     }
 }

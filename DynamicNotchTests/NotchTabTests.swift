@@ -3,14 +3,17 @@
 //  DynamicNotchTests
 //
 
+@testable import DynamicNotch
 import SwiftUI
 import XCTest
-@testable import DynamicNotch
 
 final class NotchTabTests: XCTestCase {
     func test_order_andSymbols() {
         XCTAssertEqual(NotchTab.allCases, [.home, .files, .timers, .notes, .agenda])
-        XCTAssertEqual(NotchTab.allCases.map(\.systemImage), ["house.fill", "tray.full.fill", "timer", "note.text", "calendar"])
+        XCTAssertEqual(
+            NotchTab.allCases.map(\.systemImage),
+            ["house.fill", "tray.full.fill", "timer", "note.text", "calendar"]
+        )
     }
 
     func test_panelHeights() {

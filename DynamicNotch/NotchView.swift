@@ -16,7 +16,9 @@ struct NotchView: View {
     @Namespace private var activityNamespace
     @State private var dropTargeting = false
 
-    private var centerX: CGFloat { vm.geometry.notchCenterXInWindow }
+    private var centerX: CGFloat {
+        vm.geometry.notchCenterXInWindow
+    }
 
     private func shape(_ m: ShellMetrics) -> NotchShellShape {
         NotchShellShape(

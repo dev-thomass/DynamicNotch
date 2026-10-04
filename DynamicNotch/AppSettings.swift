@@ -12,7 +12,6 @@ import Foundation
 import SwiftUI
 
 final class AppSettings: ObservableObject {
-
     static let shared = AppSettings()
 
     private init() {}
