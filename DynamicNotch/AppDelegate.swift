@@ -143,6 +143,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_: Notification) {
+        MainActor.assumeIsolated { NowPlayingManager.shared.stopObserving() }
         try? FileManager.default.removeItem(at: temporaryDirectory)
     }
 

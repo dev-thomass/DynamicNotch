@@ -3,10 +3,10 @@
 //  DynamicNotch
 //
 //  Météo de la ville choisie dans les réglages, rafraîchie toutes les 30 min.
-//  Ville vide : aucune requête réseau.
+//  Ville vide : aucune requête réseau. Rafraîchie aussi au réveil du Mac.
 //
 
-import Foundation
+import AppKit
 import Observation
 
 @MainActor
@@ -34,6 +34,17 @@ final class WeatherStore {
 
     init(session: URLSession = .shared) {
         self.session = session
+        // Au réveil, la météo a souvent plusieurs heures : on laisse le réseau
+        // revenir puis on recharge.
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                MainActor.assumeIsolated { self?.refresh() }
+            }
+        }
     }
 
     /// Change de ville (vide = météo désactivée) et recharge.

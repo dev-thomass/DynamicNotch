@@ -122,6 +122,9 @@ final class NowPlayingManager {
     private let adapter = MediaRemoteAdapter()
     /// Vrai dès que l'adaptateur a répondu : il devient alors la seule source.
     private var adapterActive = false
+    /// Pochette brute du dernier état de l'adaptateur : le flux la renvoie à
+    /// chaque ligne, on ne recrée l'image que si elle change.
+    private var adapterArtworkData: Data?
 
     private init() {}
 
@@ -132,9 +135,14 @@ final class NowPlayingManager {
         guard !observing else { return }
         observing = true
 
-        adapter?.start { [weak self] state in
-            self?.receive(adapter: state)
-        }
+        adapter?.start(
+            onUpdate: { [weak self] state in
+                self?.receive(adapter: state)
+            },
+            onGiveUp: { [weak self] in
+                self?.adapterDidStop()
+            }
+        )
 
         MR.shared.register?(DispatchQueue.main)
         for name in [
@@ -166,12 +174,26 @@ final class NowPlayingManager {
 
     private func receive(adapter state: AdapterNowPlaying) {
         adapterActive = true
-        apply(
-            title: state.title,
-            artist: state.artist,
-            artwork: state.artworkData.flatMap { NSImage(data: $0) },
-            isPlaying: state.isPlaying
-        )
+        let artwork: NSImage?
+        if state.artworkData == adapterArtworkData {
+            artwork = self.artwork
+        } else {
+            adapterArtworkData = state.artworkData
+            artwork = state.artworkData.flatMap { NSImage(data: $0) }
+        }
+        apply(title: state.title, artist: state.artist, artwork: artwork, isPlaying: state.isPlaying)
+    }
+
+    /// L'adaptateur a abandonné : retour à MediaRemote et aux notifications.
+    private func adapterDidStop() {
+        adapterActive = false
+        adapterArtworkData = nil
+        refresh()
+    }
+
+    /// Fermeture de l'app : arrête le processus de l'adaptateur.
+    func stopObserving() {
+        adapter?.stop()
     }
 
     private func receive(playerInfo info: PlayerTrackInfo?) {
@@ -223,7 +245,7 @@ final class NowPlayingManager {
             self.artist = artist
         }
         // Une source sans pochette n'efface pas celle du morceau en cours.
-        if artwork != nil || title.isEmpty || trackChanged {
+        if artwork != nil || title.isEmpty || trackChanged, self.artwork !== artwork {
             self.artwork = artwork
         }
         if self.isPlaying != isPlaying {
