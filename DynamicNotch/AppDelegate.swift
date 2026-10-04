@@ -96,16 +96,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             .store(in: &settingsObservers)
 
+        let hotKey = toggleHotKey
         AppSettings.shared.$globalShortcutEnabled
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] enabled in
+            .sink { enabled in
                 MainActor.assumeIsolated {
-                    guard let self else { return }
                     if enabled {
-                        toggleHotKey.register()
+                        hotKey.register()
                     } else {
-                        toggleHotKey.unregister()
+                        hotKey.unregister()
                     }
                 }
             }
