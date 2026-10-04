@@ -85,9 +85,13 @@ final class ActivityWiring {
             }
             reevaluate()
         }
-        PomodoroModel.shared.onPhaseChange = { [weak self] _, naturalEnd in
+        PomodoroModel.shared.onPhaseChange = { [weak self] phase, naturalEnd in
             if naturalEnd {
                 NSSound(named: "Glass")?.play()
+                if AppSettings.shared.pomodoroNotifications {
+                    let minutes = Int(PomodoroModel.shared.phaseTotal / 60)
+                    PomodoroNotifier.notify(enteringPhase: phase, minutes: minutes)
+                }
             }
             self?.center.post(.pomodoroPhase)
         }

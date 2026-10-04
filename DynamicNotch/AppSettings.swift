@@ -66,6 +66,10 @@ final class AppSettings: ObservableObject {
     @PublishedPersist(key: "pomodoroCyclesBeforeLongBreak", defaultValue: 4)
     var pomodoroCyclesBeforeLongBreak: Int
 
+    /// Notification macOS à la fin de chaque phase (visible même encoche masquée).
+    @PublishedPersist(key: "pomodoroNotifications", defaultValue: true)
+    var pomodoroNotifications: Bool
+
     // MARK: wings (extensions latérales de l'encoche)
 
     /// Active globalement le système de wings — quand `false`, l'encoche

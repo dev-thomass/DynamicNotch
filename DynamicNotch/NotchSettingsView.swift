@@ -212,6 +212,12 @@ struct NotchSettingsView: View {
                     range: 2 ... 8,
                     suffix: nil
                 )
+                Toggle(isOn: $settings.pomodoroNotifications) {
+                    settingLabel(
+                        "Notification en fin de phase",
+                        subtitle: "Visible même quand l'encoche est masquée"
+                    )
+                }
             }
         }
     }
@@ -326,6 +332,7 @@ struct NotchSettingsView: View {
         settings.pomodoroShortBreakMinutes = 5
         settings.pomodoroLongBreakMinutes = 15
         settings.pomodoroCyclesBeforeLongBreak = 4
+        settings.pomodoroNotifications = true
         settings.wingsEnabled = true
         settings.wingBattery = true
         settings.wingStopwatch = true
