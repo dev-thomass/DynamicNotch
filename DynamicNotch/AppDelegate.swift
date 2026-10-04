@@ -91,6 +91,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             .store(in: &settingsObservers)
 
+        // Météo : on attend la fin de la saisie avant d'interroger le réseau.
+        AppSettings.shared.$weatherCity
+            .debounce(for: .seconds(1), scheduler: DispatchQueue.main)
+            .removeDuplicates()
+            .sink { city in
+                MainActor.assumeIsolated { WeatherStore.shared.setCity(city) }
+            }
+            .store(in: &settingsObservers)
+
         // Rebuild the windows when the user picks a different display
         // OU bascule "afficher sur tous les écrans".
         Publishers.CombineLatest3(

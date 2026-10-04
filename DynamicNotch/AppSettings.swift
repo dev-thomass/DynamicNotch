@@ -76,6 +76,12 @@ final class AppSettings: ObservableObject {
     @PublishedPersist(key: "clipboardHistoryEnabled", defaultValue: true)
     var clipboardHistoryEnabled: Bool
 
+    // MARK: weather
+
+    /// Ville de la météo (Accueil). Vide : météo désactivée, aucune requête.
+    @PublishedPersist(key: "weatherCity", defaultValue: "")
+    var weatherCity: String
+
     // MARK: wings (extensions latérales de l'encoche)
 
     /// Active globalement le système de wings — quand `false`, l'encoche

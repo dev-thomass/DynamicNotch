@@ -21,6 +21,8 @@ history and more — all behind a clean, customisable design system.
   - **Pomodoro** (configurable focus / break / long break durations, macOS
     notification at the end of each phase)
   - **Agenda** (today's events, next ones on Home, via EventKit)
+  - **Weather** on Home (city set in Settings, via Open-Meteo; off by default,
+    no network call until a city is entered)
   - **Clipboard** (last 20 copied texts, in memory only, password-manager
     copies skipped)
   - **Music** as a live activity (artwork + bars in the notch, card on track
@@ -71,8 +73,8 @@ DynamicNotch/
 
 ## Privacy
 
-Everything stays on your Mac. No telemetry, no analytics, no network
-calls. See `Resources/Privacy.md` for the full breakdown.
+Everything stays on your Mac. No telemetry, no analytics; the only network
+calls are the optional weather requests. See `Resources/Privacy.md` for the full breakdown.
 
 ## Third-party code
 

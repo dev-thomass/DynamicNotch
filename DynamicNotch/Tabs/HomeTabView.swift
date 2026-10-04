@@ -2,7 +2,7 @@
 //  HomeTabView.swift
 //  DynamicNotch
 //
-//  Accueil : aujourd'hui (date + deux prochains événements), fichiers
+//  Accueil : aujourd'hui (date, météo, deux prochains événements), fichiers
 //  récents (zone de dépôt) et quatre actions rapides.
 //
 
@@ -30,6 +30,7 @@ struct HomeTabView: View {
 private struct HomeTodayModule: View {
     let vm: NotchViewModel
     private let calendar = CalendarStore.shared
+    private let weather = WeatherStore.shared
 
     var body: some View {
         DSModule(
@@ -37,13 +38,41 @@ private struct HomeTodayModule: View {
             action: calendar.access == .granted ? { vm.selectTab(.agenda) } : nil
         ) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(Date().formatted(.dateTime.weekday(.abbreviated).day()))
-                    .font(DS.Typography.displayMedium)
-                    .foregroundStyle(DS.Color.textPrimary)
+                HStack(alignment: .firstTextBaseline) {
+                    Text(Date().formatted(.dateTime.weekday(.abbreviated).day()))
+                        .font(DS.Typography.displayMedium)
+                        .foregroundStyle(DS.Color.textPrimary)
+                    Spacer(minLength: 4)
+                    weatherBadge
+                }
                 detail
             }
         }
         .onAppear { calendar.refreshAccess() }
+    }
+
+    /// Icône + température ; rien tant que la météo n'est pas chargée.
+    @ViewBuilder
+    private var weatherBadge: some View {
+        if case let .loaded(snapshot) = weather.state {
+            HStack(spacing: 4) {
+                Image(systemName: snapshot.condition.systemImage(isDay: snapshot.isDay))
+                    .symbolRenderingMode(.multicolor)
+                Text(snapshot.temperatureText)
+                    .monospacedDigit()
+                    .foregroundStyle(DS.Color.textPrimary)
+            }
+            .font(DS.Typography.bodyEmphasis)
+            .help(Text(weatherHelp(snapshot)))
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(Text(weatherHelp(snapshot)))
+        }
+    }
+
+    private func weatherHelp(_ snapshot: WeatherSnapshot) -> String {
+        [snapshot.place, snapshot.condition.label, snapshot.temperatureText, snapshot.rangeText]
+            .compactMap(\.self)
+            .joined(separator: " · ")
     }
 
     @ViewBuilder

@@ -26,6 +26,7 @@ struct NotchSettingsView: View {
                 HStack(alignment: .top, spacing: DS.Spacing.md) {
                     VStack(alignment: .leading, spacing: DS.Spacing.md) {
                         behaviorSection
+                        weatherSection
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
@@ -189,6 +190,21 @@ struct NotchSettingsView: View {
         }
     }
 
+    // MARK: weather
+
+    private var weatherSection: some View {
+        sectionCard(title: "Météo", systemImage: "cloud.sun.fill") {
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+                TextField("Ville (ex. Paris)", text: $settings.weatherCity)
+                    .textFieldStyle(.roundedBorder)
+                Text("Affichée sur l'Accueil, via Open-Meteo. Laisser vide pour ne rien envoyer sur le réseau.")
+                    .font(DS.Typography.captionSmall)
+                    .foregroundStyle(DS.Color.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     // MARK: pomodoro
 
     private var pomodoroSection: some View {
@@ -340,6 +356,7 @@ struct NotchSettingsView: View {
         settings.pomodoroCyclesBeforeLongBreak = 4
         settings.pomodoroNotifications = true
         settings.clipboardHistoryEnabled = true
+        settings.weatherCity = ""
         settings.wingsEnabled = true
         settings.wingBattery = true
         settings.wingStopwatch = true
