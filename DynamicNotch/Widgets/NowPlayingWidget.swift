@@ -281,7 +281,7 @@ final class NowPlayingManager {
 // MARK: - View
 
 struct NowPlayingWidgetView: View {
-    @ObservedObject var vm: NotchViewModel
+    var vm: NotchViewModel
     private let player = NowPlayingManager.shared
 
     var body: some View {

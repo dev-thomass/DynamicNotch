@@ -29,7 +29,7 @@ extension NotchViewModel {
             .sink { [weak self] _ in self?.handleMouseMove(to: NSEvent.mouseLocation) }
             .store(in: &cancellables)
 
-        $presentation
+        presentationChanges
             .filter { $0 == .peek }
             .throttle(for: .seconds(0.5), scheduler: DispatchQueue.main, latest: false)
             .sink { [weak self] _ in

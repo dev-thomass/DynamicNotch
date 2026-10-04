@@ -78,7 +78,7 @@ final class NotchViewModelTests: XCTestCase {
         let vm = makeViewModel()
         XCTAssertEqual(vm.presentation, .expanded(.charging))
         var states: [NotchPresentation] = []
-        let observation = vm.$presentation.dropFirst().sink { states.append($0) }
+        let observation = vm.presentationChanges.sink { states.append($0) }
         vm.notchOpen(.boot)
         XCTAssertEqual(states, [.opened(.tab(.home))])
         observation.cancel()

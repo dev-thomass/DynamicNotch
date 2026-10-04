@@ -214,7 +214,7 @@ final class PomodoroModel {
 // MARK: - View
 
 struct PomodoroWidgetView: View {
-    @ObservedObject var vm: NotchViewModel
+    var vm: NotchViewModel
     private let model = PomodoroModel.shared
 
     var body: some View {

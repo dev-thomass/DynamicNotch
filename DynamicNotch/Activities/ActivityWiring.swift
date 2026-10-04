@@ -123,7 +123,7 @@ final class ActivityWiring {
             settings.$wingPomodoro.map { _ in () }.eraseToAnyPublisher(),
             settings.$wingCalendar.map { _ in () }.eraseToAnyPublisher()
         ]
-        // receive(on:) : @Published émet avant l'écriture, on relit après.
+        // receive(on:) : on réévalue après la fin de la mise à jour en cours.
         Publishers.MergeMany(triggers)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.reevaluate() }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NotchContentView: View {
-    @ObservedObject var vm: NotchViewModel
+    var vm: NotchViewModel
 
     var body: some View {
         // ZStack : pendant un changement d'onglet, le contenu sortant et le

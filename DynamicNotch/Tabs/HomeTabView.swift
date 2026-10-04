@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct HomeTabView: View {
-    @ObservedObject var vm: NotchViewModel
+    var vm: NotchViewModel
 
     /// Largeur utile (640 − 2 × 16) moins deux espacements de 10, en 3,2 parts.
     private let unit: CGFloat = (640 - 32 - 20) / 3.2
@@ -120,7 +120,7 @@ private struct HomeTodayModule: View {
 
 private struct HomeFilesModule: View {
     let vm: NotchViewModel
-    @ObservedObject private var tray = TrayDrop.shared
+    private let tray = TrayDrop.shared
     @State private var targeted = false
 
     var body: some View {
