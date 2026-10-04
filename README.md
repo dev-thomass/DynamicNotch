@@ -51,6 +51,13 @@ open ~/Applications/DynamicNotch.app
 
 For development, just open `DynamicNotch.xcodeproj` in Xcode and ⌘R.
 
+To update an installed copy to the latest `main` in one go (pull, build,
+replace in `~/Applications`, relaunch):
+
+```bash
+./Tools/update.sh
+```
+
 ## Project layout
 
 ```
